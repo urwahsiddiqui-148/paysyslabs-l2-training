@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 3 · Day 3 & 4 — Log Parsing & Cron Jobs</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600;700;800&family=Mulish:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #06080d;
+    --surface: #0c0f18;
+    --surface2: #111520;
+    --surface3: #161c28;
+    --border: #1e2535;
+    --text: #a8b8d0;
+    --text-dim: #485870;
+    --text-faint: #1e2838;
+    --white: #e8f0fc;
+
+    --cyan: #00d4ff;
+    --cyan-bg: #00101a;
+    --cyan-border: #003848;
+
+    --lime: #7fff00;
+    --lime-bg: #0a1400;
+    --lime-border: #203800;
+
+    --amber: #ffb800;
+    --amber-bg: #181000;
+    --amber-border: #402800;
+
+    --rose: #ff4080;
+    --rose-bg: #180008;
+    --rose-border: #400020;
+
+    --violet: #9060ff;
+    --violet-bg: #0c0818;
+    --violet-border: #281848;
+
+    --teal: #00e5a0;
+    --teal-bg: #001810;
+    --teal-border: #003828;
+  }
+
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Mulish',sans-serif; font-size:15px; line-height:1.7; padding:48px 24px 100px; }
+  .page { max-width:960px; margin:0 auto; }
+
+  /* TOPBAR */
+  .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:52px; padding-bottom:18px; border-bottom:1px solid var(--border); }
+  .topbar-left { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-faint); letter-spacing:1px; text-transform:uppercase; }
+  .tb-right { display:flex; gap:8px; }
+  .tb-badge { font-family:'JetBrains Mono',monospace; font-size:10px; padding:4px 14px; border-radius:100px; letter-spacing:1px; text-transform:uppercase; }
+  .tb-week { background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); }
+  .tb-d3 { background:var(--cyan-bg); border:1px solid var(--cyan-border); color:var(--cyan); }
+  .tb-d4 { background:var(--amber-bg); border:1px solid var(--amber-border); color:var(--amber); }
+
+  /* HERO */
+  .hero { margin-bottom:52px; }
+  .day-label { font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--cyan); margin-bottom:14px; }
+  .hero h1 { font-family:'Unbounded',sans-serif; font-size:clamp(28px,5vw,52px); font-weight:800; line-height:1.1; color:var(--white); margin-bottom:18px; }
+  .hero h1 .c { color:var(--cyan); }
+  .hero h1 .a { color:var(--amber); }
+  .hero-desc { color:var(--text-dim); font-size:15px; max-width:560px; }
+  .tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:22px; }
+  .tag { padding:5px 14px; border-radius:100px; font-family:'JetBrains Mono',monospace; font-size:11px; background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); }
+  .tag-d3 { background:var(--cyan-bg); border-color:var(--cyan-border); color:var(--cyan); }
+  .tag-d4 { background:var(--amber-bg); border-color:var(--amber-border); color:var(--amber); }
+
+  /* DAY DIVIDER */
+  .day-div { display:flex; align-items:center; gap:16px; margin:56px 0 32px; }
+  .dd-pill { font-family:'JetBrains Mono',monospace; font-size:11px; padding:6px 20px; border-radius:100px; letter-spacing:2px; text-transform:uppercase; font-weight:600; flex-shrink:0; }
+  .dd-d3 { background:var(--cyan-bg); border:2px solid var(--cyan-border); color:var(--cyan); }
+  .dd-d4 { background:var(--amber-bg); border:2px solid var(--amber-border); color:var(--amber); }
+  .dd-line-c { flex:1; height:1px; background:var(--cyan-border); }
+  .dd-line-a { flex:1; height:1px; background:var(--amber-border); }
+  .dd-title { font-family:'Unbounded',sans-serif; font-size:16px; font-weight:700; }
+  .dd-title-c { color:var(--cyan); }
+  .dd-title-a { color:var(--amber); }
+
+  /* SECTION */
+  .sec { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--text-faint); margin-bottom:18px; margin-top:44px; display:flex; align-items:center; gap:12px; }
+  .sec .sn { font-size:12px; }
+  .sn-c { color:var(--cyan); }
+  .sn-a { color:var(--amber); }
+  .sec::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* ANALOGY */
+  .analogy { border-left:4px solid; border-radius:12px; padding:22px 28px; margin-bottom:16px; }
+  .an-c { background:var(--cyan-bg); border-color:var(--cyan); }
+  .an-a { background:var(--amber-bg); border-color:var(--amber); }
+  .analogy .al { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; }
+  .an-c .al { color:var(--cyan); }
+  .an-a .al { color:var(--amber); }
+  .analogy p { color:var(--text); font-size:14px; }
+  .analogy strong { color:var(--white); }
+
+  /* CARD */
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px 28px; margin-bottom:14px; }
+  .card h3 { font-family:'Unbounded',sans-serif; font-size:15px; font-weight:700; color:var(--white); margin-bottom:8px; }
+  .card p { color:var(--text-dim); margin-bottom:8px; font-size:14px; }
+  .card p:last-child { margin-bottom:0; }
+  .card strong { color:var(--text); }
+
+  /* COMMAND BLOCK */
+  .cmd-block { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:16px; }
+  .cmd-header { padding:16px 24px; background:var(--surface2); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .cmd-name { font-family:'JetBrains Mono',monospace; font-size:20px; font-weight:600; color:var(--white); }
+  .cmd-pill { font-family:'JetBrains Mono',monospace; font-size:10px; padding:3px 12px; border-radius:100px; letter-spacing:1px; text-transform:uppercase; }
+  .cp-c { background:var(--cyan-bg); border:1px solid var(--cyan-border); color:var(--cyan); }
+  .cp-l { background:var(--lime-bg); border:1px solid var(--lime-border); color:var(--lime); }
+  .cp-v { background:var(--violet-bg); border:1px solid var(--violet-border); color:var(--violet); }
+  .cp-a { background:var(--amber-bg); border:1px solid var(--amber-border); color:var(--amber); }
+  .cp-t { background:var(--teal-bg); border:1px solid var(--teal-border); color:var(--teal); }
+  .cmd-tagline { margin-left:auto; font-size:13px; font-style:italic; color:var(--text-dim); }
+  .cmd-body { padding:24px; display:flex; flex-direction:column; gap:14px; }
+  .cmd-what { font-size:14px; color:var(--text-dim); }
+  .cmd-what strong { color:var(--white); }
+
+  /* CODE BOX */
+  .cbox { background:var(--bg); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  .cbox-bar { padding:7px 14px; background:var(--surface3); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:7px; }
+  .cbox-bar .d { width:8px; height:8px; border-radius:50%; }
+  .dr{background:#ff5f56;} .dy{background:#ffbd2e;} .dg{background:#27c93f;}
+  .cbox-bar .ctitle { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-faint); margin-left:4px; letter-spacing:1px; }
+  .cbox-code { padding:16px 20px; font-family:'JetBrains Mono',monospace; font-size:12.5px; line-height:2.0; overflow-x:auto; }
+
+  /* SYNTAX */
+  .kw  { color:#ff7b72; }
+  .fn  { color:#79c0ff; }
+  .str { color:#a5d6ff; }
+  .var { color:#ffa657; }
+  .cm  { color:#3a4858; }
+  .pip { color:#e3b341; }
+  .out { color:#3fb950; }
+  .op  { color:#c9d1d9; }
+  .hl  { color:var(--cyan); }
+
+  /* PIPE TABLE */
+  .pipe-table { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:14px; }
+  .pt-header { padding:14px 22px; background:var(--surface2); border-bottom:1px solid var(--border); font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; color:var(--white); }
+  table.pt { width:100%; border-collapse:collapse; }
+  table.pt th { padding:9px 18px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint); text-align:left; border-bottom:1px solid var(--border); font-weight:400; background:var(--surface3); }
+  table.pt td { padding:12px 18px; font-size:13px; color:var(--text-dim); border-bottom:1px solid rgba(255,255,255,0.03); vertical-align:middle; }
+  table.pt tr:last-child td { border-bottom:none; }
+  table.pt tr:hover td { background:rgba(255,255,255,0.02); }
+  table.pt td:first-child { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--cyan); white-space:nowrap; }
+
+  /* NOTE */
+  .note { border-radius:10px; padding:11px 16px; font-size:13px; }
+  .n-c { background:var(--cyan-bg); border:1px solid var(--cyan-border); color:var(--cyan); }
+  .n-a { background:var(--amber-bg); border:1px solid var(--amber-border); color:var(--amber); }
+  .n-l { background:var(--lime-bg); border:1px solid var(--lime-border); color:var(--lime); }
+  .n-r { background:var(--rose-bg); border:1px solid var(--rose-border); color:var(--rose); }
+  .n-t { background:var(--teal-bg); border:1px solid var(--teal-border); color:var(--teal); }
+  .note strong { color:var(--white); }
+
+  /* CRON TABLE */
+  .cron-table { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:14px; }
+  .cron-header { padding:14px 22px; background:var(--surface2); border-bottom:1px solid var(--border); font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; color:var(--white); }
+  .cron-fields { display:grid; grid-template-columns:repeat(5,1fr) auto; gap:0; }
+  .cf-item { padding:14px 16px; text-align:center; border-bottom:1px solid var(--border); border-right:1px solid var(--border); }
+  .cf-item:last-child { border-right:none; }
+  .cf-label { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint); margin-bottom:6px; }
+  .cf-sym { font-family:'JetBrains Mono',monospace; font-size:20px; font-weight:700; }
+  .cf-range { font-size:11px; color:var(--text-faint); margin-top:4px; font-family:'JetBrains Mono',monospace; }
+  .s1 .cf-sym { color:var(--cyan); }
+  .s2 .cf-sym { color:var(--amber); }
+  .s3 .cf-sym { color:var(--lime); }
+  .s4 .cf-sym { color:var(--rose); }
+  .s5 .cf-sym { color:var(--violet); }
+  .s6 .cf-sym { color:var(--teal); font-size:13px; }
+
+  /* CRON EXAMPLES */
+  .cron-ex { padding:4px 0; }
+  table.ce { width:100%; border-collapse:collapse; }
+  table.ce th { padding:9px 18px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint); text-align:left; border-bottom:1px solid var(--border); font-weight:400; background:var(--surface3); }
+  table.ce td { padding:12px 18px; font-size:13px; color:var(--text-dim); border-bottom:1px solid rgba(255,255,255,0.03); vertical-align:middle; }
+  table.ce tr:last-child td { border-bottom:none; }
+  table.ce tr:hover td { background:rgba(255,255,255,0.02); }
+  table.ce td:first-child { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--amber); white-space:nowrap; }
+
+  /* LAB */
+  .lab { border-radius:16px; overflow:hidden; margin-bottom:14px; }
+  .lab-d3 { border:2px solid var(--cyan-border); }
+  .lab-d4 { border:2px solid var(--amber-border); }
+  .lab-header { padding:18px 26px; border-bottom:1px solid; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  .lab-d3 .lab-header { background:var(--cyan-bg); border-color:var(--cyan-border); }
+  .lab-d4 .lab-header { background:var(--amber-bg); border-color:var(--amber-border); }
+  .lab-header h3 { font-family:'Unbounded',sans-serif; font-size:14px; font-weight:700; color:var(--white); }
+  .lab-badge { font-family:'JetBrains Mono',monospace; font-size:10px; padding:4px 12px; border-radius:100px; }
+  .lab-d3 .lab-badge { background:rgba(0,212,255,0.1); border:1px solid var(--cyan-border); color:var(--cyan); }
+  .lab-d4 .lab-badge { background:rgba(255,184,0,0.1); border:1px solid var(--amber-border); color:var(--amber); }
+  .lab-body { padding:26px; display:flex; flex-direction:column; gap:0; background:var(--surface); }
+  .lab-step { display:flex; gap:18px; position:relative; }
+  .lab-step:not(:last-child) .ls-left::after { content:''; position:absolute; left:19px; top:44px; bottom:0; width:2px; background:var(--border); z-index:0; }
+  .ls-left { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+  .ls-num { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:12px; z-index:1; position:relative; }
+  .lab-d3 .ls-num { background:var(--cyan-bg); border:2px solid var(--cyan-border); color:var(--cyan); }
+  .lab-d4 .ls-num { background:var(--amber-bg); border:2px solid var(--amber-border); color:var(--amber); }
+  .ls-content { flex:1; padding-bottom:24px; padding-top:4px; }
+  .ls-title { font-size:14px; font-weight:700; color:var(--white); margin-bottom:4px; }
+  .ls-desc  { font-size:13px; color:var(--text-dim); margin-bottom:8px; }
+  .ls-out   { font-family:'JetBrains Mono',monospace; font-size:12px; border-radius:8px; padding:9px 14px; display:block; margin-top:8px; line-height:1.7; }
+  .lab-d3 .ls-out { background:var(--cyan-bg); border:1px solid var(--cyan-border); color:var(--cyan); }
+  .lab-d4 .ls-out { background:var(--amber-bg); border:1px solid var(--amber-border); color:var(--amber); }
+
+  /* CHEAT */
+  .cheat { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:14px; }
+  .cheat-header { padding:14px 22px; background:var(--surface2); border-bottom:1px solid var(--border); font-family:'Unbounded',sans-serif; font-size:14px; font-weight:700; color:var(--white); }
+  .cheat-grid { display:grid; grid-template-columns:1fr 1fr; gap:0; }
+  .cheat-item { padding:12px 20px; border-bottom:1px solid var(--border); border-right:1px solid var(--border); display:flex; gap:10px; align-items:flex-start; }
+  .cheat-item:nth-child(even) { border-right:none; }
+  .cheat-item:nth-last-child(-n+2) { border-bottom:none; }
+  .ci-cmd { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--cyan); background:var(--cyan-bg); border:1px solid var(--cyan-border); padding:3px 9px; border-radius:6px; white-space:nowrap; flex-shrink:0; }
+  .ci-desc { font-size:13px; color:var(--text-dim); padding-top:1px; }
+
+  /* SCENARIOS */
+  .scen-list { display:flex; flex-direction:column; gap:12px; margin-bottom:14px; }
+  .scen-item { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 20px; display:flex; gap:14px; align-items:flex-start; }
+  .si-id { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--cyan); background:var(--cyan-bg); border:1px solid var(--cyan-border); border-radius:6px; padding:4px 8px; flex-shrink:0; margin-top:2px; }
+  .scen-item p { font-size:14px; color:var(--text-dim); }
+  .scen-item p strong { color:var(--white); }
+
+  /* OUTCOME */
+  .outcome { background:linear-gradient(135deg, var(--cyan-bg) 0%, var(--surface) 50%, var(--amber-bg) 100%); border:1px solid var(--border); border-radius:16px; padding:32px; margin-top:48px; }
+  .outcome h3 { font-family:'Unbounded',sans-serif; font-size:18px; font-weight:700; color:var(--cyan); margin-bottom:18px; }
+  .outcome ul { display:flex; flex-direction:column; gap:9px; list-style:none; }
+  .outcome ul li { font-size:14px; color:var(--text-dim); padding-left:22px; position:relative; }
+  .outcome ul li::before { content:'✓'; position:absolute; left:0; color:var(--cyan); font-family:'JetBrains Mono',monospace; }
+  .outcome ul li.d4::before { color:var(--amber); }
+
+  @media(max-width:640px){
+    .cheat-grid { grid-template-columns:1fr; }
+    .cheat-item { border-right:none; }
+    .cron-fields { grid-template-columns:repeat(3,1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 3</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-week">Week 3</span>
+      <span class="tb-badge tb-d3">Day 3</span>
+      <span class="tb-badge tb-d4">Day 4</span>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="day-label">Week 3 · Day 3 & Day 4</div>
+    <h1>Log <span class="c">Parsing</span> &<br>Cron <span class="a">Jobs</span></h1>
+    <p class="hero-desc">Day 3 teaches you to extract exactly what you need from logs using powerful command combinations. Day 4 teaches you to schedule tasks so they run automatically without you being there.</p>
+    <div class="tags">
+      <span class="tag tag-d3">Day 3 — Log Parsing</span>
+      <span class="tag tag-d4">Day 4 — Cron Jobs</span>
+      <span class="tag">grep</span>
+      <span class="tag">awk</span>
+      <span class="tag">pipes</span>
+      <span class="tag">crontab</span>
+    </div>
+  </div>
+
+  <!-- ====== DAY 3 ====== -->
+  <div class="day-div">
+    <span class="dd-pill dd-d3">Day 3</span>
+    <span class="dd-line-c"></span>
+    <span class="dd-title dd-title-c">Log Parsing</span>
+  </div>
+
+  <div class="sec"><span class="sn sn-c">01</span> The Simple Idea</div>
+
+  <div class="analogy an-c">
+    <div class="al">Real-life Analogy</div>
+    <p>Think of a log file like a <strong>very long CCTV recording</strong>. You don't watch 8 hours of footage to find one incident. You fast-forward, filter by time, zoom in.<br><br><strong>grep, awk, and pipes are your fast-forward and zoom tools</strong> — they let you cut through millions of log lines and extract exactly the one piece of information you need in seconds.</p>
+  </div>
+
+  <!-- GREP ADVANCED -->
+  <div class="sec"><span class="sn sn-c">02</span> Commands — grep, awk & Pipes</div>
+
+  <div class="cmd-block">
+    <div class="cmd-header">
+      <div class="cmd-name">grep</div>
+      <span class="cmd-pill cp-c">Search & Filter</span>
+      <div class="cmd-tagline">Advanced patterns for log investigation</div>
+    </div>
+    <div class="cmd-body">
+      <div class="cmd-what"><strong>Used for:</strong> Finding lines that match a pattern. Combine with flags for powerful filtering.</div>
+      <div class="cbox">
+        <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">grep — useful flags</span></div>
+        <div class="cbox-code">
+<span class="cm"># Count ERROR lines</span><br>
+<span class="fn">grep</span> -c <span class="str">"ERROR"</span> payment.log<br>
+<br>
+<span class="cm"># Show line number of each ERROR</span><br>
+<span class="fn">grep</span> -n <span class="str">"ERROR"</span> payment.log<br>
+<br>
+<span class="cm"># Show 3 lines BEFORE the error (context)</span><br>
+<span class="fn">grep</span> -B 3 <span class="str">"ERROR"</span> payment.log<br>
+<br>
+<span class="cm"># Show 3 lines AFTER the error (context)</span><br>
+<span class="fn">grep</span> -A 3 <span class="str">"ERROR"</span> payment.log<br>
+<br>
+<span class="cm"># Search for multiple patterns at once</span><br>
+<span class="fn">grep</span> -E <span class="str">"ERROR|WARN|TIMEOUT"</span> payment.log<br>
+<br>
+<span class="cm"># Search recursively in all files in a folder</span><br>
+<span class="fn">grep</span> -r <span class="str">"DB_TIMEOUT"</span> /var/logs/
+        </div>
+      </div>
+      <div class="note n-c">💡 <strong>L2 daily use:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:11px;">grep -c "ERROR" payment.log</code> gives you the exact error count for a client report in one second.</div>
+    </div>
+  </div>
+
+  <!-- AWK -->
+  <div class="cmd-block">
+    <div class="cmd-header">
+      <div class="cmd-name">awk</div>
+      <span class="cmd-pill cp-l">Extract Columns</span>
+      <div class="cmd-tagline">Pull specific fields from each log line</div>
+    </div>
+    <div class="cmd-body">
+      <div class="cmd-what"><strong>What it does:</strong> awk treats each log line like a table row and lets you pick specific columns (fields) from it. By default, fields are separated by spaces. <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--lime);">$1</code> = first word, <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--lime);">$2</code> = second word, and so on.</div>
+      <div class="cbox">
+        <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">awk examples</span></div>
+        <div class="cbox-code">
+<span class="cm"># Sample log line:</span><br>
+<span class="cm"># [2024-03-15 14:02:05] ERROR DB_TIMEOUT TXN-9823</span><br>
+<span class="cm">#  $1=date   $2=time  $3=level $4=error  $5=txn_id</span><br>
+<br>
+<span class="cm"># Print only the timestamp (field 1 and 2)</span><br>
+<span class="fn">awk</span> <span class="str">'{print $1, $2}'</span> payment.log<br>
+<br>
+<span class="cm"># Print only the error type (field 4)</span><br>
+<span class="fn">awk</span> <span class="str">'{print $4}'</span> payment.log<br>
+<br>
+<span class="cm"># Print lines where field 3 equals ERROR</span><br>
+<span class="fn">awk</span> <span class="str">'$3 == "ERROR" {print $0}'</span> payment.log<br>
+<br>
+<span class="cm"># Custom separator — for CSV files</span><br>
+<span class="fn">awk</span> -F<span class="str">','</span> <span class="str">'{print $2}'</span> report.csv
+        </div>
+      </div>
+      <div class="note n-l">💡 <strong>L2 use:</strong> Extract just the TXN IDs of all failed transactions from a log — no manual copy-pasting. Send the list straight to the client.</div>
+    </div>
+  </div>
+
+  <!-- PIPES -->
+  <div class="cmd-block">
+    <div class="cmd-header">
+      <div class="cmd-name">pipes  |</div>
+      <span class="cmd-pill cp-v">Connect Commands</span>
+      <div class="cmd-tagline">Chain commands together — output of one becomes input of next</div>
+    </div>
+    <div class="cmd-body">
+      <div class="cmd-what"><strong>What it does:</strong> The pipe <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--violet);">|</code> connects two commands — the output of the first becomes the input of the second. This is how you build powerful one-line commands that do multiple things at once.</div>
+      <div class="cbox">
+        <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">pipe combinations</span></div>
+        <div class="cbox-code">
+<span class="cm"># Watch live log but only show ERROR lines</span><br>
+<span class="fn">tail</span> -f payment.log <span class="pip">|</span> <span class="fn">grep</span> <span class="str">"ERROR"</span><br>
+<br>
+<span class="cm"># Count how many unique error types appear</span><br>
+<span class="fn">grep</span> <span class="str">"ERROR"</span> payment.log <span class="pip">|</span> <span class="fn">awk</span> <span class="str">'{print $4}'</span> <span class="pip">|</span> <span class="fn">sort</span> <span class="pip">|</span> <span class="fn">uniq</span> -c<br>
+<br>
+<span class="cm"># Get top 5 most repeated errors</span><br>
+<span class="fn">grep</span> <span class="str">"ERROR"</span> payment.log <span class="pip">|</span> <span class="fn">awk</span> <span class="str">'{print $4}'</span> <span class="pip">|</span> <span class="fn">sort</span> <span class="pip">|</span> <span class="fn">uniq</span> -c <span class="pip">|</span> <span class="fn">sort</span> -rn <span class="pip">|</span> <span class="fn">head</span> -5<br>
+<br>
+<span class="cm"># Extract disk % and check if above 80</span><br>
+<span class="fn">df</span> / <span class="pip">|</span> <span class="fn">awk</span> <span class="str">'NR==2 {print $5}'</span> <span class="pip">|</span> <span class="fn">tr</span> -d <span class="str">'%'</span>
+        </div>
+      </div>
+
+      <div class="pipe-table">
+        <div class="pt-header">🔗 Pipe Chain Explained — Most Used Combination</div>
+        <table class="pt">
+          <thead><tr><th>Command</th><th>What it does in the chain</th></tr></thead>
+          <tbody>
+            <tr><td>grep "ERROR" payment.log</td><td>Get all lines containing ERROR</td></tr>
+            <tr><td>| awk '{print $4}'</td><td>From those lines, extract only the 4th field (error code)</td></tr>
+            <tr><td>| sort</td><td>Sort the error codes alphabetically so duplicates are together</td></tr>
+            <tr><td>| uniq -c</td><td>Count how many times each unique error code appears</td></tr>
+            <tr><td>| sort -rn</td><td>Sort by count — highest first</td></tr>
+            <tr><td>| head -5</td><td>Show only the top 5 most frequent errors</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note n-c">💡 This single pipe chain tells you <strong>which 5 errors are causing the most failures</strong> — the most useful command you'll run after an outage.</div>
+    </div>
+  </div>
+
+  <!-- DAY 3 LAB -->
+  <div class="sec"><span class="sn sn-c">03</span> Day 3 Lab — Extract ERROR Counts</div>
+
+  <div class="lab lab-d3">
+    <div class="lab-header">
+      <h3>🔬 Lab: Parse Logs & Extract Error Report</h3>
+      <span class="lab-badge">Kali Linux · Terminal</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Create a sample log file to parse</div>
+          <div class="ls-desc">Use the log file you created in Week 2 Day 2, or create a fresh one.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">terminal</span></div><div class="cbox-code">
+<span class="fn">cat</span> ~/payment-service.log   <span class="cm"># view it first</span>
+          </div></div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Count total ERROR lines</div>
+          <div class="ls-desc">Get the exact number of errors in the log.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">terminal</span></div><div class="cbox-code">
+<span class="fn">grep</span> -c <span class="str">"ERROR"</span> ~/payment-service.log
+          </div></div>
+          <div class="ls-out">→ Expected output: 5</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Extract unique error types and their count</div>
+          <div class="ls-desc">Use the full pipe chain to get a ranked error summary.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">terminal</span></div><div class="cbox-code">
+<span class="fn">grep</span> <span class="str">"ERROR"</span> ~/payment-service.log <span class="pip">|</span> <span class="fn">awk</span> <span class="str">'{print $4}'</span> <span class="pip">|</span> <span class="fn">sort</span> <span class="pip">|</span> <span class="fn">uniq</span> -c <span class="pip">|</span> <span class="fn">sort</span> -rn
+          </div></div>
+          <div class="ls-out">→ Expected: count + error type, sorted highest first</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Save the error report to a file</div>
+          <div class="ls-desc">Redirect the output into a report file you can share.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">terminal</span></div><div class="cbox-code">
+<span class="fn">grep</span> <span class="str">"ERROR"</span> ~/payment-service.log <span class="pip">|</span> <span class="fn">awk</span> <span class="str">'{print $4}'</span> <span class="pip">|</span> <span class="fn">sort</span> <span class="pip">|</span> <span class="fn">uniq</span> -c <span class="pip">|</span> <span class="fn">sort</span> -rn <span class="op">&gt;</span> ~/error-report.txt<br>
+<span class="fn">cat</span> ~/error-report.txt
+          </div></div>
+          <div class="ls-out">→ error-report.txt created — contains ranked error summary ✅</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">05</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Find errors with context — 2 lines before and after</div>
+          <div class="ls-desc">See what happened just before and after each error.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">terminal</span></div><div class="cbox-code">
+<span class="fn">grep</span> -B 2 -A 2 <span class="str">"ERROR"</span> ~/payment-service.log
+          </div></div>
+          <div class="ls-out">→ Shows each ERROR with 2 lines of context — reveals the build-up ✅</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ====== DAY 4 ====== -->
+  <div class="day-div" style="margin-top:60px;">
+    <span class="dd-pill dd-d4">Day 4</span>
+    <span class="dd-line-a"></span>
+    <span class="dd-title dd-title-a">Cron Jobs</span>
+  </div>
+
+  <div class="sec"><span class="sn sn-a">04</span> The Simple Idea</div>
+
+  <div class="analogy an-a">
+    <div class="al">Real-life Analogy</div>
+    <p>Think of a <strong>bank's scheduled reports</strong>. Every morning at 9 AM, the system automatically generates yesterday's transaction summary and emails it to management. Nobody manually triggers it — it's scheduled.<br><br><strong>Cron jobs are exactly that</strong> — you tell Linux "run this script every day at 8 AM" and it does it automatically forever, even when you're asleep.</p>
+  </div>
+
+  <!-- CRONTAB -->
+  <div class="sec"><span class="sn sn-a">05</span> Crontab — How It Works</div>
+
+  <div class="card">
+    <h3>What is Crontab?</h3>
+    <p>Crontab is Linux's built-in task scheduler. You give it a <strong>time pattern + a command</strong> and it runs that command automatically at the right time. Every scheduled job is called a <strong>cron job</strong>.</p>
+    <p>To open and edit your cron schedule, you run: <code style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--amber);">crontab -e</code></p>
+  </div>
+
+  <!-- CRON SYNTAX VISUAL -->
+  <div class="cron-table">
+    <div class="cron-header">⏱️ Cron Syntax — 5 Fields + Command</div>
+    <div class="cron-fields">
+      <div class="cf-item s1"><div class="cf-label">Minute</div><div class="cf-sym">*</div><div class="cf-range">0 – 59</div></div>
+      <div class="cf-item s2"><div class="cf-label">Hour</div><div class="cf-sym">*</div><div class="cf-range">0 – 23</div></div>
+      <div class="cf-item s3"><div class="cf-label">Day of Month</div><div class="cf-sym">*</div><div class="cf-range">1 – 31</div></div>
+      <div class="cf-item s4"><div class="cf-label">Month</div><div class="cf-sym">*</div><div class="cf-range">1 – 12</div></div>
+      <div class="cf-item s5"><div class="cf-label">Day of Week</div><div class="cf-sym">*</div><div class="cf-range">0=Sun 6=Sat</div></div>
+      <div class="cf-item s6"><div class="cf-label">Command</div><div class="cf-sym">/path/script.sh</div><div class="cf-range">full path</div></div>
+    </div>
+    <div class="cron-ex">
+      <table class="ce">
+        <thead><tr><th>Cron Expression</th><th>When it runs</th></tr></thead>
+        <tbody>
+          <tr><td>0 8 * * *</td><td>Every day at 8:00 AM</td></tr>
+          <tr><td>0 8 * * 1</td><td>Every Monday at 8:00 AM</td></tr>
+          <tr><td>*/30 * * * *</td><td>Every 30 minutes</td></tr>
+          <tr><td>0 0 * * *</td><td>Every day at midnight</td></tr>
+          <tr><td>0 8,17 * * *</td><td>Every day at 8 AM and 5 PM</td></tr>
+          <tr><td>0 8 1 * *</td><td>1st of every month at 8 AM</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="cmd-block">
+    <div class="cmd-header">
+      <div class="cmd-name">crontab</div>
+      <span class="cmd-pill cp-a">Scheduler</span>
+      <div class="cmd-tagline">Schedule any script or command to run automatically</div>
+    </div>
+    <div class="cmd-body">
+      <div class="cbox">
+        <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">crontab commands</span></div>
+        <div class="cbox-code">
+<span class="cm"># Open crontab editor to add/edit jobs</span><br>
+<span class="fn">crontab</span> -e<br>
+<br>
+<span class="cm"># List all current cron jobs</span><br>
+<span class="fn">crontab</span> -l<br>
+<br>
+<span class="cm"># Remove all cron jobs (careful!)</span><br>
+<span class="fn">crontab</span> -r
+        </div>
+      </div>
+      <div class="cbox">
+        <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">example cron jobs for L2 use</span></div>
+        <div class="cbox-code">
+<span class="cm"># Run health check every day at 8 AM — save output to log</span><br>
+<span class="var">0 8 * * *</span> /home/kali/health-check.sh <span class="op">&gt;&gt;</span> /home/kali/daily-report.txt<br>
+<br>
+<span class="cm"># Run error count script every hour</span><br>
+<span class="var">0 * * * *</span> /home/kali/error-count.sh<br>
+<br>
+<span class="cm"># Run disk check every 30 minutes</span><br>
+<span class="var">*/30 * * * *</span> /home/kali/disk-check.sh<br>
+<br>
+<span class="cm"># Run log cleanup every Sunday at midnight</span><br>
+<span class="var">0 0 * * 0</span> /home/kali/cleanup-logs.sh
+        </div>
+      </div>
+      <div class="note n-a">⚠️ <strong>Important:</strong> Always use the <strong>full path</strong> to your script in crontab — not <code style="font-family:'JetBrains Mono',monospace;font-size:11px;">./script.sh</code> but <code style="font-family:'JetBrains Mono',monospace;font-size:11px;">/home/kali/script.sh</code>. Cron doesn't know your current directory.</div>
+    </div>
+  </div>
+
+  <!-- DAY 4 LAB -->
+  <div class="sec"><span class="sn sn-a">06</span> Day 4 Lab — Schedule Daily Health Check</div>
+
+  <div class="lab lab-d4">
+    <div class="lab-header">
+      <h3>🔬 Lab: Schedule Your Health Check Script with Crontab</h3>
+      <span class="lab-badge">Kali Linux · Crontab</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Create a log parser script to schedule</div>
+          <div class="ls-desc">This script counts errors and saves the result — this is what cron will run.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">error-count.sh</span></div><div class="cbox-code">
+<span class="cm">#!/bin/bash</span><br>
+<span class="var">LOG</span>=<span class="str">"/home/kali/payment-service.log"</span><br>
+<span class="var">OUT</span>=<span class="str">"/home/kali/daily-error-report.txt"</span><br>
+<span class="fn">echo</span> <span class="str">"=== Error Report: <span class="op">$(</span><span class="fn">date</span><span class="op">)</span> ==="</span> <span class="op">&gt;&gt;</span> <span class="var">$OUT</span><br>
+<span class="fn">grep</span> -c <span class="str">"ERROR"</span> <span class="var">$LOG</span> <span class="op">&gt;&gt;</span> <span class="var">$OUT</span><br>
+<span class="fn">grep</span> <span class="str">"ERROR"</span> <span class="var">$LOG</span> <span class="pip">|</span> <span class="fn">awk</span> <span class="str">'{print $4}'</span> <span class="pip">|</span> <span class="fn">sort</span> <span class="pip">|</span> <span class="fn">uniq</span> -c <span class="op">&gt;&gt;</span> <span class="var">$OUT</span>
+          </div></div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Give it permission and test it manually first</div>
+          <div class="ls-desc">Always test a script manually before scheduling it.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">terminal</span></div><div class="cbox-code">
+<span class="fn">chmod</span> +x /home/kali/error-count.sh<br>
+<span class="op">./</span>error-count.sh<br>
+<span class="fn">cat</span> /home/kali/daily-error-report.txt
+          </div></div>
+          <div class="ls-out">→ Report file created with timestamp and error counts ✅</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Open crontab and schedule it</div>
+          <div class="ls-desc">Add two cron jobs — one for daily health check, one for hourly error count.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">crontab -e</span></div><div class="cbox-code">
+<span class="cm"># Daily health check at 8 AM</span><br>
+<span class="var">0 8 * * *</span> /home/kali/health-check.sh <span class="op">&gt;&gt;</span> /home/kali/health-report.txt<br>
+<br>
+<span class="cm"># Error count every hour</span><br>
+<span class="var">0 * * * *</span> /home/kali/error-count.sh
+          </div></div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Confirm the cron jobs are scheduled</div>
+          <div class="ls-desc">List all active cron jobs to confirm they were saved correctly.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">terminal</span></div><div class="cbox-code">
+<span class="fn">crontab</span> -l
+          </div></div>
+          <div class="ls-out">→ Both jobs listed — health check at 8 AM, error count hourly ✅</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CHEATSHEET -->
+  <div class="sec"><span class="sn sn-c">07</span> Quick Cheat Sheet — Day 3 & 4</div>
+
+  <div class="cheat">
+    <div class="cheat-header">⌨️ Log Parsing & Cron Cheat Sheet</div>
+    <div class="cheat-grid">
+      <div class="cheat-item"><span class="ci-cmd">grep -c "ERR" file</span><span class="ci-desc">Count matching lines</span></div>
+      <div class="cheat-item"><span class="ci-cmd">grep -n "ERR" file</span><span class="ci-desc">Show line numbers with matches</span></div>
+      <div class="cheat-item"><span class="ci-cmd">grep -B 2 -A 2 "ERR"</span><span class="ci-desc">Show 2 lines before and after match</span></div>
+      <div class="cheat-item"><span class="ci-cmd">grep -E "ERR|WARN"</span><span class="ci-desc">Match multiple patterns at once</span></div>
+      <div class="cheat-item"><span class="ci-cmd">awk '{print $2}'</span><span class="ci-desc">Print the 2nd field of each line</span></div>
+      <div class="cheat-item"><span class="ci-cmd">awk -F',' '{print $1}'</span><span class="ci-desc">Use comma as field separator (CSV)</span></div>
+      <div class="cheat-item"><span class="ci-cmd">sort | uniq -c</span><span class="ci-desc">Sort and count duplicates</span></div>
+      <div class="cheat-item"><span class="ci-cmd">sort -rn | head -5</span><span class="ci-desc">Top 5 highest count items</span></div>
+      <div class="cheat-item"><span class="ci-cmd">cmd > file.txt</span><span class="ci-desc">Save output to file (overwrites)</span></div>
+      <div class="cheat-item"><span class="ci-cmd">cmd >> file.txt</span><span class="ci-desc">Append output to file (adds to end)</span></div>
+      <div class="cheat-item"><span class="ci-cmd">crontab -e</span><span class="ci-desc">Open cron editor to add/edit jobs</span></div>
+      <div class="cheat-item"><span class="ci-cmd">crontab -l</span><span class="ci-desc">List all current cron jobs</span></div>
+    </div>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn sn-c">08</span> Real L2 Scenarios</div>
+
+  <div class="scen-list">
+    <div class="scen-item">
+      <div class="si-id">01</div>
+      <p>After an outage, manager asks: <strong>"What were the top 3 errors?"</strong> — You run the full pipe chain in 5 seconds: <code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);color:var(--cyan);padding:2px 6px;border-radius:4px;">grep "ERROR" payment.log | awk '{print $4}' | sort | uniq -c | sort -rn | head -3</code> — done.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">02</div>
+      <p>Client says: <strong>"Can you send us the error summary every morning?"</strong> — You schedule <code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);color:var(--cyan);padding:2px 6px;border-radius:4px;">error-count.sh</code> with crontab at 8 AM. It runs automatically every day, saves to a file, and you forward it. No manual work.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">03</div>
+      <p>You need to find <strong>all logs that contain a specific TXN ID across 20 files</strong>: <code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);color:var(--cyan);padding:2px 6px;border-radius:4px;">grep -r "TXN-9823" /var/logs/</code> — searches all files recursively in one command.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">04</div>
+      <p>Disk is filling up because old logs are never deleted. You write a cleanup script and schedule it with crontab: <strong>every Sunday at midnight</strong> — <code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);color:var(--cyan);padding:2px 6px;border-radius:4px;">0 0 * * 0</code> — it runs automatically and keeps disk healthy without manual intervention.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 3 · Day 3 & 4 Outcomes</h3>
+    <ul>
+      <li>Use grep with advanced flags — -c, -n, -B, -A, -E, -r — for precise log filtering</li>
+      <li>Use awk to extract specific fields from log lines by column number</li>
+      <li>Build pipe chains combining grep + awk + sort + uniq to generate error summaries</li>
+      <li>Redirect output to files using > and >> for saving reports</li>
+      <li>Complete Day 3 lab — extract error counts and save a ranked error report from a log file</li>
+      <li class="d4">Read and write crontab syntax — understand all 5 time fields</li>
+      <li class="d4">Schedule scripts to run daily, hourly, weekly, or on a custom interval</li>
+      <li class="d4">Complete Day 4 lab — schedule health check and error count scripts using crontab</li>
+      <li class="d4">Verify scheduled cron jobs are active using crontab -l</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

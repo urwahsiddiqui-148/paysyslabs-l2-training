@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 1 · Day 3 — Jira & SLA</title>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #0f1422;
+    --surface2: #141929;
+    --border: #1e2540;
+    --text: #c8d0e8;
+    --text-dim: #6b7494;
+    --text-faint: #3d4560;
+    --white: #eef1f8;
+
+    --p1: #ff4444;
+    --p1-bg: #1f0a0a;
+    --p1-border: #3d1010;
+    --p2: #ff8c00;
+    --p2-bg: #1f1200;
+    --p2-border: #3d2800;
+    --p3: #f5c400;
+    --p3-bg: #1f1a00;
+    --p3-border: #3d3400;
+    --p4: #4caf50;
+    --p4-bg: #0a1f0a;
+    --p4-border: #1a3d1a;
+
+    --accent: #4f7fff;
+    --accent-bg: #0a1030;
+    --accent-border: #1a2860;
+
+    --open: #4f7fff;
+    --inprog: #f5c400;
+    --review: #ff8c00;
+    --resolved: #4caf50;
+    --closed: #6b7494;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Familjen Grotesk', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    padding: 48px 24px 100px;
+  }
+
+  .page { max-width: 900px; margin: 0 auto; }
+
+  /* TOP */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 52px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar-left {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--text-faint);
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+  .topbar-right {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .tb-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; padding: 4px 12px;
+    border-radius: 100px; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .tb-week { background: var(--surface2); border: 1px solid var(--border); color: var(--text-dim); }
+  .tb-day { background: var(--accent-bg); border: 1px solid var(--accent-border); color: var(--accent); }
+
+  /* HERO */
+  .hero { margin-bottom: 52px; }
+  .day-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--accent);
+    margin-bottom: 14px;
+  }
+  .hero h1 {
+    font-family: 'Familjen Grotesk', sans-serif;
+    font-size: clamp(38px, 7vw, 68px);
+    font-weight: 700; line-height: 1.0;
+    color: var(--white); margin-bottom: 18px;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero-desc { color: var(--text-dim); font-size: 16px; max-width: 520px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+  .tag {
+    padding: 5px 14px; border-radius: 100px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text-dim);
+  }
+
+  /* SECTION */
+  .sec {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--text-faint); margin-bottom: 20px; margin-top: 52px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .sec .sec-num { color: var(--accent); }
+  .sec::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* ANALOGY */
+  .analogy {
+    background: var(--accent-bg); border: 1px solid var(--accent-border);
+    border-left: 4px solid var(--accent);
+    border-radius: 12px; padding: 26px 30px; margin-bottom: 16px;
+  }
+  .analogy .al { font-family:'JetBrains Mono',monospace; font-size:10px;
+    letter-spacing:2px; text-transform:uppercase; color:var(--accent); margin-bottom:10px; }
+  .analogy p { color: var(--text); font-size: 15px; }
+  .analogy strong { color: var(--white); }
+
+  /* CARD */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 26px 30px; margin-bottom: 14px;
+  }
+  .card h3 {
+    font-family: 'Familjen Grotesk', sans-serif; font-size: 17px;
+    font-weight: 700; color: var(--white); margin-bottom: 10px;
+  }
+  .card p { color: var(--text-dim); margin-bottom: 10px; }
+  .card p:last-child { margin-bottom: 0; }
+
+  /* TICKET LIFECYCLE */
+  .lifecycle {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 32px; margin-bottom: 14px;
+  }
+  .lifecycle h3 {
+    font-family:'Familjen Grotesk',sans-serif; font-size:17px;
+    font-weight:700; color:var(--white); margin-bottom:28px; text-align:center;
+  }
+  .lc-steps {
+    display: flex; align-items: flex-start; gap: 0;
+    overflow-x: auto; padding-bottom: 8px;
+  }
+  .lc-step {
+    flex: 1; min-width: 110px; text-align: center;
+    position: relative;
+  }
+  .lc-step:not(:last-child)::after {
+    content: '→';
+    position: absolute; top: 18px; right: -12px;
+    color: var(--text-faint);
+    font-family: 'JetBrains Mono', monospace; font-size: 16px;
+    z-index: 1;
+  }
+  .lc-dot {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 10px; font-size: 16px;
+    border: 2px solid;
+  }
+  .lc-dot.open    { background: #0a1030; border-color: var(--open); color: var(--open); }
+  .lc-dot.inprog  { background: #1a1600; border-color: var(--inprog); color: var(--inprog); }
+  .lc-dot.review  { background: #1a0d00; border-color: var(--review); color: var(--review); }
+  .lc-dot.resolved{ background: var(--p4-bg); border-color: var(--resolved); color: var(--resolved); }
+  .lc-dot.closed  { background: #10121a; border-color: var(--closed); color: var(--closed); }
+  .lc-name {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;
+  }
+  .lc-name.open    { color: var(--open); }
+  .lc-name.inprog  { color: var(--inprog); }
+  .lc-name.review  { color: var(--review); }
+  .lc-name.resolved{ color: var(--resolved); }
+  .lc-name.closed  { color: var(--closed); }
+  .lc-desc { font-size: 11px; color: var(--text-dim); line-height: 1.4; padding: 0 4px; }
+
+  /* SEVERITY */
+  .severity-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    margin-bottom: 14px;
+  }
+  .sev-card {
+    border-radius: 14px; padding: 22px 24px;
+    border: 1px solid;
+  }
+  .sev-card.p1 { background: var(--p1-bg); border-color: var(--p1-border); }
+  .sev-card.p2 { background: var(--p2-bg); border-color: var(--p2-border); }
+  .sev-card.p3 { background: var(--p3-bg); border-color: var(--p3-border); }
+  .sev-card.p4 { background: var(--p4-bg); border-color: var(--p4-border); }
+  .sev-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 6px; display: flex; align-items: center; gap: 8px;
+  }
+  .sev-label.p1 { color: var(--p1); }
+  .sev-label.p2 { color: var(--p2); }
+  .sev-label.p3 { color: var(--p3); }
+  .sev-label.p4 { color: var(--p4); }
+  .sev-name {
+    font-family: 'Familjen Grotesk', sans-serif;
+    font-size: 17px; font-weight: 700; color: var(--white);
+    margin-bottom: 6px;
+  }
+  .sev-sla {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    margin-bottom: 10px; padding: 4px 10px; border-radius: 6px;
+    display: inline-block;
+  }
+  .sev-sla.p1 { background: rgba(255,68,68,0.15); color: var(--p1); }
+  .sev-sla.p2 { background: rgba(255,140,0,0.15); color: var(--p2); }
+  .sev-sla.p3 { background: rgba(245,196,0,0.15); color: var(--p3); }
+  .sev-sla.p4 { background: rgba(76,175,80,0.15); color: var(--p4); }
+  .sev-card p { font-size: 13px; color: var(--text-dim); }
+
+  /* SLA TABLE */
+  .sla-table-wrap {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden; margin-bottom: 14px;
+  }
+  .sla-thead { padding: 16px 24px; background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    font-family:'Familjen Grotesk',sans-serif; font-size:15px; font-weight:700; color:var(--white);
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    padding: 11px 20px; font-family:'JetBrains Mono',monospace;
+    font-size: 10px; letter-spacing:1px; text-transform:uppercase;
+    color: var(--text-faint); text-align:left;
+    border-bottom: 1px solid var(--border); font-weight:400;
+  }
+  td {
+    padding: 14px 20px; font-size:13px; color: var(--text-dim);
+    border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align:middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  td:first-child { font-family:'JetBrains Mono',monospace; font-size:12px; }
+
+  /* DUMMY TICKET */
+  .ticket {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden; margin-bottom: 14px;
+  }
+  .ticket-topbar {
+    background: var(--surface2); border-bottom: 1px solid var(--border);
+    padding: 14px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .ticket-id {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    font-weight: 500; color: var(--accent);
+  }
+  .ticket-status {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 1px; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 100px;
+  }
+  .st-open     { background: var(--accent-bg); border:1px solid var(--accent-border); color:var(--open); }
+  .st-inprog   { background: #1a1600; border:1px solid #3d3400; color:var(--inprog); }
+  .st-resolved { background: var(--p4-bg); border:1px solid var(--p4-border); color:var(--resolved); }
+  .sev-badge {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    padding: 3px 10px; border-radius: 100px;
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+  .sb-p1 { background: var(--p1-bg); border:1px solid var(--p1-border); color:var(--p1); }
+  .sb-p3 { background: var(--p3-bg); border:1px solid var(--p3-border); color:var(--p3); }
+  .ticket-time { margin-left: auto; font-family:'JetBrains Mono',monospace;
+    font-size:11px; color:var(--text-faint); }
+  .ticket-body { padding: 24px; }
+  .ticket-title {
+    font-family: 'Familjen Grotesk', sans-serif; font-size: 18px;
+    font-weight: 700; color: var(--white); margin-bottom: 14px;
+  }
+  .ticket-meta {
+    display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 18px;
+    padding-bottom: 18px; border-bottom: 1px solid var(--border);
+  }
+  .ticket-meta-item { font-size: 13px; }
+  .ticket-meta-item .m-key {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--text-faint); text-transform: uppercase; letter-spacing: 1px;
+    display: block; margin-bottom: 3px;
+  }
+  .ticket-meta-item .m-val { color: var(--text); font-weight: 500; }
+  .ticket-desc { color: var(--text-dim); font-size: 14px; margin-bottom: 20px; }
+  .ticket-steps {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 20px;
+  }
+  .ticket-steps .ts-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-faint); margin-bottom: 12px;
+  }
+  .ts-item {
+    display: flex; gap: 12px; margin-bottom: 10px;
+    font-size: 13px; color: var(--text-dim);
+  }
+  .ts-item:last-child { margin-bottom: 0; }
+  .ts-item .ts-num {
+    font-family:'JetBrains Mono',monospace; font-size:11px;
+    color: var(--accent); flex-shrink:0; margin-top:2px;
+  }
+
+  /* ESCALATION */
+  .escalation {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden; margin-bottom: 14px;
+  }
+  .esc-header {
+    padding: 18px 24px; background: var(--p1-bg);
+    border-bottom: 1px solid var(--p1-border);
+    font-family:'Familjen Grotesk',sans-serif; font-size:16px; font-weight:700; color:var(--white);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .esc-body { padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+  .esc-row {
+    display: flex; gap: 16px; align-items: flex-start;
+    padding: 14px 16px; border-radius: 10px;
+    background: var(--surface2); border: 1px solid var(--border);
+  }
+  .esc-level {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    padding: 4px 10px; border-radius: 6px; flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .el-l1 { background:#0a1030; color:var(--accent); border:1px solid var(--accent-border); }
+  .el-l2 { background:var(--p3-bg); color:var(--p3); border:1px solid var(--p3-border); }
+  .el-l3 { background:var(--p1-bg); color:var(--p1); border:1px solid var(--p1-border); }
+  .esc-row p { font-size: 14px; color: var(--text-dim); }
+  .esc-row p strong { color: var(--white); }
+
+  /* SCENARIOS */
+  .scen-list { display:flex; flex-direction:column; gap:12px; margin-bottom:14px; }
+  .scen-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 22px;
+    display: flex; gap: 16px; align-items: flex-start;
+  }
+  .scen-item .si-id {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--accent); background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    border-radius: 6px; padding: 4px 8px; flex-shrink:0; margin-top:2px;
+  }
+  .scen-item p { font-size:14px; color:var(--text-dim); }
+  .scen-item p strong { color: var(--white); }
+
+  /* OUTCOME */
+  .outcome {
+    background: linear-gradient(135deg, #0a1030 0%, #0f1422 100%);
+    border: 1px solid var(--accent-border);
+    border-radius: 16px; padding: 36px; margin-top: 48px;
+  }
+  .outcome h3 {
+    font-family:'Familjen Grotesk',sans-serif; font-size:22px; font-weight:700;
+    color:var(--accent); margin-bottom:20px;
+  }
+  .outcome ul { display:flex; flex-direction:column; gap:10px; list-style:none; }
+  .outcome ul li {
+    font-size:14px; color:var(--text-dim);
+    padding-left:24px; position:relative;
+  }
+  .outcome ul li::before {
+    content:'✓'; position:absolute; left:0;
+    color:var(--accent); font-family:'JetBrains Mono',monospace;
+  }
+
+  @media(max-width:600px){
+    .severity-grid { grid-template-columns:1fr; }
+    .lc-steps { gap: 4px; }
+    .lc-step:not(:last-child)::after { display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 1</div>
+    <div class="topbar-right">
+      <span class="tb-badge tb-week">Week 1</span>
+      <span class="tb-badge tb-day">Day 3</span>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="day-label">Today's Topic</div>
+    <h1>Jira &amp; <span>SLA</span></h1>
+    <p class="hero-desc">Every problem a client reports becomes a ticket. You live inside tickets as an L2 engineer. Today you learn how tickets are born, how they move, and how fast you need to respond.</p>
+    <div class="tags">
+      <span class="tag">Ticket Workflow</span>
+      <span class="tag">Severity Levels</span>
+      <span class="tag">Escalation</span>
+      <span class="tag">SLA</span>
+    </div>
+  </div>
+
+  <!-- SIMPLE IDEA -->
+  <div class="sec"><span class="sec-num">01</span> The Simple Idea First</div>
+
+  <div class="analogy">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Imagine you go to a hospital. You walk in and tell the receptionist your problem. They write it down, give you a <strong>token number</strong>, and a doctor is assigned to you. If your issue is really serious (like a heart attack) you skip the queue. If it's a small cut, you wait your turn.<br><br>
+      <strong>Jira is that hospital system.</strong> Every client complaint = a ticket. Every ticket has a number, a status, and someone assigned to fix it. <strong>SLA is the rule that says "how fast must the doctor respond."</strong> A heart attack = respond in 2 minutes. A small cut = respond in 2 hours.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>What is Jira?</h3>
+    <p>Jira is a tool companies use to <strong>track problems and tasks</strong>. When a client reports an issue — like "payments are failing" — someone creates a Jira ticket. That ticket tracks everything: what the problem is, who is working on it, what has been done, and whether it's fixed.</p>
+    <p>As an L2 support engineer, Jira is where your work lives. You'll open it every morning, see what tickets are assigned to you, and work through them one by one.</p>
+  </div>
+
+  <div class="card">
+    <h3>What is SLA?</h3>
+    <p><strong>SLA = Service Level Agreement.</strong> It's basically a promise your company makes to the client: <em>"We will respond to your problem within X hours."</em> If you miss that promise, it's a breach — and that's a big deal in fintech. Clients can penalize your company for it.</p>
+    <p>Different severity levels have different SLA times. A system-down emergency has a much tighter SLA than a minor UI bug.</p>
+  </div>
+
+  <!-- TICKET LIFECYCLE -->
+  <div class="sec"><span class="sec-num">02</span> The Ticket Lifecycle</div>
+
+  <div class="lifecycle">
+    <h3>How a ticket moves from start to finish</h3>
+    <div class="lc-steps">
+      <div class="lc-step">
+        <div class="lc-dot open">📥</div>
+        <div class="lc-name open">Open</div>
+        <div class="lc-desc">Ticket is created. Problem is reported. Nobody has touched it yet.</div>
+      </div>
+      <div class="lc-step">
+        <div class="lc-dot inprog">⚙️</div>
+        <div class="lc-name inprog">In Progress</div>
+        <div class="lc-desc">An engineer picks it up and starts investigating the issue.</div>
+      </div>
+      <div class="lc-step">
+        <div class="lc-dot review">🔍</div>
+        <div class="lc-name review">In Review</div>
+        <div class="lc-desc">A fix is ready. Someone else checks it to make sure it actually works.</div>
+      </div>
+      <div class="lc-step">
+        <div class="lc-dot resolved">✅</div>
+        <div class="lc-name resolved">Resolved</div>
+        <div class="lc-desc">Fix confirmed. Client is informed that the issue has been fixed.</div>
+      </div>
+      <div class="lc-step">
+        <div class="lc-dot closed">🔒</div>
+        <div class="lc-name closed">Closed</div>
+        <div class="lc-desc">Client confirms everything is OK. Ticket is officially done and archived.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>One important rule about tickets</h3>
+    <p>A ticket should <strong>never just sit there silently</strong>. Even if you don't have a fix yet, you must update the ticket with what you've tried, what you found, and what you're doing next. This is called <strong>adding comments</strong> to the ticket.</p>
+    <p>The client can see the ticket status. If it stays "Open" for 3 hours with no update, they get nervous. Keep it moving — even a comment like "Investigating, found the issue is in the Payments module" is better than silence.</p>
+  </div>
+
+  <!-- SEVERITY -->
+  <div class="sec"><span class="sec-num">03</span> Severity Levels — How Bad Is It?</div>
+
+  <div class="severity-grid">
+    <div class="sev-card p1">
+      <div class="sev-label p1">🔴 P1</div>
+      <div class="sev-name">Critical</div>
+      <div class="sev-sla p1">Respond: 30 min · Fix: 2 hrs</div>
+      <p>Everything is down. No one can use the system. Real money is being affected right now. All hands on deck. Wake people up if needed.</p>
+    </div>
+    <div class="sev-card p2">
+      <div class="sev-label p2">🟠 P2</div>
+      <div class="sev-name">High</div>
+      <div class="sev-sla p2">Respond: 2 hrs · Fix: 8 hrs</div>
+      <p>A major feature is broken but the system is still partly working. For example, payments work but refunds are failing for all users.</p>
+    </div>
+    <div class="sev-card p3">
+      <div class="sev-label p3">🟡 P3</div>
+      <div class="sev-name">Medium</div>
+      <div class="sev-sla p3">Respond: 4 hrs · Fix: 24 hrs</div>
+      <p>Something is broken but it affects only some users or a non-critical feature. There's usually a workaround available.</p>
+    </div>
+    <div class="sev-card p4">
+      <div class="sev-label p4">🟢 P4</div>
+      <div class="sev-name">Low</div>
+      <div class="sev-sla p4">Respond: 8 hrs · Fix: 72 hrs</div>
+      <p>Minor issues — a wrong label, a UI glitch, a small report formatting error. No one's workflow is blocked.</p>
+    </div>
+  </div>
+
+  <!-- SLA TABLE -->
+  <div class="sla-table-wrap">
+    <div class="sla-thead">⏱️ SLA Quick Reference</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Priority</th>
+          <th>Example in Fintech</th>
+          <th>First Response</th>
+          <th>Resolution Target</th>
+          <th>Who Gets Notified</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="color:var(--p1)">P1 — Critical</td>
+          <td>All payments down, core banking offline</td>
+          <td style="color:var(--p1)">30 minutes</td>
+          <td>2 hours</td>
+          <td>L2 + L3 + Manager + Client</td>
+        </tr>
+        <tr>
+          <td style="color:var(--p2)">P2 — High</td>
+          <td>Refunds failing, login broken for many users</td>
+          <td style="color:var(--p2)">2 hours</td>
+          <td>8 hours</td>
+          <td>L2 + L3</td>
+        </tr>
+        <tr>
+          <td style="color:var(--p3)">P3 — Medium</td>
+          <td>Reports not generating, slow dashboard</td>
+          <td style="color:var(--p3)">4 hours</td>
+          <td>24 hours</td>
+          <td>L2 Engineer</td>
+        </tr>
+        <tr>
+          <td style="color:var(--p4)">P4 — Low</td>
+          <td>Wrong date format, minor UI bug</td>
+          <td style="color:var(--p4)">8 hours</td>
+          <td>72 hours</td>
+          <td>L2 Engineer</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ESCALATION -->
+  <div class="sec"><span class="sec-num">04</span> Escalation — When You Can't Fix It Alone</div>
+
+  <div class="escalation">
+    <div class="esc-header">🚨 Escalation Path — Who Handles What</div>
+    <div class="esc-body">
+      <div class="esc-row">
+        <span class="esc-level el-l1">L1 Support</span>
+        <p><strong>First contact.</strong> Picks up the ticket, asks basic questions, tries simple fixes. If they can't solve it in the agreed time, they escalate to L2. (That's where you come in.)</p>
+      </div>
+      <div class="esc-row">
+        <span class="esc-level el-l2">L2 Support ← You</span>
+        <p><strong>Deeper investigation.</strong> You dig into logs, check the database, test in UAT, try to reproduce the issue. You know the product well. If the fix needs a code change or is beyond your access, you escalate to L3.</p>
+      </div>
+      <div class="esc-row">
+        <span class="esc-level el-l3">L3 / Dev Team</span>
+        <p><strong>Code-level fixes.</strong> Developers or senior engineers who can actually change the source code. Only get involved when L2 confirms the problem is a real bug — not a config issue or user error.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Golden Rule of Escalation</h3>
+    <p>Never escalate a ticket without first doing your homework. When you pass a ticket to L3, you must include: <strong>what the problem is, what you already tried, what you found in the logs, and why you believe it needs a code fix.</strong></p>
+    <p>Sending a ticket with just "client is complaining, please check" is a bad escalation. It wastes everyone's time and makes you look lazy.</p>
+  </div>
+
+  <!-- DUMMY TICKET -->
+  <div class="sec"><span class="sec-num">05</span> Dummy Ticket — Hands-on Lab</div>
+
+  <div class="card" style="margin-bottom:14px;">
+    <h3>How to fill a proper Jira ticket</h3>
+    <p>Every ticket must have: a clear title, the client name, which product/module is affected, severity level, steps to reproduce the issue, and what you've done so far. Here's a real example of what a good ticket looks like:</p>
+  </div>
+
+  <!-- TICKET 1 -->
+  <div class="ticket" style="margin-bottom:16px;">
+    <div class="ticket-topbar">
+      <span class="ticket-id">FIN-1042</span>
+      <span class="ticket-status st-inprog">In Progress</span>
+      <span class="sev-badge sb-p1">P1 — Critical</span>
+      <span class="ticket-time">Opened: Today 09:14 AM</span>
+    </div>
+    <div class="ticket-body">
+      <div class="ticket-title">Alpha Bank — Payment Gateway completely down, all transactions failing</div>
+      <div class="ticket-meta">
+        <div class="ticket-meta-item">
+          <span class="m-key">Client</span>
+          <span class="m-val">Alpha Bank</span>
+        </div>
+        <div class="ticket-meta-item">
+          <span class="m-key">Product</span>
+          <span class="m-val">Payment Gateway</span>
+        </div>
+        <div class="ticket-meta-item">
+          <span class="m-key">Module</span>
+          <span class="m-val">Transaction Engine</span>
+        </div>
+        <div class="ticket-meta-item">
+          <span class="m-key">Environment</span>
+          <span class="m-val">PROD</span>
+        </div>
+        <div class="ticket-meta-item">
+          <span class="m-key">Assigned To</span>
+          <span class="m-val">You (L2)</span>
+        </div>
+        <div class="ticket-meta-item">
+          <span class="m-key">SLA Deadline</span>
+          <span class="m-val" style="color:var(--p1)">11:14 AM (2 hrs)</span>
+        </div>
+      </div>
+      <div class="ticket-desc">
+        Client reports that all payment transactions are failing since 09:00 AM. Error message shown to end users: <em>"Transaction could not be processed. Please try again."</em> No transactions have gone through in the last 14 minutes. Estimated 500+ users affected. Client's operations team has escalated to their management.
+      </div>
+      <div class="ticket-steps">
+        <div class="ts-label">Steps Taken So Far (L2 Notes)</div>
+        <div class="ts-item"><span class="ts-num">01</span><span>Checked server status — Application server is running, no CPU spikes.</span></div>
+        <div class="ts-item"><span class="ts-num">02</span><span>Checked application logs — Found repeated error: <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--p1)">DB_CONNECTION_TIMEOUT</code> starting at 09:01 AM.</span></div>
+        <div class="ts-item"><span class="ts-num">03</span><span>Checked database — Found the DB connection pool is exhausted. Too many open connections, no new ones allowed.</span></div>
+        <div class="ts-item"><span class="ts-num">04</span><span>Escalating to L3 Dev team to increase connection pool limit and investigate root cause of connection leak.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TICKET 2 -->
+  <div class="ticket">
+    <div class="ticket-topbar">
+      <span class="ticket-id">FIN-1051</span>
+      <span class="ticket-status st-open">Open</span>
+      <span class="sev-badge sb-p3">P3 — Medium</span>
+      <span class="ticket-time">Opened: Today 11:30 AM</span>
+    </div>
+    <div class="ticket-body">
+      <div class="ticket-title">Gamma Finance — Monthly loan report not generating for October</div>
+      <div class="ticket-meta">
+        <div class="ticket-meta-item">
+          <span class="m-key">Client</span>
+          <span class="m-val">Gamma Finance</span>
+        </div>
+        <div class="ticket-meta-item">
+          <span class="m-key">Product</span>
+          <span class="m-val">Core Banking</span>
+        </div>
+        <div class="ticket-meta-item">
+          <span class="m-key">Module</span>
+          <span class="m-val">Reporting Module</span>
+        </div>
+        <div class="ticket-meta-item">
+          <span class="m-key">Environment</span>
+          <span class="m-val">PROD</span>
+        </div>
+        <div class="ticket-meta-item">
+          <span class="m-key">Assigned To</span>
+          <span class="m-val">You (L2)</span>
+        </div>
+        <div class="ticket-meta-item">
+          <span class="m-key">SLA Deadline</span>
+          <span class="m-val" style="color:var(--p3)">Tomorrow 11:30 AM (24 hrs)</span>
+        </div>
+      </div>
+      <div class="ticket-desc">
+        Client tried to generate the October loan summary report today. The report job runs but produces an empty file. No error shown to the user. Previous months (Aug, Sep) worked fine. Client needs the report for a board meeting tomorrow.
+      </div>
+      <div class="ticket-steps">
+        <div class="ts-label">Next Steps (Your Investigation Plan)</div>
+        <div class="ts-item"><span class="ts-num">01</span><span>Check report scheduler logs to see if the job ran and at what time.</span></div>
+        <div class="ts-item"><span class="ts-num">02</span><span>Check if October loan data actually exists in the database.</span></div>
+        <div class="ts-item"><span class="ts-num">03</span><span>Compare report config for October vs September to spot any difference.</span></div>
+        <div class="ts-item"><span class="ts-num">04</span><span>Update ticket with findings and inform client within 4 hours.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REAL SCENARIOS -->
+  <div class="sec"><span class="sec-num">06</span> Real L2 Scenarios</div>
+
+  <div class="scen-list">
+    <div class="scen-item">
+      <div class="si-id">01</div>
+      <p>A ticket comes in at 2 PM marked P1. Your SLA says you must respond in 30 minutes. <strong>You stop everything else and jump on this first.</strong> Even if you have 5 other tickets open — P1 is always the priority.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">02</div>
+      <p>You've been working on a ticket for 2 hours and still can't find the fix. <strong>Don't sit on it silently.</strong> Update the ticket with what you've tried, change status to "Escalated", and send it to L3 with full notes. SLA clock is still running.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">03</div>
+      <p>A client calls and says "this is urgent, please make it P1." But it's just a report formatting issue. <strong>You assess the actual business impact</strong> — is any money blocked? Are users unable to work? If not, it stays P3. Severity is based on impact, not the client's mood.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">04</div>
+      <p>You fixed an issue and moved the ticket to "Resolved." The client replies: <strong>"Actually it's still broken on our end."</strong> — You reopen the ticket, change status back to "In Progress", and investigate again. Never close a ticket without client confirmation.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Day 3 Outcomes — Can You Do This?</h3>
+    <ul>
+      <li>Explain what Jira is and why support teams use it</li>
+      <li>Walk through the full ticket lifecycle: Open → In Progress → In Review → Resolved → Closed</li>
+      <li>Explain what SLA means and why missing it is a serious issue in fintech</li>
+      <li>Identify P1 / P2 / P3 / P4 severity and give a real example of each</li>
+      <li>Know the escalation path: L1 → L2 (you) → L3/Dev and when to escalate</li>
+      <li>Create a proper dummy Jira ticket with all required fields filled correctly</li>
+      <li>Explain what a good escalation note looks like vs a lazy one</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

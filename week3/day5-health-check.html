@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 3 · Day 5 — Health Check Script</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #080b10;
+    --surface: #0d1117;
+    --surface2: #131920;
+    --surface3: #181f28;
+    --border: #1e2835;
+    --text: #aabcce;
+    --text-dim: #485a6a;
+    --text-faint: #1e2838;
+    --white: #e8f2fc;
+
+    --green: #00e676;
+    --green-bg: #001a08;
+    --green-border: #003818;
+
+    --blue: #40a9ff;
+    --blue-bg: #001828;
+    --blue-border: #003858;
+
+    --orange: #ff9c3a;
+    --orange-bg: #1a0c00;
+    --orange-border: #402000;
+
+    --red: #ff4d4d;
+    --red-bg: #1a0000;
+    --red-border: #400808;
+
+    --yellow: #ffd740;
+    --yellow-bg: #1a1400;
+    --yellow-border: #403000;
+
+    --purple: #b06aff;
+    --purple-bg: #120818;
+    --purple-border: #2c1040;
+  }
+
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans',sans-serif; font-size:15px; line-height:1.7; padding:48px 24px 100px; }
+  .page { max-width:960px; margin:0 auto; }
+
+  .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:52px; padding-bottom:18px; border-bottom:1px solid var(--border); }
+  .topbar-left { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-faint); letter-spacing:1px; text-transform:uppercase; }
+  .tb-right { display:flex; gap:8px; }
+  .tb-badge { font-family:'JetBrains Mono',monospace; font-size:10px; padding:4px 14px; border-radius:100px; letter-spacing:1px; text-transform:uppercase; }
+  .tb-week { background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); }
+  .tb-day  { background:var(--green-bg); border:1px solid var(--green-border); color:var(--green); }
+
+  .hero { margin-bottom:52px; }
+  .day-label { font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--green); margin-bottom:14px; }
+  .hero h1 { font-size:clamp(32px,6vw,58px); font-weight:800; line-height:1.05; color:var(--white); margin-bottom:18px; }
+  .hero h1 span { color:var(--green); }
+  .hero-desc { color:var(--text-dim); font-size:16px; max-width:540px; }
+  .tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:22px; }
+  .tag { padding:5px 14px; border-radius:100px; font-family:'JetBrains Mono',monospace; font-size:11px; background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); }
+
+  .sec { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--text-faint); margin-bottom:18px; margin-top:44px; display:flex; align-items:center; gap:12px; }
+  .sec .sn { color:var(--green); font-size:12px; }
+  .sec::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  .analogy { background:var(--green-bg); border:1px solid var(--green-border); border-left:4px solid var(--green); border-radius:12px; padding:24px 28px; margin-bottom:16px; }
+  .analogy .al { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--green); margin-bottom:8px; }
+  .analogy p { color:var(--text); font-size:14px; }
+  .analogy strong { color:var(--white); }
+
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px 28px; margin-bottom:14px; }
+  .card h3 { font-size:17px; font-weight:700; color:var(--white); margin-bottom:8px; }
+  .card p { color:var(--text-dim); margin-bottom:8px; font-size:14px; }
+  .card p:last-child { margin-bottom:0; }
+
+  /* METRIC CARDS */
+  .metrics-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+  .metric-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+  .mc-header { padding:14px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+  .mc-icon { font-size:22px; }
+  .mc-label { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; }
+  .mc-title { font-size:15px; font-weight:700; color:var(--white); }
+  .mc-body { padding:16px 20px; }
+  .mc-body p { font-size:13px; color:var(--text-dim); margin-bottom:8px; }
+  .mc-body p:last-child { margin-bottom:0; }
+
+  .m-green { border-top:3px solid var(--green); }
+  .m-blue  { border-top:3px solid var(--blue); }
+  .m-orange{ border-top:3px solid var(--orange); }
+  .m-yellow{ border-top:3px solid var(--yellow); }
+  .m-green .mc-label { color:var(--green); }
+  .m-blue  .mc-label { color:var(--blue); }
+  .m-orange.mc-label { color:var(--orange); }
+  .m-yellow .mc-label { color:var(--yellow); }
+
+  /* THRESHOLD TABLE */
+  .thresh-wrap { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:14px; }
+  .tw-header { padding:14px 22px; background:var(--surface2); border-bottom:1px solid var(--border); font-size:15px; font-weight:700; color:var(--white); }
+  table.tt { width:100%; border-collapse:collapse; }
+  table.tt th { padding:9px 18px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint); text-align:left; border-bottom:1px solid var(--border); font-weight:400; background:var(--surface3); }
+  table.tt td { padding:12px 18px; font-size:13px; color:var(--text-dim); border-bottom:1px solid rgba(255,255,255,0.03); vertical-align:middle; }
+  table.tt tr:last-child td { border-bottom:none; }
+  table.tt tr:hover td { background:rgba(255,255,255,0.02); }
+  table.tt td:first-child { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--white); }
+  .st-ok   { font-family:'JetBrains Mono',monospace; font-size:10px; padding:2px 9px; border-radius:100px; background:var(--green-bg); border:1px solid var(--green-border); color:var(--green); }
+  .st-warn { font-family:'JetBrains Mono',monospace; font-size:10px; padding:2px 9px; border-radius:100px; background:var(--yellow-bg); border:1px solid var(--yellow-border); color:var(--yellow); }
+  .st-crit { font-family:'JetBrains Mono',monospace; font-size:10px; padding:2px 9px; border-radius:100px; background:var(--red-bg); border:1px solid var(--red-border); color:var(--red); }
+
+  /* CODE BLOCK */
+  .cbox { background:var(--bg); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:14px; }
+  .cbox-bar { padding:8px 14px; background:var(--surface3); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:7px; }
+  .cbox-bar .d { width:8px; height:8px; border-radius:50%; }
+  .dr{background:#ff5f56;} .dy{background:#ffbd2e;} .dg{background:#27c93f;}
+  .cbox-bar .ctitle { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-faint); margin-left:4px; letter-spacing:1px; }
+  .cbox-code { padding:18px 22px; font-family:'JetBrains Mono',monospace; font-size:12.5px; line-height:2.0; overflow-x:auto; }
+  .kw{color:#ff7b72;} .fn{color:#79c0ff;} .str{color:#a5d6ff;}
+  .var{color:#ffa657;} .cm{color:#3a4d5c;} .op{color:#c9d1d9;}
+  .gt{color:#3fb950;} .yt{color:#e3b341;} .rt{color:#ff6b6b;}
+
+  /* SCRIPT BLOCK */
+  .script-block { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:20px; }
+  .sb-header { padding:16px 24px; background:var(--surface2); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  .sb-header h3 { font-size:15px; font-weight:700; color:var(--white); }
+  .sb-badge { font-family:'JetBrains Mono',monospace; font-size:10px; padding:3px 12px; border-radius:100px; background:var(--green-bg); border:1px solid var(--green-border); color:var(--green); }
+  .sb-filename { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-dim); }
+
+  /* NOTE */
+  .note { border-radius:10px; padding:11px 16px; font-size:13px; margin-bottom:10px; }
+  .n-g { background:var(--green-bg); border:1px solid var(--green-border); color:var(--green); }
+  .n-o { background:var(--orange-bg); border:1px solid var(--orange-border); color:var(--orange); }
+  .n-b { background:var(--blue-bg); border:1px solid var(--blue-border); color:var(--blue); }
+  .n-r { background:var(--red-bg); border:1px solid var(--red-border); color:var(--red); }
+  .note strong { color:var(--white); }
+
+  /* LAB */
+  .lab { border:2px solid var(--green-border); border-radius:16px; overflow:hidden; margin-bottom:14px; }
+  .lab-header { padding:18px 26px; background:var(--green-bg); border-bottom:1px solid var(--green-border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  .lab-header h3 { font-size:16px; font-weight:700; color:var(--white); }
+  .lab-badge { font-family:'JetBrains Mono',monospace; font-size:10px; padding:4px 12px; border-radius:100px; background:rgba(0,230,118,0.1); border:1px solid var(--green-border); color:var(--green); }
+  .lab-body { padding:26px; display:flex; flex-direction:column; gap:0; background:var(--surface); }
+  .lab-step { display:flex; gap:18px; position:relative; }
+  .lab-step:not(:last-child) .ls-left::after { content:''; position:absolute; left:19px; top:44px; bottom:0; width:2px; background:var(--border); z-index:0; }
+  .ls-left { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+  .ls-num { width:40px; height:40px; border-radius:50%; background:var(--green-bg); border:2px solid var(--green-border); display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--green); z-index:1; position:relative; }
+  .ls-content { flex:1; padding-bottom:24px; padding-top:4px; }
+  .ls-title { font-size:14px; font-weight:700; color:var(--white); margin-bottom:4px; }
+  .ls-desc  { font-size:13px; color:var(--text-dim); margin-bottom:8px; }
+  .ls-out   { font-family:'JetBrains Mono',monospace; font-size:12px; background:var(--green-bg); border:1px solid var(--green-border); color:var(--green); border-radius:8px; padding:9px 14px; display:block; margin-top:8px; }
+
+  /* SCENARIOS */
+  .scen-list { display:flex; flex-direction:column; gap:12px; margin-bottom:14px; }
+  .scen-item { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 20px; display:flex; gap:14px; align-items:flex-start; }
+  .si-id { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--green); background:var(--green-bg); border:1px solid var(--green-border); border-radius:6px; padding:4px 8px; flex-shrink:0; margin-top:2px; }
+  .scen-item p { font-size:14px; color:var(--text-dim); }
+  .scen-item p strong { color:var(--white); }
+
+  .outcome { background:linear-gradient(135deg, var(--green-bg) 0%, var(--surface) 100%); border:1px solid var(--green-border); border-radius:16px; padding:32px; margin-top:48px; }
+  .outcome h3 { font-size:20px; font-weight:700; color:var(--green); margin-bottom:18px; }
+  .outcome ul { display:flex; flex-direction:column; gap:9px; list-style:none; }
+  .outcome ul li { font-size:14px; color:var(--text-dim); padding-left:22px; position:relative; }
+  .outcome ul li::before { content:'✓'; position:absolute; left:0; color:var(--green); font-family:'JetBrains Mono',monospace; }
+
+  @media(max-width:640px){ .metrics-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 3</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-week">Week 3</span>
+      <span class="tb-badge tb-day">Day 5</span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="day-label">Today's Topic</div>
+    <h1>Health Check <span>Script</span></h1>
+    <p class="hero-desc">One script that checks everything — disk, CPU, memory — and tells you if your server is healthy or needs attention. Every L2 engineer needs this in their toolkit.</p>
+    <div class="tags">
+      <span class="tag">Disk Check</span>
+      <span class="tag">CPU Check</span>
+      <span class="tag">Memory Check</span>
+      <span class="tag">Monitoring Automation</span>
+    </div>
+  </div>
+
+  <!-- ANALOGY -->
+  <div class="sec"><span class="sn">01</span> The Simple Idea First</div>
+
+  <div class="analogy">
+    <div class="al">Real-life Analogy</div>
+    <p>Think of a <strong>pilot's pre-flight checklist</strong>. Before every flight, the pilot checks fuel level, engine status, pressure, temperature — every critical metric in a fixed order. They don't skip anything and they don't do it from memory — they follow the same checklist every single time.<br><br><strong>Your health check script is that checklist.</strong> Every morning before support starts, you run it and instantly know if the server is ready or if something needs attention.</p>
+  </div>
+
+  <!-- THE 3 METRICS -->
+  <div class="sec"><span class="sn">02</span> The 3 Things You Always Check</div>
+
+  <div class="metrics-grid">
+    <div class="metric-card m-green">
+      <div class="mc-header">
+        <div class="mc-icon">💾</div>
+        <div>
+          <div class="mc-label">Metric 1</div>
+          <div class="mc-title">Disk Space</div>
+        </div>
+      </div>
+      <div class="mc-body">
+        <p>How full is the hard drive? When disk hits 100% the server stops writing logs, transactions fail, everything breaks.</p>
+        <p><strong>Command:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--green);">df -h</code></p>
+        <p><strong>What to check:</strong> The Use% column on the / (root) partition.</p>
+      </div>
+    </div>
+    <div class="metric-card m-blue">
+      <div class="mc-header">
+        <div class="mc-icon">🧠</div>
+        <div>
+          <div class="mc-label">Metric 2</div>
+          <div class="mc-title">Memory (RAM)</div>
+        </div>
+      </div>
+      <div class="mc-body">
+        <p>How much RAM is available? When RAM runs out the server uses disk as backup (swap) — much slower, causes lag and crashes.</p>
+        <p><strong>Command:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--blue);">free -h</code></p>
+        <p><strong>What to check:</strong> Available column and Swap used.</p>
+      </div>
+    </div>
+    <div class="metric-card m-orange">
+      <div class="mc-header">
+        <div class="mc-icon">⚙️</div>
+        <div>
+          <div class="mc-label">Metric 3</div>
+          <div class="mc-title">CPU Usage</div>
+        </div>
+      </div>
+      <div class="mc-body">
+        <p>How hard is the processor working? High CPU means the server is struggling — transactions slow down and timeouts increase.</p>
+        <p><strong>Command:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--orange);">top</code> or <code style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--orange);">mpstat</code></p>
+        <p><strong>What to check:</strong> %idle — the lower the idle, the more stressed.</p>
+      </div>
+    </div>
+    <div class="metric-card m-yellow">
+      <div class="mc-header">
+        <div class="mc-icon">📋</div>
+        <div>
+          <div class="mc-label">Metric 4</div>
+          <div class="mc-title">Log Errors</div>
+        </div>
+      </div>
+      <div class="mc-body">
+        <p>Are there any ERROR lines in the application logs? Even if the server looks healthy, the app could be throwing errors.</p>
+        <p><strong>Command:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--yellow);">grep -c "ERROR" app.log</code></p>
+        <p><strong>What to check:</strong> Any count above 0 means something needs attention.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- THRESHOLDS -->
+  <div class="thresh-wrap">
+    <div class="tw-header">⚠️ Alert Thresholds — When to Act</div>
+    <table class="tt">
+      <thead><tr><th>Metric</th><th>OK</th><th>Warning</th><th>Critical — Act Now</th></tr></thead>
+      <tbody>
+        <tr><td>Disk Space</td><td><span class="st-ok">Below 80%</span></td><td><span class="st-warn">80% – 90%</span></td><td><span class="st-crit">Above 90%</span></td></tr>
+        <tr><td>RAM Available</td><td><span class="st-ok">Above 30%</span></td><td><span class="st-warn">15% – 30%</span></td><td><span class="st-crit">Below 15%</span></td></tr>
+        <tr><td>CPU Idle</td><td><span class="st-ok">Above 30%</span></td><td><span class="st-warn">10% – 30%</span></td><td><span class="st-crit">Below 10%</span></td></tr>
+        <tr><td>Swap Used</td><td><span class="st-ok">0 – low</span></td><td><span class="st-warn">Growing</span></td><td><span class="st-crit">High / Maxed</span></td></tr>
+        <tr><td>Log Errors</td><td><span class="st-ok">0 errors</span></td><td><span class="st-warn">1 – 10 errors</span></td><td><span class="st-crit">More than 10</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SCRIPTS SECTION -->
+  <div class="sec"><span class="sn">03</span> The Scripts — Every One Written Out</div>
+
+  <div class="note n-b">📌 <strong>Run order:</strong> Create the sample log first (Script 1), then run the health check (Script 2). The full monitoring script (Script 3) combines everything.</div>
+
+  <!-- SCRIPT 1 -->
+  <div class="script-block">
+    <div class="sb-header">
+      <div>
+        <div class="sb-filename">create-sample-log.sh</div>
+        <h3>Script 1 — Create Sample Log File</h3>
+      </div>
+      <span class="sb-badge">Run This First</span>
+    </div>
+    <div class="cbox">
+      <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">create-sample-log.sh — copy exactly as is</span></div>
+      <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Creates a sample payment log for testing</span><br>
+<span class="cm"># Run this FIRST before any other script</span><br>
+<br>
+<span class="var">LOG_FILE</span>=<span class="str">"$HOME/payment-service.log"</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"Creating sample log at $LOG_FILE ..."</span><br>
+<br>
+<span class="fn">cat</span> &gt; <span class="str">"$LOG_FILE"</span> &lt;&lt; <span class="str">'EOF'</span><br>
+[2024-03-15 14:01:55] [INFO ] TXN-9820 received. Amount: 2000 Status: QUEUED<br>
+[2024-03-15 14:01:57] [INFO ] TXN-9820 processed successfully Status: SUCCESS<br>
+[2024-03-15 14:02:00] [INFO ] TXN-9821 received. Amount: 8500 Status: QUEUED<br>
+[2024-03-15 14:02:02] [WARN ] DB connection pool at 82% capacity<br>
+[2024-03-15 14:02:03] [WARN ] DB connection pool at 91% capacity<br>
+[2024-03-15 14:02:04] [WARN ] DB connection pool at 97% capacity CRITICAL<br>
+[2024-03-15 14:02:05] [ERROR] DB_CONNECTION_TIMEOUT failed to acquire connection<br>
+[2024-03-15 14:02:05] [ERROR] TXN-9821 FAILED unable to write to database<br>
+[2024-03-15 14:02:06] [ERROR] DB_CONNECTION_TIMEOUT failed to acquire connection<br>
+[2024-03-15 14:02:06] [ERROR] TXN-9822 FAILED unable to write to database<br>
+[2024-03-15 14:02:07] [WARN ] Retry attempt 1/3 for TXN-9822<br>
+[2024-03-15 14:02:09] [WARN ] Retry attempt 2/3 for TXN-9822<br>
+[2024-03-15 14:02:12] [ERROR] Max retries exceeded TXN-9822 dead-letter queue<br>
+[2024-03-15 14:02:15] [INFO ] TXN-9824 received. Amount: 1200 Status: QUEUED<br>
+[2024-03-15 14:02:16] [INFO ] TXN-9824 processed successfully Status: SUCCESS<br>
+[2024-03-15 14:03:00] [ERROR] SOCKET_TIMEOUT no response from SBP after 10000ms<br>
+[2024-03-15 14:03:01] [ERROR] TXN-9825 FAILED external gateway unreachable<br>
+EOF<br>
+<br>
+<span class="fn">echo</span> <span class="str">"Done. Log created."</span><br>
+<span class="fn">echo</span> <span class="str">"ERROR lines : $(grep -c 'ERROR' $LOG_FILE)"</span><br>
+<span class="fn">echo</span> <span class="str">"WARN lines  : $(grep -c 'WARN' $LOG_FILE)"</span><br>
+<span class="fn">echo</span> <span class="str">"INFO lines  : $(grep -c 'INFO' $LOG_FILE)"</span>
+      </div>
+    </div>
+    <div style="padding:0 16px 16px;">
+      <div class="note n-g">✅ <strong>How to run:</strong> chmod +x create-sample-log.sh &amp;&amp; ./create-sample-log.sh</div>
+    </div>
+  </div>
+
+  <!-- SCRIPT 2 -->
+  <div class="script-block">
+    <div class="sb-header">
+      <div>
+        <div class="sb-filename">disk-check.sh</div>
+        <h3>Script 2 — Disk Space Check</h3>
+      </div>
+      <span class="sb-badge">Individual Check</span>
+    </div>
+    <div class="cbox">
+      <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">disk-check.sh</span></div>
+      <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Checks disk usage and alerts if above limit</span><br>
+<br>
+<span class="var">DISK_LIMIT</span>=<span class="op">80</span><br>
+<span class="var">DISK_USED</span>=<span class="op">$(</span><span class="fn">df</span> / | <span class="fn">awk</span> <span class="str">'NR==2 {print $5}'</span> | <span class="fn">tr</span> -d <span class="str">'%'</span><span class="op">)</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"[DISK] Usage: $DISK_USED%"</span><br>
+<br>
+<span class="kw">if</span> [ <span class="var">$DISK_USED</span> -gt <span class="var">$DISK_LIMIT</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"[DISK] WARNING: Disk at $DISK_USED% — above $DISK_LIMIT% limit!"</span><br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"[DISK] OK — below threshold"</span><br>
+<span class="kw">fi</span>
+      </div>
+    </div>
+    <div style="padding:0 16px 16px;">
+      <div class="note n-g">✅ <strong>How to run:</strong> chmod +x disk-check.sh &amp;&amp; ./disk-check.sh</div>
+    </div>
+  </div>
+
+  <!-- SCRIPT 3 -->
+  <div class="script-block">
+    <div class="sb-header">
+      <div>
+        <div class="sb-filename">memory-check.sh</div>
+        <h3>Script 3 — Memory (RAM) Check</h3>
+      </div>
+      <span class="sb-badge">Individual Check</span>
+    </div>
+    <div class="cbox">
+      <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">memory-check.sh</span></div>
+      <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Checks RAM usage and swap status</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"[MEMORY] Current RAM usage:"</span><br>
+<span class="fn">free</span> -h<br>
+<br>
+<span class="cm"># Get available memory in MB</span><br>
+<span class="var">MEM_AVAIL</span>=<span class="op">$(</span><span class="fn">free</span> -m | <span class="fn">awk</span> <span class="str">'NR==2 {print $7}'</span><span class="op">)</span><br>
+<span class="var">MEM_TOTAL</span>=<span class="op">$(</span><span class="fn">free</span> -m | <span class="fn">awk</span> <span class="str">'NR==2 {print $2}'</span><span class="op">)</span><br>
+<span class="var">SWAP_USED</span>=<span class="op">$(</span><span class="fn">free</span> -m | <span class="fn">awk</span> <span class="str">'NR==3 {print $3}'</span><span class="op">)</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"[MEMORY] Available: ${MEM_AVAIL}MB of ${MEM_TOTAL}MB"</span><br>
+<span class="fn">echo</span> <span class="str">"[MEMORY] Swap used: ${SWAP_USED}MB"</span><br>
+<br>
+<span class="kw">if</span> [ <span class="var">$SWAP_USED</span> -gt <span class="op">100</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"[MEMORY] WARNING: High swap usage — RAM is running low!"</span><br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"[MEMORY] OK — Swap usage is normal"</span><br>
+<span class="kw">fi</span>
+      </div>
+    </div>
+    <div style="padding:0 16px 16px;">
+      <div class="note n-g">✅ <strong>How to run:</strong> chmod +x memory-check.sh &amp;&amp; ./memory-check.sh</div>
+    </div>
+  </div>
+
+  <!-- SCRIPT 4 -->
+  <div class="script-block">
+    <div class="sb-header">
+      <div>
+        <div class="sb-filename">cpu-check.sh</div>
+        <h3>Script 4 — CPU Usage Check</h3>
+      </div>
+      <span class="sb-badge">Individual Check</span>
+    </div>
+    <div class="cbox">
+      <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">cpu-check.sh</span></div>
+      <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Checks CPU usage using top snapshot</span><br>
+<br>
+<span class="cm"># Get CPU idle % from top (run once, not interactive)</span><br>
+<span class="var">CPU_IDLE</span>=<span class="op">$(</span><span class="fn">top</span> -bn1 | <span class="fn">grep</span> <span class="str">"Cpu(s)"</span> | <span class="fn">awk</span> <span class="str">'{print $8}'</span> | <span class="fn">tr</span> -d <span class="str">'%id,'</span><span class="op">)</span><br>
+<span class="var">CPU_USED</span>=<span class="op">$(</span><span class="fn">echo</span> <span class="str">"100 - $CPU_IDLE"</span> | <span class="fn">bc</span><span class="op">)</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"[CPU] Usage  : ${CPU_USED}%"</span><br>
+<span class="fn">echo</span> <span class="str">"[CPU] Idle   : ${CPU_IDLE}%"</span><br>
+<br>
+<span class="kw">if</span> [ <span class="op">$(</span><span class="fn">echo</span> <span class="str">"$CPU_IDLE < 20"</span> | <span class="fn">bc</span><span class="op">)</span> -eq <span class="op">1</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"[CPU] WARNING: CPU idle below 20% — server is under heavy load!"</span><br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"[CPU] OK — CPU load is acceptable"</span><br>
+<span class="kw">fi</span><br>
+<br>
+<span class="cm"># Show top 3 CPU-eating processes</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"[CPU] Top 3 processes by CPU:"</span><br>
+<span class="fn">ps</span> aux --sort=-%cpu | <span class="fn">awk</span> <span class="str">'NR==2,NR==4 {print $11, $3"%"}'</span>
+      </div>
+    </div>
+    <div style="padding:0 16px 16px;">
+      <div class="note n-g">✅ <strong>How to run:</strong> chmod +x cpu-check.sh &amp;&amp; ./cpu-check.sh</div>
+      <div class="note n-o" style="margin-top:8px;">⚠️ <strong>Note:</strong> If bc is not installed run: <code style="font-family:'JetBrains Mono',monospace;font-size:11px;">sudo apt install bc -y</code></div>
+    </div>
+  </div>
+
+  <!-- SCRIPT 5 — MAIN HEALTH CHECK -->
+  <div class="script-block">
+    <div class="sb-header">
+      <div>
+        <div class="sb-filename">server-health-check.sh</div>
+        <h3>Script 5 — FULL Server Health Check (Main Script)</h3>
+      </div>
+      <span class="sb-badge">⭐ Main Script</span>
+    </div>
+    <div class="note n-b" style="margin:0 16px 10px;">📌 This is the main script — combines disk + memory + CPU + log error check all in one. This is what gets scheduled with crontab.</div>
+    <div class="cbox">
+      <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">server-health-check.sh — FULL SCRIPT</span></div>
+      <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># ============================================</span><br>
+<span class="cm"># server-health-check.sh</span><br>
+<span class="cm"># Full server health check — disk, RAM, CPU, logs</span><br>
+<span class="cm"># Run: chmod +x server-health-check.sh</span><br>
+<span class="cm"># Then: ./server-health-check.sh</span><br>
+<span class="cm"># ============================================</span><br>
+<br>
+<span class="cm"># --- CONFIG — change these if needed ---</span><br>
+<span class="var">DISK_WARN</span>=<span class="op">80</span>          <span class="cm"># warn above 80%</span><br>
+<span class="var">DISK_CRIT</span>=<span class="op">90</span>          <span class="cm"># critical above 90%</span><br>
+<span class="var">SWAP_WARN</span>=<span class="op">100</span>         <span class="cm"># warn if swap above 100MB</span><br>
+<span class="var">LOG_FILE</span>=<span class="str">"$HOME/payment-service.log"</span><br>
+<span class="var">REPORT</span>=<span class="str">"$HOME/health-report.txt"</span><br>
+<span class="cm"># ---------------------------------------</span><br>
+<br>
+<span class="cm"># --- HEADER ---</span><br>
+<span class="fn">echo</span> <span class="str">"============================================"</span><br>
+<span class="fn">echo</span> <span class="str">" SERVER HEALTH CHECK"</span><br>
+<span class="fn">echo</span> <span class="str">" Date : $(date)"</span><br>
+<span class="fn">echo</span> <span class="str">"============================================"</span><br>
+<br>
+<span class="cm"># --- DISK CHECK ---</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"[1/4] DISK SPACE"</span><br>
+<span class="fn">echo</span> <span class="str">"--------------------------------------------"</span><br>
+<span class="var">DISK_USED</span>=<span class="op">$(</span><span class="fn">df</span> / | <span class="fn">awk</span> <span class="str">'NR==2 {print $5}'</span> | <span class="fn">tr</span> -d <span class="str">'%'</span><span class="op">)</span><br>
+<span class="fn">df</span> -h /<br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<br>
+<span class="kw">if</span> [ <span class="var">$DISK_USED</span> -ge <span class="var">$DISK_CRIT</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"STATUS: CRITICAL — Disk at $DISK_USED%! Clean up immediately!"</span><br>
+<span class="kw">elif</span> [ <span class="var">$DISK_USED</span> -ge <span class="var">$DISK_WARN</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"STATUS: WARNING  — Disk at $DISK_USED%. Schedule cleanup soon."</span><br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"STATUS: OK       — Disk at $DISK_USED%"</span><br>
+<span class="kw">fi</span><br>
+<br>
+<span class="cm"># --- MEMORY CHECK ---</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"[2/4] MEMORY (RAM)"</span><br>
+<span class="fn">echo</span> <span class="str">"--------------------------------------------"</span><br>
+<span class="fn">free</span> -h<br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="var">SWAP_USED</span>=<span class="op">$(</span><span class="fn">free</span> -m | <span class="fn">awk</span> <span class="str">'NR==3 {print $3}'</span><span class="op">)</span><br>
+<br>
+<span class="kw">if</span> [ <span class="var">$SWAP_USED</span> -gt <span class="var">$SWAP_WARN</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"STATUS: WARNING  — Swap used: ${SWAP_USED}MB. RAM may be low."</span><br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"STATUS: OK       — Swap used: ${SWAP_USED}MB"</span><br>
+<span class="kw">fi</span><br>
+<br>
+<span class="cm"># --- CPU CHECK ---</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"[3/4] CPU USAGE"</span><br>
+<span class="fn">echo</span> <span class="str">"--------------------------------------------"</span><br>
+<span class="fn">echo</span> <span class="str">"Top 5 processes by CPU:"</span><br>
+<span class="fn">ps</span> aux --sort=-%cpu | <span class="fn">awk</span> <span class="str">'NR==1,NR==6 {printf "%-20s %s\n", $11, $3"%"}'</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="cm"># Load average (1min 5min 15min) — above 1.0 per core is stressed</span><br>
+<span class="var">LOAD</span>=<span class="op">$(</span><span class="fn">cat</span> /proc/loadavg | <span class="fn">awk</span> <span class="str">'{print $1, $2, $3}'</span><span class="op">)</span><br>
+<span class="fn">echo</span> <span class="str">"Load average (1m 5m 15m): $LOAD"</span><br>
+<br>
+<span class="cm"># --- LOG ERROR CHECK ---</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"[4/4] LOG ERRORS"</span><br>
+<span class="fn">echo</span> <span class="str">"--------------------------------------------"</span><br>
+<br>
+<span class="kw">if</span> [ -f <span class="str">"$LOG_FILE"</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="var">ERR_COUNT</span>=<span class="op">$(</span><span class="fn">grep</span> -c <span class="str">"ERROR"</span> <span class="str">"$LOG_FILE"</span> 2&gt;/dev/null || <span class="fn">echo</span> <span class="op">0</span><span class="op">)</span><br>
+&nbsp;&nbsp;<span class="var">WARN_COUNT</span>=<span class="op">$(</span><span class="fn">grep</span> -c <span class="str">"WARN"</span> <span class="str">"$LOG_FILE"</span> 2&gt;/dev/null || <span class="fn">echo</span> <span class="op">0</span><span class="op">)</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"Log file   : $LOG_FILE"</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"Errors     : $ERR_COUNT"</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"Warnings   : $WARN_COUNT"</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">""</span><br>
+&nbsp;&nbsp;<span class="kw">if</span> [ <span class="var">$ERR_COUNT</span> -gt <span class="op">10</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"STATUS: CRITICAL — $ERR_COUNT errors found! Investigate now."</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"Top errors:"</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">grep</span> <span class="str">"ERROR"</span> <span class="str">"$LOG_FILE"</span> | <span class="fn">awk</span> <span class="str">'{print $4}'</span> | <span class="fn">sort</span> | <span class="fn">uniq</span> -c | <span class="fn">sort</span> -rn | <span class="fn">head</span> -3<br>
+&nbsp;&nbsp;<span class="kw">elif</span> [ <span class="var">$ERR_COUNT</span> -gt <span class="op">0</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"STATUS: WARNING  — $ERR_COUNT errors found. Monitor closely."</span><br>
+&nbsp;&nbsp;<span class="kw">else</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"STATUS: OK       — No errors in log"</span><br>
+&nbsp;&nbsp;<span class="kw">fi</span><br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"Note: Log file not found at $LOG_FILE"</span><br>
+<span class="kw">fi</span><br>
+<br>
+<span class="cm"># --- FOOTER ---</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"============================================"</span><br>
+<span class="fn">echo</span> <span class="str">" Check complete. Report saved to: $REPORT"</span><br>
+<span class="fn">echo</span> <span class="str">"============================================"</span>
+      </div>
+    </div>
+    <div style="padding:0 16px 16px;">
+      <div class="note n-g">✅ <strong>How to run:</strong> chmod +x server-health-check.sh &amp;&amp; ./server-health-check.sh</div>
+    </div>
+  </div>
+
+  <!-- SCRIPT 6 — SCHEDULE -->
+  <div class="script-block">
+    <div class="sb-header">
+      <div>
+        <div class="sb-filename">schedule-health-check.sh</div>
+        <h3>Script 6 — Schedule Health Check with Crontab</h3>
+      </div>
+      <span class="sb-badge">Automation</span>
+    </div>
+    <div class="cbox">
+      <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">schedule-health-check.sh</span></div>
+      <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Gives all scripts permission and schedules them</span><br>
+<span class="cm"># Run this LAST after all scripts are in place</span><br>
+<br>
+<span class="cm"># Give all scripts permission to run</span><br>
+<span class="fn">chmod</span> +x <span class="str">"$HOME/server-health-check.sh"</span><br>
+<span class="fn">chmod</span> +x <span class="str">"$HOME/disk-check.sh"</span><br>
+<span class="fn">chmod</span> +x <span class="str">"$HOME/memory-check.sh"</span><br>
+<span class="fn">chmod</span> +x <span class="str">"$HOME/cpu-check.sh"</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"Permissions set."</span><br>
+<span class="fn">echo</span> <span class="str">"Scheduling cron jobs..."</span><br>
+<br>
+<span class="cm"># Add cron jobs (without removing existing ones)</span><br>
+(<span class="fn">crontab</span> -l <span class="op">2</span>&gt;/dev/null; <span class="fn">echo</span> <span class="str">"# Daily health check at 8 AM"</span>) | <span class="fn">crontab</span> -<br>
+(<span class="fn">crontab</span> -l <span class="op">2</span>&gt;/dev/null; <span class="fn">echo</span> <span class="str">"0 8 * * * $HOME/server-health-check.sh >> $HOME/health-report.txt 2>&1"</span>) | <span class="fn">crontab</span> -<br>
+(<span class="fn">crontab</span> -l <span class="op">2</span>&gt;/dev/null; <span class="fn">echo</span> <span class="str">"# Disk check every 30 minutes"</span>) | <span class="fn">crontab</span> -<br>
+(<span class="fn">crontab</span> -l <span class="op">2</span>&gt;/dev/null; <span class="fn">echo</span> <span class="str">"*/30 * * * * $HOME/disk-check.sh >> $HOME/disk-report.txt 2>&1"</span>) | <span class="fn">crontab</span> -<br>
+<br>
+<span class="fn">echo</span> <span class="str">"Done. Your active cron jobs:"</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">crontab</span> -l
+      </div>
+    </div>
+    <div style="padding:0 16px 16px;">
+      <div class="note n-g">✅ <strong>How to run:</strong> chmod +x schedule-health-check.sh &amp;&amp; ./schedule-health-check.sh</div>
+    </div>
+  </div>
+
+  <!-- LAB -->
+  <div class="sec"><span class="sn">04</span> Hands-on Lab — Run Everything Step by Step</div>
+
+  <div class="lab">
+    <div class="lab-header">
+      <h3>🔬 Lab: Build and Run the Full Health Check</h3>
+      <span class="lab-badge">Kali Linux · VirtualBox</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Copy all scripts to your home folder on Kali</div>
+          <div class="ls-desc">Place all 6 scripts in /home/kali/ — then give them all permission at once.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">terminal</span></div><div class="cbox-code">
+<span class="fn">chmod</span> +x ~/*.sh
+          </div></div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Create the sample log file first</div>
+          <div class="ls-desc">Other scripts need this log to exist.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">terminal</span></div><div class="cbox-code">
+<span class="op">./</span>create-sample-log.sh
+          </div></div>
+          <div class="ls-out">→ payment-service.log created with 17 lines ✅</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Run each individual check to understand each metric</div>
+          <div class="ls-desc">Test each one separately before running the full script.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">terminal</span></div><div class="cbox-code">
+<span class="op">./</span>disk-check.sh<br>
+<span class="op">./</span>memory-check.sh<br>
+<span class="op">./</span>cpu-check.sh
+          </div></div>
+          <div class="ls-out">→ Each check runs and shows OK or WARNING status ✅</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Run the FULL health check script</div>
+          <div class="ls-desc">This is the main script — runs all 4 checks together.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">terminal</span></div><div class="cbox-code">
+<span class="op">./</span>server-health-check.sh
+          </div></div>
+          <div class="ls-out">→ Full report: disk, RAM, CPU load, error count — all in one output ✅</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">05</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Save output to a report file</div>
+          <div class="ls-desc">Run it and save the result so you can review it later.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">terminal</span></div><div class="cbox-code">
+<span class="op">./</span>server-health-check.sh &gt;&gt; ~/health-report.txt<br>
+<span class="fn">cat</span> ~/health-report.txt
+          </div></div>
+          <div class="ls-out">→ health-report.txt created — full report saved ✅</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">06</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Schedule it to run automatically every day</div>
+          <div class="ls-desc">Run the scheduling script to set up crontab.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ctitle">terminal</span></div><div class="cbox-code">
+<span class="op">./</span>schedule-health-check.sh<br>
+<span class="fn">crontab</span> -l
+          </div></div>
+          <div class="ls-out">→ Cron jobs confirmed — health check runs every day at 8 AM automatically ✅</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn">05</span> Real L2 Scenarios</div>
+
+  <div class="scen-list">
+    <div class="scen-item">
+      <div class="si-id">01</div>
+      <p>You arrive at work and run <strong>./server-health-check.sh</strong> as your first action. It shows disk at 93% — CRITICAL. Before any client calls you, you already know there's an issue and start the cleanup. <strong>Proactive support, not reactive.</strong></p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">02</div>
+      <p>An S1 fires and transactions are slow. You run the health check and it shows <strong>swap at 800MB</strong> — RAM is nearly full. You check <code style="font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--surface2);color:var(--green);padding:2px 6px;border-radius:4px;">ps aux --sort=-%mem | head -5</code> to find which process is eating memory, then report on the bridge immediately.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">03</div>
+      <p>Manager asks: <strong>"What was the server status at 8 AM today?"</strong> — Because your health check is scheduled and saving to health-report.txt, you open the file and read the exact status from this morning. Full history, no manual checking needed.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">04</div>
+      <p>The health check runs at 8 AM and finds <strong>6 ERROR lines</strong> in the log. You investigate before clients call. You find a DB connection error from overnight, trace it through the DB tables, and have a root cause ready before the working day even starts.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 3 · Day 5 Outcomes</h3>
+    <ul>
+      <li>Understand the 4 key server health metrics — disk, RAM, CPU, and log errors</li>
+      <li>Know the alert thresholds for each metric — OK, Warning, and Critical levels</li>
+      <li>Write and run the individual check scripts — disk-check, memory-check, cpu-check</li>
+      <li>Build and run the full server-health-check.sh combining all 4 checks with smart alerts</li>
+      <li>Save health check output to a report file for historical reference</li>
+      <li>Schedule the health check to run automatically every day at 8 AM using crontab</li>
+      <li>Use the health check output during an S1 to report server status on the bridge instantly</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

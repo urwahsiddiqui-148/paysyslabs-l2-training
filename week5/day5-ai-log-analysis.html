@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 5 · Day 5 — AI Log Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#06080e;
+    --surface:#0c0f18;
+    --surface2:#111520;
+    --surface3:#161c28;
+    --border:#1c2535;
+    --text:#a8bcd0;
+    --text-dim:#3e5568;
+    --text-faint:#152030;
+    --white:#eaf2fc;
+
+    --ai:#a855f7;
+    --ai-bg:#0e0818;
+    --ai-border:#281840;
+
+    --teal:#00d4c8;
+    --teal-bg:#001818;
+    --teal-border:#003838;
+
+    --amber:#ffaa18;
+    --amber-bg:#180c00;
+    --amber-border:#3c2800;
+
+    --green:#22d46a;
+    --green-bg:#001810;
+    --green-border:#003820;
+
+    --rose:#ff3858;
+    --rose-bg:#180008;
+    --rose-border:#3c0018;
+
+    --blue:#3898ff;
+    --blue-bg:#020e20;
+    --blue-border:#082240;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.7;padding:48px 24px 100px;}
+  .page{max-width:920px;margin:0 auto;}
+
+  /* TOPBAR */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:52px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .topbar-left{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;}
+  .tb-right{display:flex;gap:8px;}
+  .tb-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 14px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;}
+  .tb-wk{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tb-d5{background:var(--ai-bg);border:1px solid var(--ai-border);color:var(--ai);}
+
+  /* HERO */
+  .hero{margin-bottom:52px;}
+  .day-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--ai);margin-bottom:14px;}
+  .hero h1{font-family:'Cabinet Grotesk',sans-serif;font-size:clamp(32px,6vw,60px);font-weight:800;line-height:1.0;color:var(--white);margin-bottom:18px;}
+  .hero h1 span{color:var(--ai);}
+  .hero-desc{color:var(--text-dim);font-size:16px;max-width:530px;}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;}
+  .tag{padding:5px 14px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tag-ai{background:var(--ai-bg);border-color:var(--ai-border);color:var(--ai);}
+
+  /* SECTION */
+  .sec{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faint);margin-bottom:18px;margin-top:44px;display:flex;align-items:center;gap:12px;}
+  .sec .sn{color:var(--ai);font-size:12px;}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  /* ANALOGY */
+  .analogy{background:var(--ai-bg);border:1px solid var(--ai-border);border-left:4px solid var(--ai);border-radius:12px;padding:22px 28px;margin-bottom:16px;}
+  .analogy .al{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ai);margin-bottom:8px;}
+  .analogy p{color:var(--text);font-size:14px;}
+  .analogy strong{color:var(--white);}
+
+  /* CARD */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 28px;margin-bottom:14px;}
+  .card h3{font-family:'Cabinet Grotesk',sans-serif;font-size:18px;font-weight:700;color:var(--white);margin-bottom:8px;}
+  .card p{color:var(--text-dim);margin-bottom:8px;font-size:14px;}
+  .card p:last-child{margin-bottom:0;}
+  .card strong{color:var(--text);}
+
+  /* HOW AI HELPS GRID */
+  .ai-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+  .ai-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;border-top:3px solid var(--ai);}
+  .ai-card .ac-icon{font-size:24px;margin-bottom:8px;}
+  .ai-card .ac-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ai);margin-bottom:4px;}
+  .ai-card h4{font-size:14px;font-weight:600;color:var(--white);margin-bottom:6px;}
+  .ai-card p{font-size:13px;color:var(--text-dim);}
+
+  /* PROMPT BLOCK */
+  .prompt-block{background:var(--surface);border:1px solid var(--ai-border);border-radius:16px;overflow:hidden;margin-bottom:14px;}
+  .pb-header{padding:14px 22px;background:var(--ai-bg);border-bottom:1px solid var(--ai-border);display:flex;align-items:center;gap:10px;}
+  .pb-header .ph-icon{font-size:20px;}
+  .pb-header h3{font-size:15px;font-weight:600;color:var(--white);}
+  .pb-header .ph-tag{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 10px;border-radius:100px;background:rgba(168,85,247,0.15);border:1px solid var(--ai-border);color:var(--ai);margin-left:auto;}
+  .pb-body{padding:20px 22px;}
+  .pb-body p{font-size:14px;color:var(--text-dim);margin-bottom:10px;}
+
+  /* PROMPT TEXT */
+  .prompt-text{background:var(--bg);border:1px solid var(--ai-border);border-radius:10px;padding:16px 18px;font-size:14px;color:var(--text);line-height:1.8;font-style:italic;position:relative;}
+  .prompt-text::before{content:'"';position:absolute;top:-8px;left:12px;font-size:28px;color:var(--ai);opacity:0.4;font-style:normal;}
+
+  /* AI RESPONSE MOCK */
+  .ai-response{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-top:12px;}
+  .ar-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+  .ar-dot{width:8px;height:8px;border-radius:50%;background:var(--ai);animation:pulse 1.5s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+  .ar-label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ai);letter-spacing:1px;}
+  .ar-body{font-size:13px;color:var(--text-dim);line-height:1.8;}
+  .ar-body .ar-bold{color:var(--white);font-weight:600;}
+  .ar-body .ar-code{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg);border:1px solid var(--border);padding:2px 7px;border-radius:4px;color:var(--ai);}
+  .ar-divider{height:1px;background:var(--border);margin:10px 0;}
+
+  /* PATTERN TABLE */
+  .pattern-table{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+  .pt-head{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:15px;font-weight:600;color:var(--white);}
+  table.pt{width:100%;border-collapse:collapse;}
+  table.pt th{padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);text-align:left;border-bottom:1px solid var(--border);font-weight:400;background:var(--surface3);}
+  table.pt td{padding:12px 18px;font-size:13px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;}
+  table.pt tr:last-child td{border-bottom:none;}
+  table.pt tr:hover td{background:rgba(255,255,255,0.02);}
+  table.pt td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ai);white-space:nowrap;}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 9px;border-radius:100px;white-space:nowrap;}
+  .p-ai{background:var(--ai-bg);border:1px solid var(--ai-border);color:var(--ai);}
+  .p-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .p-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+
+  /* CODE */
+  .cbox{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:10px 0;}
+  .cbox-bar{padding:7px 14px;background:var(--surface3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+  .d{width:8px;height:8px;border-radius:50%;}.dr{background:#ff5f56;}.dy{background:#ffbd2e;}.dg{background:#27c93f;}
+  .ct{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);margin-left:4px;letter-spacing:1px;}
+  .cbox-code{padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2.0;overflow-x:auto;}
+  .cm{color:#2e4050;} .op{color:#c9d1d9;} .str{color:#a5d6ff;} .var{color:#ffa657;}
+
+  /* NOTE */
+  .note{border-radius:10px;padding:10px 16px;font-size:13px;margin-bottom:12px;}
+  .n-ai{background:var(--ai-bg);border:1px solid var(--ai-border);color:var(--ai);}
+  .n-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .n-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .note strong{color:var(--white);}
+
+  /* LAB */
+  .lab{border:2px solid var(--ai-border);border-radius:16px;overflow:hidden;margin-bottom:14px;}
+  .lab-head{padding:16px 26px;background:var(--ai-bg);border-bottom:1px solid var(--ai-border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .lab-head h3{font-size:15px;font-weight:700;color:var(--white);}
+  .lab-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 12px;border-radius:100px;background:rgba(168,85,247,0.1);border:1px solid var(--ai-border);color:var(--ai);}
+  .lab-body{padding:26px;display:flex;flex-direction:column;gap:0;background:var(--surface);}
+  .lab-step{display:flex;gap:18px;position:relative;}
+  .lab-step:not(:last-child) .ls-left::after{content:'';position:absolute;left:19px;top:44px;bottom:0;width:2px;background:var(--border);z-index:0;}
+  .ls-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+  .ls-num{width:40px;height:40px;border-radius:50%;background:var(--ai-bg);border:2px solid var(--ai-border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ai);z-index:1;position:relative;}
+  .ls-content{flex:1;padding-bottom:24px;padding-top:4px;}
+  .ls-title{font-size:14px;font-weight:600;color:var(--white);margin-bottom:4px;}
+  .ls-desc{font-size:13px;color:var(--text-dim);margin-bottom:8px;}
+  .ls-out{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--ai-bg);border:1px solid var(--ai-border);color:var(--ai);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+
+  /* GOOD VS BAD PROMPT */
+  .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+  .cmp-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;}
+  .cmp-card .cc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+  .cc-bad .cc-label{color:var(--rose);}
+  .cc-good .cc-label{color:var(--green);}
+  .cc-bad{border-top:3px solid var(--rose);}
+  .cc-good{border-top:3px solid var(--green);}
+  .cmp-card p{font-size:13px;color:var(--text-dim);font-style:italic;line-height:1.6;}
+  .cmp-card .cc-why{font-size:12px;color:var(--text-dim);margin-top:8px;font-style:normal;}
+
+  /* SCENARIOS */
+  .scen-list{display:flex;flex-direction:column;gap:12px;margin-bottom:14px;}
+  .scen-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;}
+  .si-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ai);background:var(--ai-bg);border:1px solid var(--ai-border);border-radius:6px;padding:4px 8px;flex-shrink:0;margin-top:2px;}
+  .scen-item p{font-size:14px;color:var(--text-dim);}
+  .scen-item p strong{color:var(--white);}
+
+  /* OUTCOME */
+  .outcome{background:linear-gradient(135deg,var(--ai-bg) 0%,var(--surface) 100%);border:1px solid var(--ai-border);border-radius:16px;padding:32px;margin-top:48px;}
+  .outcome h3{font-family:'Cabinet Grotesk',sans-serif;font-size:22px;font-weight:700;color:var(--ai);margin-bottom:18px;}
+  .outcome ul{display:flex;flex-direction:column;gap:9px;list-style:none;}
+  .outcome ul li{font-size:14px;color:var(--text-dim);padding-left:22px;position:relative;}
+  .outcome ul li::before{content:'✓';position:absolute;left:0;color:var(--ai);font-family:'JetBrains Mono',monospace;}
+
+  @media(max-width:640px){.ai-grid,.compare-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 5</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-wk">Week 5</span>
+      <span class="tb-badge tb-d5">Day 5</span>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="day-label">Week 5 · Day 5</div>
+    <h1>AI Log <span>Analysis</span></h1>
+    <p class="hero-desc">Instead of manually reading through hundreds of log lines, you use AI to summarize, detect patterns, and generate an RCA in seconds. Today you learn exactly how to do that.</p>
+    <div class="tags">
+      <span class="tag tag-ai">Log Summarization</span>
+      <span class="tag tag-ai">Pattern Detection</span>
+      <span class="tag">RCA Generation</span>
+      <span class="tag">Prompt Engineering</span>
+    </div>
+  </div>
+
+  <!-- ANALOGY -->
+  <div class="sec"><span class="sn">01</span> The Simple Idea First</div>
+
+  <div class="analogy">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Think of a very long CCTV recording — 8 hours of footage. You need to find what happened at a specific time. You could watch all 8 hours manually. Or you could hand it to an analyst who watches it at 100x speed, spots the incident, and gives you a 2-minute summary.<br><br>
+      <strong>AI is that analyst for your log files.</strong> You paste the log in, ask the right question, and get back a clear summary with the root cause — in seconds instead of 20 minutes.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>What does AI Log Analysis actually mean?</h3>
+    <p>It means using a large language model (like Claude, ChatGPT, or Gemini) to read your log file and answer questions about it. The AI reads every line, groups related errors, spots repeating patterns, and writes you a summary in plain English — exactly what you need for an RCA in a Jira ticket.</p>
+    <p><strong>Important:</strong> AI is a first-pass tool. It speeds up your investigation. You still verify the findings, run the DB queries, and make the final call. Never paste production logs with sensitive customer data into a public AI tool — use only sample or anonymized logs for this.</p>
+  </div>
+
+  <!-- HOW AI HELPS -->
+  <div class="sec"><span class="sn">02</span> 4 Things AI Does That Save You Time</div>
+
+  <div class="ai-grid">
+    <div class="ai-card">
+      <div class="ac-icon">📋</div>
+      <div class="ac-label">Summarization</div>
+      <h4>Turns 500 lines into 5 sentences</h4>
+      <p>AI reads the whole log and gives you a plain English summary of what happened, when it started, and what the system was doing at the time.</p>
+    </div>
+    <div class="ai-card">
+      <div class="ac-icon">🔍</div>
+      <div class="ac-label">Pattern Detection</div>
+      <h4>Spots what repeats and what changed</h4>
+      <p>AI identifies patterns like "this error appears every 15 minutes" or "warnings always appear 2 minutes before the crash" — things easy to miss when manually scrolling.</p>
+    </div>
+    <div class="ai-card">
+      <div class="ac-icon">🎯</div>
+      <div class="ac-label">Root Cause</div>
+      <h4>Points to what likely caused the problem</h4>
+      <p>Based on the sequence of events, AI suggests the most likely root cause — e.g. "DB connection pool exhausted, causing all subsequent transactions to fail."</p>
+    </div>
+    <div class="ai-card">
+      <div class="ac-icon">📝</div>
+      <div class="ac-label">RCA Draft</div>
+      <h4>Writes the Jira ticket text for you</h4>
+      <p>AI can generate the RCA paragraph you paste straight into Jira — structured with what happened, when, why, and what was done. You review and adjust.</p>
+    </div>
+  </div>
+
+  <!-- GOOD VS BAD PROMPT -->
+  <div class="sec"><span class="sn">03</span> Good Prompt vs Bad Prompt</div>
+
+  <div class="card">
+    <h3>The quality of your output depends on the quality of your prompt</h3>
+    <p>Pasting a log with no context gives a generic response. Giving context and asking specific questions gives you exactly what you need.</p>
+  </div>
+
+  <div class="compare-grid">
+    <div class="cmp-card cc-bad">
+      <div class="cc-label">❌ Weak Prompt</div>
+      <p>"Here is my log. What's wrong?"</p>
+      <div class="cc-why">Too vague. AI doesn't know the system, the time range, or what you actually need. You will get a generic response.</div>
+    </div>
+    <div class="cmp-card cc-good">
+      <div class="cc-label">✅ Strong Prompt</div>
+      <p>"This is a payment service log covering 09:00–14:00. Please: 1) summarize what happened, 2) list all ERROR lines with counts, 3) identify the root cause, 4) write a 3-line RCA for a Jira ticket."</p>
+      <div class="cc-why">Specific context + specific questions = structured, usable output you can act on immediately.</div>
+    </div>
+  </div>
+
+  <!-- PROMPT EXAMPLES -->
+  <div class="sec"><span class="sn">04</span> Ready-to-Use Prompts for L2</div>
+
+  <!-- PROMPT 1 -->
+  <div class="prompt-block">
+    <div class="pb-header">
+      <span class="ph-icon">📋</span>
+      <h3>Prompt 1 — General Log Summary</h3>
+      <span class="ph-tag">Copy & Use</span>
+    </div>
+    <div class="pb-body">
+      <div class="prompt-text">
+        This is a payment service log from our fintech system. Time period: [start time] to [end time]. Please summarize: what happened, what errors appeared and how many times each, what warnings appeared, and what the system was doing normally. Keep it simple and clear.
+      </div>
+      <div class="ai-response">
+        <div class="ar-header">
+          <div class="ar-dot"></div>
+          <div class="ar-label">AI Response will look like this</div>
+        </div>
+        <div class="ar-body">
+          <span class="ar-bold">Summary:</span> The payment service ran normally from 08:00–09:14. At 09:15, DB connection pool began filling up (82% → 91% → 97%). At 09:15:04 the pool was exhausted and 2 transactions failed with DB_CONNECTION_TIMEOUT.<br>
+          <div class="ar-divider"></div>
+          <span class="ar-bold">Errors:</span> <span class="ar-code">DB_CONNECTION_TIMEOUT</span> × 2, <span class="ar-code">TXN FAILED</span> × 2<br>
+          <span class="ar-bold">Warnings:</span> Connection pool warnings × 3<br>
+          <span class="ar-bold">Normal activity:</span> 2 transactions processed successfully
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROMPT 2 -->
+  <div class="prompt-block">
+    <div class="pb-header">
+      <span class="ph-icon">🎯</span>
+      <h3>Prompt 2 — Root Cause Analysis</h3>
+      <span class="ph-tag">Copy & Use</span>
+    </div>
+    <div class="pb-body">
+      <div class="prompt-text">
+        Based on this log, what is the most likely root cause of the failures? What sequence of events led to the errors? Which error appeared first and what followed? Give me a concise root cause statement I can use in a Jira ticket.
+      </div>
+      <div class="ai-response">
+        <div class="ar-header">
+          <div class="ar-dot"></div>
+          <div class="ar-label">AI Response will look like this</div>
+        </div>
+        <div class="ar-body">
+          <span class="ar-bold">Root Cause:</span> The database connection pool became exhausted. Three consecutive warnings show the pool climbing from 82% to 97% within 2 seconds. Once at capacity, new transactions could not acquire a connection and failed with DB_CONNECTION_TIMEOUT.<br>
+          <div class="ar-divider"></div>
+          <span class="ar-bold">Jira RCA:</span> At 09:15, the DB connection pool was exhausted due to unreleased connections. This caused 2 transactions (TXN-002, TXN-004) to fail. Root cause is likely a connection leak in the application. Escalated to DBA team for investigation.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROMPT 3 -->
+  <div class="prompt-block">
+    <div class="pb-header">
+      <span class="ph-icon">🔍</span>
+      <h3>Prompt 3 — Pattern Detection</h3>
+      <span class="ph-tag">Copy & Use</span>
+    </div>
+    <div class="pb-body">
+      <div class="prompt-text">
+        Look at this log and tell me: are there any repeating patterns? Do the same errors appear at regular intervals? Does any warning always appear before an error? Is there anything unusual you notice that I should investigate?
+      </div>
+      <div class="ai-response">
+        <div class="ar-header">
+          <div class="ar-dot"></div>
+          <div class="ar-label">AI Response will look like this</div>
+        </div>
+        <div class="ar-body">
+          <span class="ar-bold">Pattern 1:</span> WARN messages about DB connection pool always appear in a sequence (82% → 91% → 97%) before every ERROR. This is a build-up pattern — the crash is predictable.<br>
+          <div class="ar-divider"></div>
+          <span class="ar-bold">Pattern 2:</span> Failures occur in clusters — multiple errors within seconds — then a quiet period, suggesting intermittent spikes rather than a constant problem.<br>
+          <div class="ar-divider"></div>
+          <span class="ar-bold">Unusual:</span> TXN-003 succeeded between two failure clusters — suggests the pool partially recovered, then failed again.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PATTERN DETECTION TABLE -->
+  <div class="sec"><span class="sn">05</span> Common Patterns AI Detects</div>
+
+  <div class="pattern-table">
+    <div class="pt-head">🔍 Patterns to Ask AI About</div>
+    <table class="pt">
+      <thead><tr><th>Pattern Type</th><th>What to ask AI</th><th>Why it matters</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Error frequency</td>
+          <td>"How many times does each error type appear?"</td>
+          <td>Tells you which error is the most common — focus there first</td>
+        </tr>
+        <tr>
+          <td>Timing pattern</td>
+          <td>"Do errors appear at regular intervals or all at once?"</td>
+          <td>Regular = likely a scheduled job failing. Burst = spike or overload.</td>
+        </tr>
+        <tr>
+          <td>Warning before error</td>
+          <td>"Do warnings always appear before the errors?"</td>
+          <td>Confirms the build-up — the warning was the early sign that was missed</td>
+        </tr>
+        <tr>
+          <td>Recovery pattern</td>
+          <td>"Did the system recover between errors or stay broken?"</td>
+          <td>Intermittent = partial fix needed. Constant = complete outage.</td>
+        </tr>
+        <tr>
+          <td>Single vs multiple TXNs</td>
+          <td>"Are all failures for one transaction ID or many?"</td>
+          <td>One ID = specific transaction issue. Many = system-wide problem.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- LAB -->
+  <div class="sec"><span class="sn">06</span> Hands-on Lab — Summarize Logs & Generate RCA</div>
+
+  <div class="lab">
+    <div class="lab-head">
+      <h3>🔬 Lab: Use AI to Analyse Your Payment Log</h3>
+      <span class="lab-badge">Claude / ChatGPT · Kali Linux</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Open your log file on Kali and copy its contents</div>
+          <div class="ls-desc">Use cat to print the full log to screen, then copy it all.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">cat ~/payment-service.log</div></div>
+          <span class="ls-out">→ Full log contents printed. Select all and copy.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Open Claude (claude.ai) in your browser</div>
+          <div class="ls-desc">No account needed for basic use. Open a new conversation.</div>
+          <div class="note n-ai" style="margin-top:0;">💡 You can use Claude, ChatGPT, or any AI assistant. Claude works well for structured log analysis.</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Paste this prompt followed by your log</div>
+          <div class="ls-desc">Copy this prompt exactly, then paste your log below it.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">Full prompt to paste into Claude</span></div><div class="cbox-code">
+This is a payment service log from a fintech system.<br>
+<br>
+Please do the following:<br>
+1. Summarize what happened in plain English (3-5 sentences)<br>
+2. List all ERROR lines with a count of each type<br>
+3. List all WARN lines with a count of each type<br>
+4. Identify the root cause of the failures<br>
+5. Detect any repeating patterns you notice<br>
+6. Write a short RCA I can paste into a Jira ticket<br>
+<br>
+Here is the log:<br>
+[PASTE YOUR LOG HERE]
+          </div></div>
+          <span class="ls-out">→ Paste your log where it says [PASTE YOUR LOG HERE] and send</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Review the AI output against the actual log</div>
+          <div class="ls-desc">Check that the error counts match, the root cause makes sense, and the RCA is accurate. Adjust if needed.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">Verify in terminal</span></div><div class="cbox-code">
+<span class="cm"># Verify the error count AI gave you</span><br>
+grep -c "ERROR" ~/payment-service.log<br>
+<br>
+<span class="cm"># Verify the specific errors AI mentioned</span><br>
+grep "ERROR" ~/payment-service.log | awk '{print $4}' | sort | uniq -c
+          </div></div>
+          <span class="ls-out">→ Numbers should match what AI reported. If they differ — trust the grep output.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">05</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Take the AI-generated RCA and format it for Jira</div>
+          <div class="ls-desc">The AI gives you a draft. You clean it up and paste it into your Jira ticket.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">Example final RCA for Jira</span></div><div class="cbox-code">
+<span class="cm">Root Cause Analysis — TXN-002 & TXN-004 Failures</span><br>
+<br>
+<span class="op">At 09:15, the database connection pool was exhausted.</span><br>
+<span class="op">Warning signs appeared at 82%, 91%, and 97% before</span><br>
+<span class="op">the first failure at 09:15:04. Two transactions failed</span><br>
+<span class="op">with DB_CONNECTION_TIMEOUT. System partially recovered</span><br>
+<span class="op">but failed again at 11:30 and 13:00 — same root cause.</span><br>
+<br>
+<span class="op">Action: Escalated to DBA. Suspected connection leak.</span><br>
+<span class="op">Pool limit to be increased as short-term fix.</span>
+          </div></div>
+          <span class="ls-out">→ Clean, professional RCA ready to paste into Jira. Job done in minutes. ✅</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- WHAT AI CANNOT DO -->
+  <div class="sec"><span class="sn">07</span> What AI Can Do vs What It Cannot</div>
+
+  <div class="pattern-table">
+    <div class="pt-head">⚖️ AI Strengths and Limits for L2 Work</div>
+    <table class="pt">
+      <thead><tr><th>Task</th><th>AI Can Do This?</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Summarize a log file</td><td><span class="pill p-g">Yes — very well</span></td><td>Best use case. Fast, accurate, saves 15+ minutes.</td></tr>
+        <tr><td>Detect error patterns</td><td><span class="pill p-g">Yes — well</span></td><td>Good at spotting repeating sequences and timings.</td></tr>
+        <tr><td>Write RCA draft</td><td><span class="pill p-g">Yes — good draft</span></td><td>Always review before submitting. You add the final verification.</td></tr>
+        <tr><td>Query the live database</td><td><span class="pill p-ai">No</span></td><td>AI has no access to your DB. You run the SQL queries yourself.</td></tr>
+        <tr><td>Restart a service</td><td><span class="pill p-ai">No</span></td><td>AI only reads and writes text. All actions are done by you.</td></tr>
+        <tr><td>Access real-time logs</td><td><span class="pill p-ai">No</span></td><td>You paste the log into AI. It cannot connect to your server.</td></tr>
+        <tr><td>Handle sensitive data</td><td><span class="pill p-a">With caution</span></td><td>Never paste real customer data, IBANs, or card numbers into public AI tools.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn">08</span> Real L2 Scenarios</div>
+  <div class="scen-list">
+    <div class="scen-item"><div class="si-id">01</div>
+      <p>During an S1, your manager asks for a quick summary of what happened. <strong>You paste the last hour of logs into Claude</strong> — 30 seconds later you have a 5-sentence summary. You paste it into the bridge chat. Everyone is informed without you spending 20 minutes reading line by line.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">02</div>
+      <p>A client asks why their transactions were failing yesterday. You pull the log, paste it with the RCA prompt. <strong>AI gives you a structured explanation</strong> — you verify it with SQL, adjust one detail, and send a clear response to the client. What used to take 30 minutes takes 5.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">03</div>
+      <p>You notice a pattern that keeps repeating but can't figure out what triggers it. You ask AI: <strong>"Do errors appear at regular intervals?"</strong> — AI spots they happen every 30 minutes. You check crontab — a scheduled job is failing every 30 minutes. Root cause found that you might have missed manually.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">04</div>
+      <p>You need to write the Jira post-incident report but it's late and the log is 400 lines. <strong>AI reads it all, writes the timeline, lists affected transactions, states the root cause.</strong> You review in 2 minutes, make small corrections, submit. Report done.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 5 · Day 5 Outcomes</h3>
+    <ul>
+      <li>Explain what AI log analysis is and where it fits in the L2 investigation workflow</li>
+      <li>Understand the 4 things AI does best — summarization, pattern detection, root cause, RCA draft</li>
+      <li>Write a strong, specific prompt for log analysis instead of a vague one</li>
+      <li>Use the 3 ready-to-use prompts for summary, RCA, and pattern detection</li>
+      <li>Complete the hands-on lab — paste the payment log into Claude and get a full analysis back</li>
+      <li>Verify AI output against grep commands to confirm accuracy before using in a Jira ticket</li>
+      <li>Know what AI cannot do — it cannot query your DB, access live logs, or take any real action</li>
+      <li>Generate a clean, professional RCA paragraph ready to paste into a Jira ticket</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

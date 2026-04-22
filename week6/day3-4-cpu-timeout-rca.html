@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 6 · Day 3 & 4 — High CPU & Txn Timeout RCA</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#070a0e;
+    --surface:#0d1018;
+    --surface2:#121620;
+    --surface3:#171c28;
+    --border:#1e2535;
+    --text:#a8b8cc;
+    --text-dim:#3e5268;
+    --text-faint:#162035;
+    --white:#eaf2fc;
+
+    --orange:#ff7c20;
+    --orange-bg:#180800;
+    --orange-border:#3c2000;
+
+    --blue:#3898ff;
+    --blue-bg:#020e20;
+    --blue-border:#082240;
+
+    --green:#22d46a;
+    --green-bg:#001810;
+    --green-border:#003820;
+
+    --amber:#ffaa18;
+    --amber-bg:#180c00;
+    --amber-border:#3c2800;
+
+    --rose:#ff3858;
+    --rose-bg:#180008;
+    --rose-border:#3c0018;
+
+    --purple:#a855f7;
+    --purple-bg:#0e0818;
+    --purple-border:#281840;
+
+    --teal:#00d8b4;
+    --teal-bg:#001814;
+    --teal-border:#003830;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Figtree',sans-serif;font-size:15px;line-height:1.7;padding:48px 24px 100px;}
+  .page{max-width:940px;margin:0 auto;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:52px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .topbar-left{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;}
+  .tb-right{display:flex;gap:8px;}
+  .tb-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 14px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;}
+  .tb-wk{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tb-d3{background:var(--orange-bg);border:1px solid var(--orange-border);color:var(--orange);}
+  .tb-d4{background:var(--blue-bg);border:1px solid var(--blue-border);color:var(--blue);}
+
+  .hero{margin-bottom:52px;}
+  .day-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--orange);margin-bottom:14px;}
+  .hero h1{font-size:clamp(28px,5.5vw,54px);font-weight:800;line-height:1.05;color:var(--white);margin-bottom:18px;}
+  .hero h1 .o{color:var(--orange);} .hero h1 .b{color:var(--blue);}
+  .hero-desc{color:var(--text-dim);font-size:15px;max-width:540px;}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;}
+  .tag{padding:5px 14px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tag-o{background:var(--orange-bg);border-color:var(--orange-border);color:var(--orange);}
+  .tag-b{background:var(--blue-bg);border-color:var(--blue-border);color:var(--blue);}
+
+  .day-div{display:flex;align-items:center;gap:16px;margin:56px 0 28px;}
+  .dd-pill{font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 20px;border-radius:100px;letter-spacing:2px;text-transform:uppercase;font-weight:600;flex-shrink:0;}
+  .dd-o{background:var(--orange-bg);border:2px solid var(--orange-border);color:var(--orange);}
+  .dd-b{background:var(--blue-bg);border:2px solid var(--blue-border);color:var(--blue);}
+  .dd-lo{flex:1;height:1px;background:var(--orange-border);}
+  .dd-lb{flex:1;height:1px;background:var(--blue-border);}
+  .dd-title{font-size:17px;font-weight:700;}
+  .dd-to{color:var(--orange);} .dd-tb{color:var(--blue);}
+
+  .sec{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faint);margin-bottom:18px;margin-top:44px;display:flex;align-items:center;gap:12px;}
+  .sec .sn{font-size:12px;}
+  .sn-o{color:var(--orange);} .sn-b{color:var(--blue);}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .analogy{border-left:4px solid;border-radius:12px;padding:22px 28px;margin-bottom:16px;}
+  .an-o{background:var(--orange-bg);border-color:var(--orange);}
+  .an-b{background:var(--blue-bg);border-color:var(--blue);}
+  .analogy .al{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+  .an-o .al{color:var(--orange);} .an-b .al{color:var(--blue);}
+  .analogy p{color:var(--text);font-size:14px;}
+  .analogy strong{color:var(--white);}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 28px;margin-bottom:14px;}
+  .card h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:8px;}
+  .card p{color:var(--text-dim);margin-bottom:8px;font-size:14px;}
+  .card p:last-child{margin-bottom:0;}
+  .card strong{color:var(--text);}
+
+  /* TOP COMMAND MOCK */
+  .top-mock{background:var(--bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px;}
+  .tm-bar{padding:8px 16px;background:#1a1a0a;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+  .tm-bar .d{width:8px;height:8px;border-radius:50%;}.dr{background:#ff5f56;}.dy{background:#ffbd2e;}.dg{background:#27c93f;}
+  .tm-bar span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);margin-left:4px;}
+  .tm-content{padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.9;overflow-x:auto;}
+  .tm-header{color:#6a9f40;margin-bottom:8px;}
+  .tm-cols{color:#4a7a60;margin-bottom:6px;border-bottom:1px solid var(--border);padding-bottom:6px;}
+  .tm-row{display:flex;gap:0;}
+  .tm-row.highlight{background:rgba(255,124,32,0.08);border-left:3px solid var(--orange);padding-left:6px;}
+  .tc-pid{min-width:60px;color:#8a9aaa;}
+  .tc-user{min-width:90px;color:#7a8a9a;}
+  .tc-cpu{min-width:70px;}
+  .tc-mem{min-width:70px;color:#7a8a9a;}
+  .tc-cmd{color:#8a9aaa;}
+  .cpu-high{color:var(--orange);font-weight:700;}
+  .cpu-ok{color:var(--green);}
+  .cpu-mid{color:var(--amber);}
+
+  /* CODE */
+  .cbox{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:8px 0;}
+  .cbox-bar{padding:7px 14px;background:var(--surface3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+  .d{width:8px;height:8px;border-radius:50%;}.dr{background:#ff5f56;}.dy{background:#ffbd2e;}.dg{background:#27c93f;}
+  .ct{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);margin-left:4px;letter-spacing:1px;}
+  .cbox-code{padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2.0;overflow-x:auto;}
+  .kw{color:#ff7b72;}.fn{color:#79c0ff;}.str{color:#a5d6ff;}.var{color:#ffa657;}.cm{color:#2e4050;}.op{color:#c9d1d9;}
+  .hi-o{color:var(--orange);font-weight:700;}
+  .hi-g{color:var(--green);}
+  .hi-r{color:var(--rose);}
+  .hi-a{color:var(--amber);}
+
+  /* NOTE */
+  .note{border-radius:10px;padding:10px 16px;font-size:13px;margin-bottom:10px;}
+  .n-o{background:var(--orange-bg);border:1px solid var(--orange-border);color:var(--orange);}
+  .n-b{background:var(--blue-bg);border:1px solid var(--blue-border);color:var(--blue);}
+  .n-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .n-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .n-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .note strong{color:var(--white);}
+
+  /* REF TABLE */
+  .ref-table{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+  .rt-head{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:15px;font-weight:700;color:var(--white);}
+  table.rt{width:100%;border-collapse:collapse;}
+  table.rt th{padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);text-align:left;border-bottom:1px solid var(--border);font-weight:400;background:var(--surface3);}
+  table.rt td{padding:12px 18px;font-size:13px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;}
+  table.rt tr:last-child td{border-bottom:none;}
+  table.rt tr:hover td{background:rgba(255,255,255,0.02);}
+  table.rt td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--orange);}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 9px;border-radius:100px;white-space:nowrap;}
+  .p-o{background:var(--orange-bg);border:1px solid var(--orange-border);color:var(--orange);}
+  .p-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .p-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .p-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .p-b{background:var(--blue-bg);border:1px solid var(--blue-border);color:var(--blue);}
+
+  /* LATENCY VISUAL */
+  .latency-block{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:14px;}
+  .latency-block h3{font-size:15px;font-weight:700;color:var(--white);margin-bottom:18px;}
+  .latency-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+  .lr-label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);min-width:130px;flex-shrink:0;}
+  .lr-bar{flex:1;height:10px;border-radius:100px;background:var(--surface2);overflow:hidden;}
+  .lr-fill{height:100%;border-radius:100px;}
+  .lr-val{font-family:'JetBrains Mono',monospace;font-size:11px;min-width:60px;text-align:right;}
+  .lf-ok{background:var(--green);width:8%;}
+  .lf-slow{background:var(--amber);width:45%;}
+  .lf-bad{background:var(--orange);width:78%;}
+  .lf-crit{background:var(--rose);width:98%;}
+  .lv-ok{color:var(--green);} .lv-slow{color:var(--amber);} .lv-bad{color:var(--orange);} .lv-crit{color:var(--rose);}
+
+  /* LAB */
+  .lab{border-radius:16px;overflow:hidden;margin-bottom:14px;}
+  .lab-o{border:2px solid var(--orange-border);}
+  .lab-b{border:2px solid var(--blue-border);}
+  .lab-head{padding:16px 26px;border-bottom:1px solid;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .lab-o .lab-head{background:var(--orange-bg);border-color:var(--orange-border);}
+  .lab-b .lab-head{background:var(--blue-bg);border-color:var(--blue-border);}
+  .lab-head h3{font-size:15px;font-weight:700;color:var(--white);}
+  .lbadge-o{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 12px;border-radius:100px;background:rgba(255,124,32,0.1);border:1px solid var(--orange-border);color:var(--orange);}
+  .lbadge-b{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 12px;border-radius:100px;background:rgba(56,152,255,0.1);border:1px solid var(--blue-border);color:var(--blue);}
+  .lab-body{padding:26px;display:flex;flex-direction:column;gap:0;background:var(--surface);}
+  .lab-step{display:flex;gap:18px;position:relative;}
+  .lab-step:not(:last-child) .ls-left::after{content:'';position:absolute;left:19px;top:44px;bottom:0;width:2px;background:var(--border);z-index:0;}
+  .ls-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+  .ls-num{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;z-index:1;position:relative;}
+  .lab-o .ls-num{background:var(--orange-bg);border:2px solid var(--orange-border);color:var(--orange);}
+  .lab-b .ls-num{background:var(--blue-bg);border:2px solid var(--blue-border);color:var(--blue);}
+  .ls-content{flex:1;padding-bottom:22px;padding-top:4px;}
+  .ls-title{font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px;}
+  .ls-desc{font-size:13px;color:var(--text-dim);margin-bottom:8px;}
+  .ls-out-o{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--orange-bg);border:1px solid var(--orange-border);color:var(--orange);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+  .ls-out-b{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--blue-bg);border:1px solid var(--blue-border);color:var(--blue);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+  .ls-out-g{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+
+  /* SCENARIOS */
+  .scen-list{display:flex;flex-direction:column;gap:12px;margin-bottom:14px;}
+  .scen-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;}
+  .si-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--orange);background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:6px;padding:4px 8px;flex-shrink:0;margin-top:2px;}
+  .scen-item p{font-size:14px;color:var(--text-dim);}
+  .scen-item p strong{color:var(--white);}
+
+  .outcome{background:linear-gradient(135deg,var(--orange-bg) 0%,var(--surface) 50%,var(--blue-bg) 100%);border:1px solid var(--border);border-radius:16px;padding:32px;margin-top:48px;}
+  .outcome h3{font-size:20px;font-weight:700;color:var(--orange);margin-bottom:18px;}
+  .outcome ul{display:flex;flex-direction:column;gap:9px;list-style:none;}
+  .outcome ul li{font-size:14px;color:var(--text-dim);padding-left:22px;position:relative;}
+  .outcome ul li::before{content:'✓';position:absolute;left:0;color:var(--orange);font-family:'JetBrains Mono',monospace;}
+  .outcome ul li.db::before{color:var(--blue);}
+
+  @media(max-width:640px){.latency-row{flex-wrap:wrap;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 6</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-wk">Week 6</span>
+      <span class="tb-badge tb-d3">Day 3</span>
+      <span class="tb-badge tb-d4">Day 4</span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="day-label">Week 6 · Day 3 & Day 4</div>
+    <h1>High <span class="o">CPU</span> Scenario &<br>Txn <span class="b">Timeout</span> RCA</h1>
+    <p class="hero-desc">Day 3 — you learn to find what is eating your server's CPU and what to do about it. Day 4 — you learn to trace why transactions are timing out and find the delay in the chain.</p>
+    <div class="tags">
+      <span class="tag tag-o">Day 3 — High CPU</span>
+      <span class="tag tag-b">Day 4 — Timeout RCA</span>
+      <span class="tag">top</span><span class="tag">ps aux</span>
+      <span class="tag">Latency</span><span class="tag">DB Query Analysis</span>
+    </div>
+  </div>
+
+  <!-- ===== DAY 3 — HIGH CPU ===== -->
+  <div class="day-div">
+    <span class="dd-pill dd-o">Day 3</span>
+    <span class="dd-lo"></span>
+    <span class="dd-title dd-to">High CPU Scenario — Process Analysis Using top</span>
+  </div>
+
+  <div class="sec"><span class="sn sn-o">01</span> The Simple Idea</div>
+
+  <div class="analogy an-o">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Think of your server's CPU like a <strong>chef in a kitchen</strong>. When one dish takes all the chef's attention — everything else in the kitchen slows down. Other dishes are left waiting, orders pile up, customers complain.<br><br>
+      <strong>A high CPU spike is that one dish taking over.</strong> One process is consuming all the processor's time and starving everything else. Your job is to identify which process is the greedy one, understand why, and decide whether to wait, kill it, or escalate.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>What causes a CPU spike?</h3>
+    <p><strong>Runaway process</strong> — a Java application, a batch job, or a database query that goes into an infinite loop or processes far more data than expected.</p>
+    <p><strong>Sudden traffic surge</strong> — too many requests hitting the server at once. Each request uses CPU and together they overwhelm it.</p>
+    <p><strong>Poorly optimised query</strong> — a database query doing a full table scan instead of using an index. On a large table this can pin the CPU for minutes.</p>
+    <p><strong>Memory pressure</strong> — when RAM runs out, the OS starts swapping (using disk as RAM). Swap operations are CPU-heavy and cause the whole server to slow down.</p>
+  </div>
+
+  <!-- TOP COMMAND ANATOMY -->
+  <div class="sec"><span class="sn sn-o">02</span> Reading the top Command — What Each Column Means</div>
+
+  <div class="top-mock">
+    <div class="tm-bar">
+      <span class="d dr"></span><span class="d dy"></span><span class="d dg"></span>
+      <span>top — server process monitor (simulated)</span>
+    </div>
+    <div class="tm-content">
+      <div class="tm-header">
+        top - 14:32:05  load average: <span class="hi-o">3.82</span>, 2.41, 1.20<br>
+        Tasks: 142 total, 3 running, 139 sleeping<br>
+        %Cpu(s): <span class="hi-o">91.2</span> us, 2.1 sy, 0.0 ni, <span class="hi-g">6.7</span> id, 0.0 wa<br>
+        MiB Mem: 8000 total, <span class="hi-a">620</span> free, 6800 used, 580 buff
+      </div>
+      <div class="tm-cols">
+        PID&nbsp;&nbsp;&nbsp;&nbsp; USER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; %CPU&nbsp;&nbsp; %MEM&nbsp;&nbsp; COMMAND
+      </div>
+      <div class="tm-row highlight">
+        <span class="tc-pid">18821</span>
+        <span class="tc-user">paymentapp</span>
+        <span class="tc-cpu cpu-high">92.3&nbsp;</span>
+        <span class="tc-mem">18.4&nbsp;</span>
+        <span class="tc-cmd">java PaymentProcessorService</span>
+      </div>
+      <div class="tm-row">
+        <span class="tc-pid">1204&nbsp;</span>
+        <span class="tc-user">postgres&nbsp;&nbsp;</span>
+        <span class="tc-cpu cpu-mid">4.1&nbsp;&nbsp;</span>
+        <span class="tc-mem">3.2&nbsp;&nbsp;</span>
+        <span class="tc-cmd">postgres: query worker</span>
+      </div>
+      <div class="tm-row">
+        <span class="tc-pid">892&nbsp;&nbsp;</span>
+        <span class="tc-user">root&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span class="tc-cpu cpu-ok">0.8&nbsp;&nbsp;</span>
+        <span class="tc-mem">0.4&nbsp;&nbsp;</span>
+        <span class="tc-cmd">nginx: worker process</span>
+      </div>
+      <div class="tm-row">
+        <span class="tc-pid">1055&nbsp;</span>
+        <span class="tc-user">root&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span class="tc-cpu cpu-ok">0.2&nbsp;&nbsp;</span>
+        <span class="tc-mem">0.1&nbsp;&nbsp;</span>
+        <span class="tc-cmd">sshd</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="ref-table">
+    <div class="rt-head">📋 What Each top Column Tells You</div>
+    <table class="rt">
+      <thead><tr><th>Column</th><th>What it means</th><th>What to look for</th></tr></thead>
+      <tbody>
+        <tr><td>PID</td><td>Process ID — the unique number of each running process</td><td>Note the PID of the heavy process — you need it to kill or investigate it</td></tr>
+        <tr><td>USER</td><td>Which user account is running this process</td><td>If it is running as root unexpectedly — suspicious</td></tr>
+        <tr><td>%CPU</td><td>How much of the CPU this process is using right now</td><td>Anything above 80% on a single process is your problem</td></tr>
+        <tr><td>%MEM</td><td>How much RAM this process is using</td><td>High CPU + high MEM together = serious resource hog</td></tr>
+        <tr><td>COMMAND</td><td>The name of the process</td><td>Tells you what application it is — java, python, nginx, postgres</td></tr>
+        <tr><td>load average</td><td>System load over last 1min, 5min, 15min</td><td>Above 1.0 per CPU core = overloaded. e.g. 4.0 on a 4-core = 100% busy</td></tr>
+        <tr><td>id (idle %)</td><td>How much CPU is free / doing nothing</td><td>Below 10% idle means the server is critically overloaded</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CPU INVESTIGATION PROTOCOL -->
+  <div class="sec"><span class="sn sn-o">03</span> High CPU Investigation — What to Do in Order</div>
+
+  <div class="card">
+    <h3>Step 1 — Confirm it is CPU and find the process</h3>
+    <p>Run top and press <strong>P</strong> to sort by CPU. The guilty process is at the top. Note the PID and the process name. If it is a Java process — it is likely your payment application. If it is postgres — a DB query is doing it.</p>
+  </div>
+
+  <div class="cbox">
+    <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — CPU investigation commands</span></div>
+    <div class="cbox-code">
+<span class="cm"># Run top and sort by CPU (press P after opening)</span><br>
+<span class="fn">top</span><br>
+<span class="cm"># then press P to sort highest CPU first</span><br>
+<br>
+<span class="cm"># Get a snapshot sorted by CPU — no interactive mode</span><br>
+<span class="fn">ps</span> aux --sort=-%cpu | <span class="fn">head</span> -10<br>
+<br>
+<span class="cm"># Find exactly which java threads are running hot</span><br>
+<span class="fn">ps</span> -p 18821 -o pid,ppid,pcpu,pmem,cmd<br>
+<br>
+<span class="cm"># Check system load average</span><br>
+<span class="fn">cat</span> /proc/loadavg<br>
+<br>
+<span class="cm"># Check how long the process has been running</span><br>
+<span class="fn">ps</span> -p 18821 -o pid,etime,pcpu,cmd
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Step 2 — Decide what to do with the process</h3>
+    <p><strong>Wait and monitor</strong> — if it is a legitimate batch job that will finish, let it run. Check if it should be running at this time. Watch if CPU is trending down.</p>
+    <p><strong>Kill the process</strong> — if it is stuck in a loop, consuming CPU with no progress, and blocking everything else. Only do this with bridge approval on PROD.</p>
+    <p><strong>Escalate to L3</strong> — if you are not sure what the process is doing or if killing it might have side effects. Always better to escalate than to accidentally stop a critical service.</p>
+  </div>
+
+  <div class="cbox">
+    <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — process control commands</span></div>
+    <div class="cbox-code">
+<span class="cm"># Graceful stop — tells the process to stop cleanly</span><br>
+<span class="fn">kill</span> -15 18821<br>
+<br>
+<span class="cm"># Force kill — only if graceful stop failed</span><br>
+<span class="fn">kill</span> -9 18821<br>
+<br>
+<span class="cm"># Watch CPU in real time — refresh every 2 seconds</span><br>
+<span class="fn">watch</span> -n 2 <span class="str">"ps aux --sort=-%cpu | head -5"</span><br>
+<br>
+<span class="cm"># Check if CPU came down after killing the process</span><br>
+<span class="fn">top</span> -bn1 | <span class="fn">grep</span> <span class="str">"Cpu(s)"</span>
+    </div>
+  </div>
+
+  <div class="note n-a">⚠️ <strong>Never use kill -9 on a database process.</strong> Forcing a DB to stop can corrupt data. Always use systemctl stop or kill -15 for DB processes, and always with DBA approval.</div>
+
+  <!-- DAY 3 LAB -->
+  <div class="sec"><span class="sn sn-o">04</span> Day 3 Lab — Analyse a CPU Spike</div>
+
+  <div class="lab lab-o">
+    <div class="lab-head">
+      <h3>🔬 Lab: Investigate a High CPU Scenario</h3>
+      <span class="lbadge-o">Kali Linux · Real Commands</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Create a CPU spike to investigate</div>
+          <div class="ls-desc">This command deliberately uses CPU so you can practice investigating a real spike. It runs for 20 seconds then stops automatically.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — create artificial CPU load</span></div><div class="cbox-code">
+<span class="cm"># Open a new terminal tab first, then run this</span><br>
+<span class="cm"># This creates CPU load for 20 seconds then stops</span><br>
+<span class="fn">timeout</span> 20 <span class="fn">yes</span> &gt; /dev/null &amp;<br>
+<span class="fn">echo</span> <span class="str">"CPU load started. PID: $!"</span>
+          </div></div>
+          <span class="ls-out-o">→ A process starts consuming CPU. Note the PID printed. You now have a real CPU spike to investigate.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Find the heavy process using top and ps</div>
+          <div class="ls-desc">In your original terminal — run these commands to find what is eating CPU.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="cm"># Snapshot — top 5 processes by CPU</span><br>
+<span class="fn">ps</span> aux --sort=-%cpu | <span class="fn">head</span> -6<br>
+<br>
+<span class="cm"># Check system load</span><br>
+<span class="fn">cat</span> /proc/loadavg<br>
+<br>
+<span class="cm"># Interactive top — press P to sort by CPU, q to quit</span><br>
+<span class="fn">top</span>
+          </div></div>
+          <span class="ls-out-o">→ You will see "yes" process at the top with high %CPU. That is the simulated heavy process.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Investigate how long the process has been running</div>
+          <div class="ls-desc">Check the PID from step 1. How long has this process been consuming CPU?</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — replace PID with the one from step 1</span></div><div class="cbox-code">
+<span class="cm"># How long has this process been running?</span><br>
+<span class="fn">ps</span> -p YOUR_PID -o pid,etime,pcpu,pmem,cmd<br>
+<br>
+<span class="cm"># Check what user is running it</span><br>
+<span class="fn">ps</span> -p YOUR_PID -o pid,user,pcpu,cmd
+          </div></div>
+          <span class="ls-out-o">→ Shows run time, CPU%, and who is running it. On a real server this tells you if it's a legit process or something unexpected.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Make the decision — kill it or escalate</div>
+          <div class="ls-desc">In this lab we know it is our test process — safe to kill. On PROD you would get bridge approval first.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="cm"># Graceful stop (replace with your PID)</span><br>
+<span class="fn">kill</span> -15 YOUR_PID<br>
+<br>
+<span class="cm"># Confirm CPU came back down</span><br>
+<span class="fn">ps</span> aux --sort=-%cpu | <span class="fn">head</span> -4<br>
+<span class="fn">cat</span> /proc/loadavg
+          </div></div>
+          <span class="ls-out-g">→ CPU usage drops. Load average starts decreasing. Server returns to normal. ✅</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">05</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Write the findings for Jira</div>
+          <div class="ls-desc">Document what you found and what you did.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">Jira entry</span></div><div class="cbox-code">
+<span class="cm">Issue      : High CPU on Payment Server</span><br>
+<span class="cm">Detected   : 14:32 — CPU at 92%</span><br>
+<span class="cm">Process    : PID 18821 — java PaymentProcessorService</span><br>
+<span class="cm">Run time   : 47 minutes (abnormal — should complete in 5)</span><br>
+<span class="cm">Action     : Graceful kill with bridge approval at 14:35</span><br>
+<span class="cm">Result     : CPU returned to 8% within 30 seconds</span><br>
+<span class="cm">Next steps : L3 to investigate why process ran for 47 mins</span>
+          </div></div>
+          <span class="ls-out-g">→ Jira RCA complete. ✅</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== DAY 4 — TIMEOUT RCA ===== -->
+  <div class="day-div" style="margin-top:60px;">
+    <span class="dd-pill dd-b">Day 4</span>
+    <span class="dd-lb"></span>
+    <span class="dd-title dd-tb">Transaction Timeout RCA — Latency & DB Query Analysis</span>
+  </div>
+
+  <div class="sec"><span class="sn sn-b">05</span> The Simple Idea</div>
+
+  <div class="analogy an-b">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Think of a timeout like <strong>a restaurant where you order food and it never arrives</strong>. After 30 minutes you give up and leave. The restaurant didn't say your order was rejected — it just took too long and you lost patience.<br><br>
+      <strong>A transaction timeout is the same.</strong> The system sent a request but waited too long for a reply and gave up. The root cause is always somewhere in the chain — the app was slow, the DB query took too long, the external API didn't respond in time, or the network had high latency.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>What is a Timeout and why does it happen?</h3>
+    <p>A <strong>timeout</strong> occurs when a system waits longer than the configured limit for a response. Instead of waiting forever, it gives up and marks the transaction as failed. Common timeout values: 5 seconds for APIs, 30 seconds for DB queries, 10 seconds for external gateways.</p>
+    <p><strong>Common causes:</strong> A slow or locked database query. An external gateway (SBP, 1LINK) responding slowly. A network bottleneck between two servers. High CPU causing the app to process requests slowly. A full connection pool making new queries wait.</p>
+  </div>
+
+  <!-- LATENCY CHAIN -->
+  <div class="sec"><span class="sn sn-b">06</span> Understanding the Latency Chain</div>
+
+  <div class="latency-block">
+    <h3>📊 Transaction Response Time — Where Time Is Spent</h3>
+    <div class="latency-row">
+      <div class="lr-label">Normal API (200ms)</div>
+      <div class="lr-bar"><div class="lr-fill lf-ok"></div></div>
+      <div class="lr-val lv-ok">200ms</div>
+    </div>
+    <div class="latency-row">
+      <div class="lr-label">Slow DB query (2.5s)</div>
+      <div class="lr-bar"><div class="lr-fill lf-slow"></div></div>
+      <div class="lr-val lv-slow">2,500ms</div>
+    </div>
+    <div class="latency-row">
+      <div class="lr-label">Slow gateway (8s)</div>
+      <div class="lr-bar"><div class="lr-fill lf-bad"></div></div>
+      <div class="lr-val lv-bad">8,000ms</div>
+    </div>
+    <div class="latency-row">
+      <div class="lr-label">Timeout (30s+)</div>
+      <div class="lr-bar"><div class="lr-fill lf-crit"></div></div>
+      <div class="lr-val lv-crit">&gt;30,000ms</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>The Timeout Investigation Chain</h3>
+    <p>Every timeout has a location. You trace it from the outside in — starting from what the client sees and working inward until you find where time is being lost.</p>
+    <p><strong>Step 1:</strong> Check the log timestamp — how long between request received and timeout error? That is the total wait time.</p>
+    <p><strong>Step 2:</strong> Was it an external timeout (SBP, 1LINK gateway) or an internal one (DB, app)? Check which system the timeout message names.</p>
+    <p><strong>Step 3:</strong> If internal — check DB query times. A slow query is the most common cause of internal timeouts in fintech.</p>
+  </div>
+
+  <!-- TIMEOUT TYPES TABLE -->
+  <div class="ref-table">
+    <div class="rt-head">⏱️ Timeout Types — What Each One Tells You</div>
+    <table class="rt">
+      <thead><tr><th>Timeout Type</th><th>Where it happens</th><th>Root cause</th><th>Who to involve</th></tr></thead>
+      <tbody>
+        <tr><td>DB_CONNECTION_TIMEOUT</td><td>App → Database</td><td>Pool exhausted or DB too slow</td><td><span class="pill p-o">DBA</span></td></tr>
+        <tr><td>QUERY_TIMEOUT</td><td>Inside DB</td><td>Slow query — no index, full table scan</td><td><span class="pill p-o">DBA</span></td></tr>
+        <tr><td>SOCKET_TIMEOUT</td><td>App → External (SBP/1LINK)</td><td>External system slow or down</td><td><span class="pill p-b">Vendor</span></td></tr>
+        <tr><td>HTTP_TIMEOUT</td><td>Client → App API</td><td>App is slow to respond — high CPU or slow DB</td><td><span class="pill p-o">L3 Dev</span></td></tr>
+        <tr><td>READ_TIMEOUT</td><td>Between internal services</td><td>Downstream service too slow</td><td><span class="pill p-o">L3 Dev</span></td></tr>
+        <tr><td>LOCK_TIMEOUT</td><td>Inside DB</td><td>A long query holding a lock blocks others</td><td><span class="pill p-o">DBA</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- DB QUERY ANALYSIS -->
+  <div class="sec"><span class="sn sn-b">07</span> DB Query Analysis — Finding the Slow Query</div>
+
+  <div class="card">
+    <h3>How slow queries cause timeouts</h3>
+    <p>A slow DB query locks a table or uses so much CPU that all other queries queue up behind it. The payment app is waiting for the DB to respond. If the wait exceeds the timeout limit — the transaction fails with QUERY_TIMEOUT even though the DB is technically running fine.</p>
+    <p>The fix is almost never to restart the DB. The fix is to <strong>identify the slow query, understand why it is slow, and either add an index, optimise the query, or kill the specific query</strong> that is causing the blockage.</p>
+  </div>
+
+  <div class="cbox">
+    <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">SQL — find slow and long-running queries (PostgreSQL / MySQL)</span></div>
+    <div class="cbox-code">
+<span class="cm">-- PostgreSQL: Find all queries running longer than 30 seconds</span><br>
+<span class="kw">SELECT</span> <span class="var">pid</span>, <span class="var">now</span>() - <span class="var">pg_stat_activity.query_start</span> <span class="kw">AS</span> <span class="var">duration</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="var">query</span>, <span class="var">state</span><br>
+<span class="kw">FROM</span>   <span class="fn">pg_stat_activity</span><br>
+<span class="kw">WHERE</span>  <span class="var">state</span> <span class="op">!=</span> <span class="str">'idle'</span><br>
+<span class="kw">AND</span>    <span class="var">now</span>() - <span class="var">pg_stat_activity.query_start</span> &gt; <span class="fn">interval</span> <span class="str">'30 seconds'</span><br>
+<span class="kw">ORDER BY</span> <span class="var">duration</span> <span class="kw">DESC</span>;<br>
+<br>
+<span class="cm">-- Find queries waiting for locks</span><br>
+<span class="kw">SELECT</span> <span class="var">pid</span>, <span class="var">wait_event_type</span>, <span class="var">wait_event</span>, <span class="var">query</span><br>
+<span class="kw">FROM</span>   <span class="fn">pg_stat_activity</span><br>
+<span class="kw">WHERE</span>  <span class="var">wait_event_type</span> <span class="op">=</span> <span class="str">'Lock'</span>;<br>
+<br>
+<span class="cm">-- SQLite (your lab DB): Check stuck transactions</span><br>
+<span class="cm">-- In SQLite: simulate by looking at PENDING rows</span>
+    </div>
+  </div>
+
+  <!-- DAY 4 LAB -->
+  <div class="sec"><span class="sn sn-b">08</span> Day 4 Lab — Investigate a Transaction Timeout</div>
+
+  <div class="lab lab-b">
+    <div class="lab-head">
+      <h3>🔬 Lab: Trace and Root-Cause a Timeout</h3>
+      <span class="lbadge-b">Kali Linux · Log + SQL</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Create a simulated timeout log</div>
+          <div class="ls-desc">This log shows a realistic timeout scenario with latency build-up visible in the timestamps.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="fn">cat</span> &gt; ~/timeout-scenario.log &lt;&lt; <span class="str">'EOF'</span><br>
+[14:00:00.100] [INFO ] TXN-201 received. Starting processing.<br>
+[14:00:00.110] [INFO ] TXN-201 validated. Sending to DB.<br>
+[14:00:00.115] [INFO ] DB query started: SELECT balance FROM accounts WHERE id=201<br>
+[14:00:04.820] [WARN ] DB query slow: 4705ms elapsed. Expected &lt; 200ms.<br>
+[14:00:08.900] [WARN ] DB query still running: 8785ms. Lock contention suspected.<br>
+[14:00:15.200] [WARN ] DB response time: 15085ms. Approaching timeout limit.<br>
+[14:00:30.115] [ERROR] QUERY_TIMEOUT: DB query exceeded 30000ms limit. Killed.<br>
+[14:00:30.116] [ERROR] TXN-201 FAILED: Timeout waiting for DB response.<br>
+[14:01:00.100] [INFO ] TXN-202 received. Starting processing.<br>
+[14:01:00.120] [ERROR] DB_CONNECTION_TIMEOUT: All connections busy. TXN-202 FAILED.<br>
+[14:01:30.100] [INFO ] TXN-203 received. Starting processing.<br>
+[14:01:30.115] [INFO ] TXN-203 validated. Sending to DB.<br>
+[14:01:30.320] [INFO ] TXN-203 SUCCESS. Response time: 205ms.<br>
+EOF
+          </div></div>
+          <span class="ls-out-b">→ Timeout log created. 3 transactions — 2 failed, 1 succeeded after DB recovered.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 1 — Identify the total wait time</div>
+          <div class="ls-desc">How long did the transaction wait before timing out? Find start and end timestamps.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="cm"># Find when TXN-201 started and when it failed</span><br>
+<span class="fn">grep</span> <span class="str">"TXN-201"</span> ~/timeout-scenario.log<br>
+<br>
+<span class="cm"># Find all WARN lines — where did slowness start?</span><br>
+<span class="fn">grep</span> <span class="str">"WARN\|slow\|contention"</span> ~/timeout-scenario.log<br>
+<br>
+<span class="cm"># Find the exact timeout error</span><br>
+<span class="fn">grep</span> <span class="str">"TIMEOUT"</span> ~/timeout-scenario.log
+          </div></div>
+          <span class="ls-out-b">→ TXN-201 started at 14:00:00, timed out at 14:00:30. Total wait: 30 seconds. DB query was the bottleneck.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 2 — Identify the type of timeout</div>
+          <div class="ls-desc">Was it a DB timeout, a gateway timeout, or an API timeout?</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="cm"># What type of timeout was it?</span><br>
+<span class="fn">grep</span> <span class="str">"TIMEOUT"</span> ~/timeout-scenario.log | <span class="fn">awk</span> <span class="str">'{print $3}'</span><br>
+<br>
+<span class="cm"># How many transactions were affected?</span><br>
+<span class="fn">grep</span> -c <span class="str">"FAILED"</span> ~/timeout-scenario.log<br>
+<br>
+<span class="cm"># Did any succeed after the timeout?</span><br>
+<span class="fn">grep</span> <span class="str">"SUCCESS"</span> ~/timeout-scenario.log
+          </div></div>
+          <span class="ls-out-b">→ QUERY_TIMEOUT = DB query was the cause. 2 transactions failed. 1 succeeded after recovery — confirms DB resolved itself.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 3 — Simulate checking for slow queries in SQLite</div>
+          <div class="ls-desc">On a real server you query pg_stat_activity. Here we simulate with your SQLite lab database.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — SQLite simulation</span></div><div class="cbox-code">
+<span class="fn">sqlite3</span> ~/fintech_lab.db &lt;&lt; <span class="str">'EOF'</span><br>
+<span class="cm">-- Simulate finding stuck/slow transactions</span><br>
+SELECT txn_id, status, amount<br>
+FROM transactions<br>
+WHERE status = 'PENDING'<br>
+ORDER BY txn_id;<br>
+<br>
+<span class="cm">-- Simulate response time analysis by status</span><br>
+SELECT status, COUNT(*) as count, SUM(amount) as total<br>
+FROM transactions<br>
+GROUP BY status;<br>
+EOF
+          </div></div>
+          <span class="ls-out-b">→ PENDING transactions = simulated stuck/slow queries. This shows how many are waiting and their total value at risk.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">05</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Write the Timeout RCA for Jira</div>
+          <div class="ls-desc">Put all findings together into a clear RCA entry.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">Jira RCA — Timeout</span></div><div class="cbox-code">
+<span class="cm">Incident   : Transaction Timeout — TXN-201, TXN-202</span><br>
+<span class="cm">Start Time : 14:00:00</span><br>
+<span class="cm">Timeout At : 14:00:30 (30 second limit exceeded)</span><br>
+<span class="cm">Type       : QUERY_TIMEOUT — DB query exceeded limit</span><br>
+<span class="cm">Root Cause : DB query on accounts table ran 30x slower</span><br>
+<span class="cm">             than expected. WARN logs showed lock contention</span><br>
+<span class="cm">             at 14:00:04. A long-running query was holding</span><br>
+<span class="cm">             a lock and blocking all other queries behind it.</span><br>
+<span class="cm">Impact     : 2 transactions failed. TXN-203 succeeded after</span><br>
+<span class="cm">             lock was released — confirms self-recovery.</span><br>
+<span class="cm">Action     : DBA identified and killed the blocking query.</span><br>
+<span class="cm">Next Steps : DBA to add index on accounts.id column.</span><br>
+<span class="cm">             Review query timeout limits with L3 team.</span>
+          </div></div>
+          <span class="ls-out-g">→ Complete, professional timeout RCA ready for Jira. ✅</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn sn-o">09</span> Real L2 Scenarios</div>
+  <div class="scen-list">
+    <div class="scen-item"><div class="si-id">01</div>
+      <p>Monitoring shows CPU at 97% for 10 minutes. You run <code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);padding:2px 6px;border-radius:4px;color:var(--orange);">ps aux --sort=-%cpu | head -5</code> — a java batch job is at 96%. It has been running 3 hours — normally takes 20 minutes. <strong>Stuck in a loop.</strong> You announce on bridge, get approval, kill -15 the PID. CPU drops to 8% in 30 seconds.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">02</div>
+      <p>Transactions are timing out but CPU is normal and DB is running. You check the log — <strong>SOCKET_TIMEOUT pointing to SBP gateway</strong>. It is not your system at all. You check SBP's status page — they are experiencing issues. You inform the client and the bridge: "External timeout — SBP gateway slow. Our system is healthy."</p>
+    </div>
+    <div class="scen-item"><div class="si-id">03</div>
+      <p>All IBFT transactions are timing out after exactly 10 seconds. You check the log — it is always exactly 10s. This is the configured API timeout — <strong>not random latency</strong>. The DB query runs in 9.8 seconds every time. Fix: DBA adds a missing index — query drops to 80ms. All timeouts stop immediately.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">04</div>
+      <p>CPU is at 85% but no single process stands out — all at 15–20% each. This is a <strong>traffic surge</strong> — too many requests simultaneously. Each is using its fair share but together they overwhelm the server. The fix is to add more capacity or implement rate limiting — not kill any process.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 6 · Day 3 & 4 Outcomes</h3>
+    <ul>
+      <li>Read the top command output — identify %CPU, load average, idle%, and the heavy process</li>
+      <li>Know the 4 most common causes of a CPU spike in a fintech server</li>
+      <li>Use ps aux to find the top CPU-consuming process and get its PID</li>
+      <li>Decide whether to wait, kill, or escalate based on the process identity and run time</li>
+      <li>Complete the CPU lab — create a real spike on Kali, investigate it with top and ps, kill it, confirm recovery, write the Jira entry</li>
+      <li class="db">Explain what a transaction timeout is and why it happens</li>
+      <li class="db">Identify the 6 types of timeouts and know which system each one points to</li>
+      <li class="db">Read a timeout log and calculate total wait time from timestamps</li>
+      <li class="db">Understand how a slow DB query causes a QUERY_TIMEOUT and how to find it</li>
+      <li class="db">Complete the timeout RCA lab — trace the full chain, identify root cause, produce a Jira-ready RCA</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

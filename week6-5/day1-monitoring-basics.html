@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 6.5 · Day 1 — Monitoring Basics</title>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#07090d;
+    --surface:#0d1018;
+    --surface2:#121620;
+    --surface3:#171c28;
+    --border:#1e2535;
+    --text:#a8b8cc;
+    --text-dim:#3e5268;
+    --text-faint:#162035;
+    --white:#eaf2fc;
+
+    --cyan:#06b6d4;
+    --cyan-bg:#001820;
+    --cyan-border:#003848;
+
+    --green:#22d46a;
+    --green-bg:#001810;
+    --green-border:#003820;
+
+    --amber:#f59e0b;
+    --amber-bg:#180c00;
+    --amber-border:#3c2800;
+
+    --rose:#f43f5e;
+    --rose-bg:#180008;
+    --rose-border:#3c0018;
+
+    --violet:#8b5cf6;
+    --violet-bg:#0c0818;
+    --violet-border:#241840;
+
+    --blue:#3b82f6;
+    --blue-bg:#020e20;
+    --blue-border:#082240;
+
+    --orange:#f97316;
+    --orange-bg:#180800;
+    --orange-border:#3c2000;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Epilogue',sans-serif;font-size:15px;line-height:1.7;padding:48px 24px 100px;}
+  .page{max-width:940px;margin:0 auto;}
+
+  /* TOPBAR */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:52px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .topbar-left{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;}
+  .tb-right{display:flex;gap:8px;}
+  .tb-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 14px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;}
+  .tb-wk{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tb-d1{background:var(--cyan-bg);border:1px solid var(--cyan-border);color:var(--cyan);}
+
+  /* HERO */
+  .hero{margin-bottom:52px;}
+  .day-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--cyan);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,58px);font-weight:800;line-height:1.05;color:var(--white);margin-bottom:18px;}
+  .hero h1 span{color:var(--cyan);}
+  .hero-desc{color:var(--text-dim);font-size:15px;max-width:540px;}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;}
+  .tag{padding:5px 14px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tag-c{background:var(--cyan-bg);border-color:var(--cyan-border);color:var(--cyan);}
+
+  /* SECTION */
+  .sec{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faint);margin-bottom:18px;margin-top:44px;display:flex;align-items:center;gap:12px;}
+  .sec .sn{color:var(--cyan);font-size:12px;}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  /* ANALOGY */
+  .analogy{background:var(--cyan-bg);border:1px solid var(--cyan-border);border-left:4px solid var(--cyan);border-radius:12px;padding:22px 28px;margin-bottom:16px;}
+  .analogy .al{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);margin-bottom:8px;}
+  .analogy p{color:var(--text);font-size:14px;}
+  .analogy strong{color:var(--white);}
+
+  /* CARD */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 28px;margin-bottom:14px;}
+  .card h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:8px;}
+  .card p{color:var(--text-dim);margin-bottom:8px;font-size:14px;}
+  .card p:last-child{margin-bottom:0;}
+  .card strong{color:var(--text);}
+
+  /* THREE PILLARS */
+  .pillars{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+  .pillar{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px 20px;text-align:center;}
+  .pillar .p-icon{font-size:32px;margin-bottom:12px;}
+  .pillar .p-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+  .pillar h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:8px;}
+  .pillar p{font-size:13px;color:var(--text-dim);text-align:left;}
+  .pillar .p-example{font-family:'JetBrains Mono',monospace;font-size:11px;margin-top:10px;padding:8px 12px;border-radius:8px;text-align:left;}
+  .pl-m{border-top:3px solid var(--cyan);}
+  .pl-m .p-label{color:var(--cyan);}
+  .pl-m .p-example{background:var(--cyan-bg);border:1px solid var(--cyan-border);color:var(--cyan);}
+  .pl-l{border-top:3px solid var(--violet);}
+  .pl-l .p-label{color:var(--violet);}
+  .pl-l .p-example{background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);}
+  .pl-t{border-top:3px solid var(--amber);}
+  .pl-t .p-label{color:var(--amber);}
+  .pl-t .p-example{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+
+  /* COMPARISON TABLE */
+  .ref-table{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+  .rt-head{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:15px;font-weight:700;color:var(--white);}
+  table.rt{width:100%;border-collapse:collapse;}
+  table.rt th{padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);text-align:left;border-bottom:1px solid var(--border);font-weight:400;background:var(--surface3);}
+  table.rt td{padding:12px 18px;font-size:13px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;}
+  table.rt tr:last-child td{border-bottom:none;}
+  table.rt tr:hover td{background:rgba(255,255,255,0.02);}
+  table.rt td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cyan);white-space:nowrap;}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 9px;border-radius:100px;white-space:nowrap;}
+  .p-c{background:var(--cyan-bg);border:1px solid var(--cyan-border);color:var(--cyan);}
+  .p-v{background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);}
+  .p-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .p-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .p-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+
+  /* DASHBOARD MOCK */
+  .dashboard{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:14px;}
+  .db-title{font-size:15px;font-weight:700;color:var(--white);margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+  .db-live{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 10px;border-radius:100px;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .db-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:20px;}
+  .db-metric{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+  .dm-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px;}
+  .dm-value{font-size:24px;font-weight:800;margin-bottom:4px;}
+  .dm-sub{font-size:11px;color:var(--text-dim);}
+  .dv-green{color:var(--green);}
+  .dv-amber{color:var(--amber);}
+  .dv-rose{color:var(--rose);}
+  .dv-cyan{color:var(--cyan);}
+  .db-bar-section{margin-top:4px;}
+  .db-bar-label{font-size:12px;color:var(--text-dim);margin-bottom:6px;display:flex;justify-content:space-between;}
+  .db-bar{height:8px;background:var(--surface3);border-radius:100px;overflow:hidden;margin-bottom:10px;}
+  .db-fill{height:100%;border-radius:100px;}
+  .df-green{background:var(--green);width:12%;}
+  .df-cyan{background:var(--cyan);width:68%;}
+  .df-amber{background:var(--amber);width:83%;}
+  .df-rose{background:var(--rose);width:97%;}
+
+  /* NOTE */
+  .note{border-radius:10px;padding:10px 16px;font-size:13px;margin-bottom:10px;}
+  .n-c{background:var(--cyan-bg);border:1px solid var(--cyan-border);color:var(--cyan);}
+  .n-v{background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);}
+  .n-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .n-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .n-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .note strong{color:var(--white);}
+
+  /* ALERT LEVELS */
+  .alert-levels{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+  .al-item{display:flex;gap:16px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;}
+  .al-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+  .al-dot-g{background:var(--green);}
+  .al-dot-a{background:var(--amber);}
+  .al-dot-o{background:var(--orange);}
+  .al-dot-r{background:var(--rose);}
+  .al-item .ali-label{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;margin-bottom:3px;}
+  .ali-green{color:var(--green);} .ali-amber{color:var(--amber);}
+  .ali-orange{color:var(--orange);} .ali-rose{color:var(--rose);}
+  .al-item p{font-size:13px;color:var(--text-dim);}
+  .al-item p strong{color:var(--white);}
+
+  /* CODE */
+  .cbox{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:8px 0;}
+  .cbox-bar{padding:7px 14px;background:var(--surface3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+  .d{width:8px;height:8px;border-radius:50%;}.dr{background:#ff5f56;}.dy{background:#ffbd2e;}.dg{background:#27c93f;}
+  .ct{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);margin-left:4px;letter-spacing:1px;}
+  .cbox-code{padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2.0;overflow-x:auto;}
+  .cm{color:#2e4050;}.fn{color:#79c0ff;}.str{color:#a5d6ff;}.var{color:#ffa657;}.op{color:#c9d1d9;}.kw{color:#ff7b72;}
+
+  /* LAB */
+  .lab{border:2px solid var(--cyan-border);border-radius:16px;overflow:hidden;margin-bottom:14px;}
+  .lab-head{padding:16px 26px;background:var(--cyan-bg);border-bottom:1px solid var(--cyan-border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .lab-head h3{font-size:15px;font-weight:700;color:var(--white);}
+  .lab-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 12px;border-radius:100px;background:rgba(6,182,212,0.1);border:1px solid var(--cyan-border);color:var(--cyan);}
+  .lab-body{padding:26px;display:flex;flex-direction:column;gap:0;background:var(--surface);}
+  .lab-step{display:flex;gap:18px;position:relative;}
+  .lab-step:not(:last-child) .ls-left::after{content:'';position:absolute;left:19px;top:44px;bottom:0;width:2px;background:var(--border);z-index:0;}
+  .ls-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+  .ls-num{width:40px;height:40px;border-radius:50%;background:var(--cyan-bg);border:2px solid var(--cyan-border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cyan);z-index:1;position:relative;}
+  .ls-content{flex:1;padding-bottom:22px;padding-top:4px;}
+  .ls-title{font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px;}
+  .ls-desc{font-size:13px;color:var(--text-dim);margin-bottom:8px;}
+  .ls-out{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--cyan-bg);border:1px solid var(--cyan-border);color:var(--cyan);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+  .ls-out-g{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+
+  /* SCEN */
+  .scen-list{display:flex;flex-direction:column;gap:12px;margin-bottom:14px;}
+  .scen-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;}
+  .si-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);background:var(--cyan-bg);border:1px solid var(--cyan-border);border-radius:6px;padding:4px 8px;flex-shrink:0;margin-top:2px;}
+  .scen-item p{font-size:14px;color:var(--text-dim);}
+  .scen-item p strong{color:var(--white);}
+
+  /* OUTCOME */
+  .outcome{background:linear-gradient(135deg,var(--cyan-bg) 0%,var(--surface) 100%);border:1px solid var(--cyan-border);border-radius:16px;padding:32px;margin-top:48px;}
+  .outcome h3{font-size:20px;font-weight:700;color:var(--cyan);margin-bottom:18px;}
+  .outcome ul{display:flex;flex-direction:column;gap:9px;list-style:none;}
+  .outcome ul li{font-size:14px;color:var(--text-dim);padding-left:22px;position:relative;}
+  .outcome ul li::before{content:'✓';position:absolute;left:0;color:var(--cyan);font-family:'JetBrains Mono',monospace;}
+
+  @media(max-width:680px){.pillars{grid-template-columns:1fr;}.db-grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 6.5</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-wk">Week 6.5</span>
+      <span class="tb-badge tb-d1">Day 1</span>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="day-label">Week 6.5 · Day 1</div>
+    <h1>Monitoring <span>Basics</span></h1>
+    <p class="hero-desc">Before you can fix a problem, you need to know it exists. Monitoring is how your system tells you what is happening — in real time, all the time, even when you are not watching.</p>
+    <div class="tags">
+      <span class="tag tag-c">Metrics</span>
+      <span class="tag tag-c">Logs</span>
+      <span class="tag tag-c">Traces</span>
+      <span class="tag">Observability</span>
+      <span class="tag">Alert Levels</span>
+      <span class="tag">Dashboard</span>
+    </div>
+  </div>
+
+  <!-- ANALOGY -->
+  <div class="sec"><span class="sn">01</span> The Simple Idea First</div>
+
+  <div class="analogy">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Think of monitoring like the <strong>dashboard of a car</strong>. While you drive, the dashboard constantly tells you: current speed (metric), engine temperature (metric), fuel level (metric). If something goes wrong — the check engine light turns on (alert).<br><br>
+      You do not have to open the bonnet every 5 minutes to check if the engine is fine. The dashboard watches for you. <strong>That is exactly what monitoring does for your server.</strong> It watches everything, measures the important numbers, and alerts you the moment something crosses a limit — before your clients notice.
+    </p>
+  </div>
+
+  <!-- WHAT IS MONITORING -->
+  <div class="card">
+    <h3>What is Monitoring?</h3>
+    <p>Monitoring means <strong>continuously collecting, measuring, and displaying data about your system</strong> — so you can see what is happening right now and compare it with what normal looks like.</p>
+    <p>In fintech, monitoring covers everything — how many transactions are processing per second, how long each one takes, how full the disk is, how much CPU the payment service is using, and how many errors the logs contain. All of it, measured every few seconds, displayed on a dashboard, and triggering alerts when limits are crossed.</p>
+    <p><strong>Without monitoring</strong> — you only find out something is wrong when a client calls. <strong>With monitoring</strong> — you know before the client does.</p>
+  </div>
+
+  <!-- THREE PILLARS -->
+  <div class="sec"><span class="sn">02</span> The 3 Pillars of Observability</div>
+
+  <div class="card">
+    <h3>Observability vs Monitoring — What is the difference?</h3>
+    <p><strong>Monitoring</strong> tells you <em>that</em> something is wrong — CPU is high, error rate is up, disk is full.</p>
+    <p><strong>Observability</strong> tells you <em>why</em> it is wrong — which query is slow, which transaction failed, what the exact error message was, and how long it has been happening. Observability is built from 3 pillars: Metrics, Logs, and Traces.</p>
+  </div>
+
+  <div class="pillars">
+    <div class="pillar pl-m">
+      <div class="p-icon">📊</div>
+      <div class="p-label">Pillar 1</div>
+      <h3>Metrics</h3>
+      <p>Numbers measured over time. CPU %, transaction count per second, error rate, response time in ms. Metrics tell you <strong>how much</strong> and <strong>how fast</strong>.</p>
+      <div class="p-example">CPU: 87% ↑<br>TXN/sec: 142<br>Error rate: 4.2%</div>
+    </div>
+    <div class="pillar pl-l">
+      <div class="p-icon">📋</div>
+      <div class="p-label">Pillar 2</div>
+      <h3>Logs</h3>
+      <p>Timestamped records of events. Every INFO, WARN, ERROR line your application writes. Logs tell you <strong>what happened</strong> and <strong>when exactly</strong>.</p>
+      <div class="p-example">[14:02] ERROR<br>DB_TIMEOUT TXN-501<br>pool exhausted</div>
+    </div>
+    <div class="pillar pl-t">
+      <div class="p-icon">🔗</div>
+      <div class="p-label">Pillar 3</div>
+      <h3>Traces</h3>
+      <p>The full journey of one request through all systems. Shows exactly where time was spent. Traces tell you <strong>where the delay is</strong> in the chain.</p>
+      <div class="p-example">API: 12ms<br>DB query: 2,840ms ⚠️<br>Network: 4ms</div>
+    </div>
+  </div>
+
+  <!-- COMPARISON TABLE -->
+  <div class="ref-table">
+    <div class="rt-head">📋 Metrics vs Logs vs Traces — Quick Reference</div>
+    <table class="rt">
+      <thead><tr><th>Pillar</th><th>What it answers</th><th>Example in fintech</th><th>Tool examples</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Metrics</td>
+          <td>How much? How fast? How many?</td>
+          <td>Payment success rate: 98.2% / DB CPU: 74% / Queue depth: 12</td>
+          <td><span class="pill p-c">Grafana</span> <span class="pill p-c">Prometheus</span></td>
+        </tr>
+        <tr>
+          <td>Logs</td>
+          <td>What happened? When? What was the error?</td>
+          <td>[14:02] ERROR TXN-501 DB_CONNECTION_TIMEOUT after 30s</td>
+          <td><span class="pill p-v">Kibana</span> <span class="pill p-v">Splunk</span></td>
+        </tr>
+        <tr>
+          <td>Traces</td>
+          <td>Where is the slowness? Which step took longest?</td>
+          <td>API call total 3.1s — breakdown: DB 2.8s, network 0.3s</td>
+          <td><span class="pill p-a">Jaeger</span> <span class="pill p-a">Zipkin</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note n-c">💡 <strong>As L2, you use all three.</strong> Metrics tell you something is wrong → Logs show you what the error was → Traces show you where in the system it happened. They work together, not separately.</div>
+
+  <!-- KEY METRICS IN FINTECH -->
+  <div class="sec"><span class="sn">03</span> Key Metrics Every L2 Should Know</div>
+
+  <div class="ref-table">
+    <div class="rt-head">📈 The Metrics You Watch Every Day</div>
+    <table class="rt">
+      <thead><tr><th>Metric</th><th>What it measures</th><th>Normal range</th><th>When to act</th></tr></thead>
+      <tbody>
+        <tr><td>TXN Success Rate</td><td>% of transactions completing successfully</td><td>Above 99%</td><td><span class="pill p-r">Below 95%</span> — investigate immediately</td></tr>
+        <tr><td>Error Rate</td><td>% of requests resulting in an error</td><td>Below 1%</td><td><span class="pill p-r">Above 5%</span> — P1 candidate</td></tr>
+        <tr><td>Response Time (p99)</td><td>How long 99% of requests take to complete</td><td>Under 500ms</td><td><span class="pill p-a">Above 2s</span> — something is slow</td></tr>
+        <tr><td>CPU Usage</td><td>How much of the processor is being used</td><td>Under 70%</td><td><span class="pill p-r">Above 90%</span> — find the heavy process</td></tr>
+        <tr><td>Disk Usage</td><td>How full the hard drive is</td><td>Under 80%</td><td><span class="pill p-r">Above 90%</span> — clean up or expand</td></tr>
+        <tr><td>Memory / RAM</td><td>How much RAM is available</td><td>Above 30% free</td><td><span class="pill p-a">Below 15% free</span> — investigate swap usage</td></tr>
+        <tr><td>Queue Depth</td><td>How many messages are waiting in the MQ</td><td>Near 0</td><td><span class="pill p-r">Growing steadily</span> — consumer may be down</td></tr>
+        <tr><td>DB Connection Pool</td><td>How many DB connections are in use</td><td>Under 80%</td><td><span class="pill p-r">Above 95%</span> — pool near exhaustion</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ALERT LEVELS -->
+  <div class="sec"><span class="sn">04</span> Alert Levels — OK, Warning, Critical</div>
+
+  <div class="card">
+    <h3>What is an Alert?</h3>
+    <p>An alert fires automatically when a metric crosses a configured threshold. You do not have to sit watching a dashboard all day — the monitoring system watches for you and notifies you when something needs attention. This is what your Slack and WhatsApp scripts from Week 5 were doing — they were basic alerting systems.</p>
+  </div>
+
+  <div class="alert-levels">
+    <div class="al-item">
+      <div class="al-dot al-dot-g"></div>
+      <div>
+        <div class="ali-label ali-green">OK — Everything normal</div>
+        <p>All metrics within expected ranges. No action needed. System is healthy. Example: CPU at 45%, error rate 0.2%, disk at 62%.</p>
+      </div>
+    </div>
+    <div class="al-item">
+      <div class="al-dot al-dot-a"></div>
+      <div>
+        <div class="ali-label ali-amber">WARNING — Something to watch</div>
+        <p>A metric is elevated but not yet causing failures. <strong>Monitor it closely.</strong> It may resolve itself or worsen into Critical. Example: CPU at 78%, disk at 84%, response time creeping up.</p>
+      </div>
+    </div>
+    <div class="al-item">
+      <div class="al-dot al-dot-o"></div>
+      <div>
+        <div class="ali-label ali-orange">HIGH — Action required soon</div>
+        <p>A metric is clearly abnormal. <strong>Investigate now</strong> — before it becomes a full outage. Example: CPU at 89%, error rate at 4%, queue depth growing steadily for 10 minutes.</p>
+      </div>
+    </div>
+    <div class="al-item">
+      <div class="al-dot al-dot-r"></div>
+      <div>
+        <div class="ali-label ali-rose">CRITICAL — Immediate action / P1</div>
+        <p>A metric has crossed the point of causing real failures or outages. <strong>Open the bridge immediately.</strong> Example: CPU at 98%, success rate below 80%, DB pool at 100%, disk full.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIMULATED DASHBOARD -->
+  <div class="sec"><span class="sn">05</span> Reading a Monitoring Dashboard</div>
+
+  <div class="card">
+    <h3>What you see on a real monitoring dashboard</h3>
+    <p>Dashboards are the visual interface of your monitoring system. They show metrics as numbers, graphs, and bars — all updating in real time. Your job as L2 is to look at this dashboard and instantly know whether everything is fine or something needs attention.</p>
+  </div>
+
+  <div class="dashboard">
+    <div class="db-title">
+      PaySysLabs — Payment Service Dashboard
+      <span class="db-live">● LIVE</span>
+    </div>
+    <div class="db-grid">
+      <div class="db-metric">
+        <div class="dm-label">TXN Success Rate</div>
+        <div class="dm-value dv-green">98.7%</div>
+        <div class="dm-sub">Last 15 minutes</div>
+      </div>
+      <div class="db-metric">
+        <div class="dm-label">CPU Usage</div>
+        <div class="dm-value dv-amber">83%</div>
+        <div class="dm-sub">⚠ Above 80% threshold</div>
+      </div>
+      <div class="db-metric">
+        <div class="dm-label">Error Rate</div>
+        <div class="dm-value dv-green">0.8%</div>
+        <div class="dm-sub">Normal range</div>
+      </div>
+      <div class="db-metric">
+        <div class="dm-label">Disk Usage</div>
+        <div class="dm-value dv-rose">97%</div>
+        <div class="dm-sub">🚨 Critical — act now</div>
+      </div>
+    </div>
+    <div class="db-bar-section">
+      <div class="db-bar-label"><span>DB Connection Pool</span><span style="color:var(--green)">68% used — OK</span></div>
+      <div class="db-bar"><div class="db-fill df-cyan"></div></div>
+      <div class="db-bar-label"><span>CPU</span><span style="color:var(--amber)">83% — WARNING</span></div>
+      <div class="db-bar"><div class="db-fill df-amber"></div></div>
+      <div class="db-bar-label"><span>Disk</span><span style="color:var(--rose)">97% — CRITICAL</span></div>
+      <div class="db-bar"><div class="db-fill df-rose"></div></div>
+      <div class="db-bar-label"><span>RAM Available</span><span style="color:var(--green)">12% free — Healthy</span></div>
+      <div class="db-bar"><div class="db-fill df-green"></div></div>
+    </div>
+  </div>
+
+  <div class="note n-r">🚨 <strong>Looking at this dashboard — what action do you take?</strong> Disk at 97% is CRITICAL — this is the most urgent item. Investigate immediately before the disk hits 100% and the DB stops writing. CPU at 83% is a WARNING — monitor but less urgent than disk. TXN success rate and error rate are healthy — no transaction issue currently.</div>
+
+  <!-- LAB -->
+  <div class="sec"><span class="sn">06</span> Hands-on Lab — Identify Metrics from a Dashboard</div>
+
+  <div class="lab">
+    <div class="lab-head">
+      <h3>🔬 Lab: Read a Dashboard and Identify What Needs Action</h3>
+      <span class="lab-badge">Observability · Decision Making</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Check your server's real metrics right now on Kali</div>
+          <div class="ls-desc">These commands pull the same data a monitoring dashboard shows — you are building it manually first so you understand where the numbers come from.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — pull all key metrics</span></div><div class="cbox-code">
+<span class="cm"># CPU — what % is idle (lower idle = higher load)</span><br>
+<span class="fn">top</span> -bn1 | <span class="fn">grep</span> <span class="str">"Cpu(s)"</span><br>
+<br>
+<span class="cm"># Memory — available RAM</span><br>
+<span class="fn">free</span> -h<br>
+<br>
+<span class="cm"># Disk — all partitions with usage %</span><br>
+<span class="fn">df</span> -h<br>
+<br>
+<span class="cm"># Load average — 1min, 5min, 15min</span><br>
+<span class="fn">cat</span> /proc/loadavg<br>
+<br>
+<span class="cm"># Error count from your log file</span><br>
+<span class="fn">grep</span> -c <span class="str">"ERROR"</span> ~/payment-service.log 2&gt;/dev/null || <span class="fn">echo</span> <span class="str">"0 errors"</span>
+          </div></div>
+          <span class="ls-out">→ You now have real metric numbers: CPU%, free RAM, disk%, load average, and error count — exactly what a dashboard shows.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Build a simple personal dashboard script</div>
+          <div class="ls-desc">This script collects all metrics and prints them in a dashboard format — your own monitoring view.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">my-dashboard.sh — create and run this</span></div><div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Simple personal monitoring dashboard</span><br>
+<span class="cm"># Run: chmod +x my-dashboard.sh && ./my-dashboard.sh</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"================================================"</span><br>
+<span class="fn">echo</span> <span class="str">" My Monitoring Dashboard — $(date)"</span><br>
+<span class="fn">echo</span> <span class="str">"================================================"</span><br>
+<br>
+<span class="cm"># CPU</span><br>
+<span class="var">CPU_IDLE</span>=<span class="op">$(</span><span class="fn">top</span> -bn1 | <span class="fn">grep</span> <span class="str">"Cpu(s)"</span> | <span class="fn">awk</span> <span class="str">'{print $8}'</span> | <span class="fn">tr</span> -d <span class="str">'%id,'</span><span class="op">)</span><br>
+<span class="var">CPU_USED</span>=<span class="op">$(</span><span class="fn">echo</span> <span class="str">"100 - $CPU_IDLE"</span> | <span class="fn">bc</span> 2&gt;/dev/null || <span class="fn">echo</span> <span class="str">"N/A"</span><span class="op">)</span><br>
+<span class="fn">echo</span> <span class="str">"[CPU    ] Used: ${CPU_USED}%"</span><br>
+<br>
+<span class="cm"># Memory</span><br>
+<span class="var">MEM_AVAIL</span>=<span class="op">$(</span><span class="fn">free</span> -h | <span class="fn">awk</span> <span class="str">'NR==2 {print $7}'</span><span class="op">)</span><br>
+<span class="fn">echo</span> <span class="str">"[MEMORY ] Available: $MEM_AVAIL"</span><br>
+<br>
+<span class="cm"># Disk</span><br>
+<span class="var">DISK</span>=<span class="op">$(</span><span class="fn">df</span> / | <span class="fn">awk</span> <span class="str">'NR==2 {print $5}'</span><span class="op">)</span><br>
+<span class="fn">echo</span> <span class="str">"[DISK   ] Used: $DISK"</span><br>
+<br>
+<span class="cm"># Load</span><br>
+<span class="var">LOAD</span>=<span class="op">$(</span><span class="fn">cat</span> /proc/loadavg | <span class="fn">awk</span> <span class="str">'{print $1, $2, $3}'</span><span class="op">)</span><br>
+<span class="fn">echo</span> <span class="str">"[LOAD   ] 1m 5m 15m: $LOAD"</span><br>
+<br>
+<span class="cm"># Errors</span><br>
+<span class="var">ERRS</span>=<span class="op">$(</span><span class="fn">grep</span> -c <span class="str">"ERROR"</span> ~/payment-service.log 2&gt;/dev/null || <span class="fn">echo</span> <span class="str">"0"</span><span class="op">)</span><br>
+<span class="fn">echo</span> <span class="str">"[ERRORS ] In log: $ERRS"</span><br>
+<span class="fn">echo</span> <span class="str">"================================================"</span>
+          </div></div>
+          <span class="ls-out">→ Run this and you see your own dashboard. Every number tells a story — compare against the thresholds table above to know what is OK and what needs attention.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Practice reading a dashboard scenario — make the call</div>
+          <div class="ls-desc">Look at this set of metrics and decide: what is OK, what is a Warning, what is Critical?</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">Scenario — read and classify each metric</span></div><div class="cbox-code">
+<span class="cm">Dashboard Reading at 14:30:</span><br>
+<br>
+<span class="cm">  TXN Success Rate : 96.4%</span><br>
+<span class="cm">  Error Rate       : 3.6%</span><br>
+<span class="cm">  CPU Usage        : 71%</span><br>
+<span class="cm">  Disk Usage       : 88%</span><br>
+<span class="cm">  RAM Available    : 24%</span><br>
+<span class="cm">  Queue Depth      : 0 messages</span><br>
+<span class="cm">  DB Pool          : 62% used</span><br>
+<span class="cm">  Response Time    : 1,400ms</span><br>
+<br>
+<span class="cm">Your job: classify each metric and decide</span><br>
+<span class="cm">what to investigate first.</span>
+          </div></div>
+          <span class="ls-out">→ TXN Success at 96.4% = WARNING (below 99%). Error rate 3.6% = WARNING (above 1%). Disk 88% = WARNING approaching Critical. Response time 1.4s = WARNING (above 500ms). CPU 71% = OK. Queue 0 = OK. Start with disk — it will become critical fastest.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Understand how metrics connect to logs and traces</div>
+          <div class="ls-desc">A metric tells you something is wrong. A log tells you what. A trace tells you where.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">The investigation chain — 3 pillars working together</span></div><div class="cbox-code">
+<span class="cm">Step 1 — Metric fires alert:</span><br>
+<span class="cm">  Error rate jumped from 0.8% to 4.2% at 14:02</span><br>
+<br>
+<span class="cm">Step 2 — Check logs to find what error:</span><br>
+<span class="fn">grep</span> <span class="str">"ERROR"</span> ~/payment-service.log | <span class="fn">tail</span> -10<br>
+<span class="cm">  → Finds: DB_CONNECTION_TIMEOUT repeated every 10 seconds</span><br>
+<br>
+<span class="cm">Step 3 — Check trace to find where delay is:</span><br>
+<span class="cm">  → DB query step took 28,000ms (28 seconds)</span><br>
+<span class="cm">  → All other steps normal (&lt;100ms)</span><br>
+<br>
+<span class="cm">Conclusion: The DB is the source. Escalate to DBA.</span>
+          </div></div>
+          <span class="ls-out-g">→ Metric → Log → Trace. Three steps. Each one narrows down the problem until you have a clear root cause. ✅</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TOOLS -->
+  <div class="sec"><span class="sn">07</span> Common Monitoring Tools You Will Encounter</div>
+
+  <div class="ref-table">
+    <div class="rt-head">🛠️ Monitoring Tools — What Each One Is Used For</div>
+    <table class="rt">
+      <thead><tr><th>Tool</th><th>Type</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>Grafana</td><td><span class="pill p-c">Metrics</span></td><td>Visualises metrics in dashboards — graphs, gauges, and alert panels. The most common L2 dashboard tool.</td></tr>
+        <tr><td>Prometheus</td><td><span class="pill p-c">Metrics</span></td><td>Collects and stores metrics from all your services. Grafana reads from Prometheus to build dashboards.</td></tr>
+        <tr><td>Kibana</td><td><span class="pill p-v">Logs</span></td><td>Search and visualise logs from all servers in one place. Part of the ELK stack (Elasticsearch, Logstash, Kibana).</td></tr>
+        <tr><td>Splunk</td><td><span class="pill p-v">Logs</span></td><td>Enterprise log management. Search across millions of log lines instantly. Common in large fintech companies.</td></tr>
+        <tr><td>Jaeger</td><td><span class="pill p-a">Traces</span></td><td>Distributed tracing — shows the full journey of a request across all microservices with timing at each step.</td></tr>
+        <tr><td>PagerDuty</td><td><span class="pill p-r">Alerting</span></td><td>Routes alerts to the on-call engineer's phone. Escalates automatically if the first responder doesn't acknowledge.</td></tr>
+        <tr><td>Datadog</td><td><span class="pill p-g">All-in-one</span></td><td>Metrics + Logs + Traces in one platform. Increasingly popular. Expensive but very powerful for L2 work.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn">08</span> Real L2 Scenarios</div>
+  <div class="scen-list">
+    <div class="scen-item"><div class="si-id">01</div>
+      <p>At 9 AM you open the Grafana dashboard. <strong>TXN success rate is at 94%.</strong> Error rate is 6%. Both are above warning threshold. You immediately check logs — DB_CONNECTION_TIMEOUT. You escalate to DBA before any client calls. You found it from the metric before anyone reported it.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">02</div>
+      <p>Alert fires at 2 AM: <strong>Disk at 93%.</strong> Metric told you first. You check logs — the application has been writing debug logs for 3 days and they are enormous. You archive old logs, disk drops to 71%. Crisis averted. Nobody lost sleep except you — and you fixed it in 10 minutes.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">03</div>
+      <p>Response time metric is showing 3.2 seconds average. Normal is under 500ms. <strong>Metric says something is slow.</strong> Log says DB_SLOW_QUERY appearing since 13:45. Trace shows the SELECT query on TRANSACTIONS_LOG taking 3,100ms. DBA adds an index. Response time drops to 180ms within 2 minutes.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">04</div>
+      <p>Manager asks: <strong>"How was the system during last night's batch run?"</strong> You open the Grafana dashboard, change the time range to 11 PM–3 AM. You see CPU spiked to 91% at midnight and came back down by 1 AM. TXN rate was high but success rate stayed at 99.1%. <strong>System handled it well.</strong> Report delivered in 2 minutes.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 6.5 · Day 1 Outcomes</h3>
+    <ul>
+      <li>Explain what monitoring is and why it matters — you know before the client does</li>
+      <li>Explain the difference between monitoring (something is wrong) and observability (why it is wrong)</li>
+      <li>Describe the 3 pillars of observability — Metrics, Logs, and Traces — and what each one answers</li>
+      <li>Know the key fintech metrics — success rate, error rate, CPU, disk, memory, queue depth, DB pool, and response time</li>
+      <li>Classify metrics into OK, Warning, High, and Critical — and know what action each level requires</li>
+      <li>Read a monitoring dashboard and identify which metrics need immediate action vs which to monitor</li>
+      <li>Complete the lab — pull real metrics from Kali using terminal commands, build a personal dashboard script, and practice classifying a full set of metrics from a scenario</li>
+      <li>Understand how Metric → Log → Trace work together as an investigation chain to find root cause</li>
+      <li>Name the common monitoring tools — Grafana, Prometheus, Kibana, Splunk, Jaeger, PagerDuty, Datadog</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

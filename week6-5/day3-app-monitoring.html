@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 6.5 · Day 3 — Application Monitoring</title>
+<link href="https://fonts.googleapis.com/css2?family=Satoshi:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#07090e;
+    --surface:#0d1018;
+    --surface2:#121620;
+    --surface3:#171c28;
+    --border:#1e2535;
+    --text:#a8b8cc;
+    --text-dim:#3e5268;
+    --text-faint:#162035;
+    --white:#eaf2fc;
+
+    --indigo:#6366f1;
+    --indigo-bg:#080818;
+    --indigo-border:#181840;
+
+    --teal:#14b8a6;
+    --teal-bg:#001814;
+    --teal-border:#003830;
+
+    --amber:#f59e0b;
+    --amber-bg:#180c00;
+    --amber-border:#3c2800;
+
+    --rose:#f43f5e;
+    --rose-bg:#180008;
+    --rose-border:#3c0018;
+
+    --green:#22d46a;
+    --green-bg:#001810;
+    --green-border:#003820;
+
+    --blue:#3b82f6;
+    --blue-bg:#020e20;
+    --blue-border:#082240;
+
+    --orange:#f97316;
+    --orange-bg:#180800;
+    --orange-border:#3c2000;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;line-height:1.7;padding:48px 24px 100px;}
+  .page{max-width:940px;margin:0 auto;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:52px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .topbar-left{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;}
+  .tb-right{display:flex;gap:8px;}
+  .tb-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 14px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;}
+  .tb-wk{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tb-d{background:var(--indigo-bg);border:1px solid var(--indigo-border);color:var(--indigo);}
+
+  .hero{margin-bottom:52px;}
+  .day-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--indigo);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,58px);font-weight:800;line-height:1.05;color:var(--white);margin-bottom:18px;}
+  .hero h1 span{color:var(--indigo);}
+  .hero-desc{color:var(--text-dim);font-size:15px;max-width:540px;}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;}
+  .tag{padding:5px 14px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tag-i{background:var(--indigo-bg);border-color:var(--indigo-border);color:var(--indigo);}
+  .tag-t{background:var(--teal-bg);border-color:var(--teal-border);color:var(--teal);}
+  .tag-a{background:var(--amber-bg);border-color:var(--amber-border);color:var(--amber);}
+
+  .sec{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faint);margin-bottom:18px;margin-top:44px;display:flex;align-items:center;gap:12px;}
+  .sec .sn{color:var(--indigo);font-size:12px;}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .analogy{background:var(--indigo-bg);border:1px solid var(--indigo-border);border-left:4px solid var(--indigo);border-radius:12px;padding:22px 28px;margin-bottom:16px;}
+  .analogy .al{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--indigo);margin-bottom:8px;}
+  .analogy p{color:var(--text);font-size:14px;}
+  .analogy strong{color:var(--white);}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 28px;margin-bottom:14px;}
+  .card h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:8px;}
+  .card p{color:var(--text-dim);margin-bottom:8px;font-size:14px;}
+  .card p:last-child{margin-bottom:0;}
+  .card strong{color:var(--text);}
+
+  /* 3 METRIC PILLARS */
+  .three-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+  .tg-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 22px;}
+  .tg-card .tc-icon{font-size:28px;margin-bottom:10px;}
+  .tg-card .tc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+  .tg-card h4{font-size:15px;font-weight:700;color:var(--white);margin-bottom:8px;}
+  .tg-card p{font-size:13px;color:var(--text-dim);}
+  .tg-card .tc-val{font-family:'JetBrains Mono',monospace;font-size:11px;padding:7px 12px;border-radius:8px;margin-top:10px;}
+  .tc-i{border-top:3px solid var(--indigo);}
+  .tc-i .tc-label{color:var(--indigo);}
+  .tc-i .tc-val{background:var(--indigo-bg);border:1px solid var(--indigo-border);color:var(--indigo);}
+  .tc-t{border-top:3px solid var(--teal);}
+  .tc-t .tc-label{color:var(--teal);}
+  .tc-t .tc-val{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+  .tc-a{border-top:3px solid var(--amber);}
+  .tc-a .tc-label{color:var(--amber);}
+  .tc-a .tc-val{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+
+  /* API TABLE MOCK */
+  .api-table-block{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:14px;}
+  .atb-header{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .atb-header h3{font-size:15px;font-weight:700;color:var(--white);}
+  .atb-live{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 10px;border-radius:100px;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  table.at{width:100%;border-collapse:collapse;}
+  table.at th{padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);text-align:left;border-bottom:1px solid var(--border);font-weight:400;background:var(--surface3);}
+  table.at td{padding:12px 18px;font-size:13px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle;}
+  table.at tr:last-child td{border-bottom:none;}
+  table.at tr:hover td{background:rgba(255,255,255,0.02);}
+  table.at td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--white);}
+  .lat-ok{color:var(--green);font-family:'JetBrains Mono',monospace;font-size:12px;}
+  .lat-warn{color:var(--amber);font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;}
+  .lat-crit{color:var(--rose);font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;}
+  .err-ok{color:var(--green);font-family:'JetBrains Mono',monospace;font-size:12px;}
+  .err-warn{color:var(--amber);font-family:'JetBrains Mono',monospace;font-size:12px;}
+  .err-crit{color:var(--rose);font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;}
+  .status-pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 9px;border-radius:100px;}
+  .sp-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .sp-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .sp-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+
+  /* NOTE */
+  .note{border-radius:10px;padding:10px 16px;font-size:13px;margin-bottom:10px;}
+  .n-i{background:var(--indigo-bg);border:1px solid var(--indigo-border);color:var(--indigo);}
+  .n-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .n-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .n-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .note strong{color:var(--white);}
+
+  /* REF TABLE */
+  .ref-table{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+  .rt-head{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:15px;font-weight:700;color:var(--white);}
+  table.rt{width:100%;border-collapse:collapse;}
+  table.rt th{padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);text-align:left;border-bottom:1px solid var(--border);font-weight:400;background:var(--surface3);}
+  table.rt td{padding:12px 18px;font-size:13px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;}
+  table.rt tr:last-child td{border-bottom:none;}
+  table.rt tr:hover td{background:rgba(255,255,255,0.02);}
+  table.rt td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--indigo);white-space:nowrap;}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 9px;border-radius:100px;white-space:nowrap;}
+  .p-i{background:var(--indigo-bg);border:1px solid var(--indigo-border);color:var(--indigo);}
+  .p-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .p-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .p-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .p-t{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+
+  /* CODE */
+  .cbox{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:8px 0;}
+  .cbox-bar{padding:7px 14px;background:var(--surface3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+  .d{width:8px;height:8px;border-radius:50%;}.dr{background:#ff5f56;}.dy{background:#ffbd2e;}.dg{background:#27c93f;}
+  .ct{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);margin-left:4px;letter-spacing:1px;}
+  .cbox-code{padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2.0;overflow-x:auto;}
+  .kw{color:#ff7b72;}.fn{color:#79c0ff;}.str{color:#a5d6ff;}.var{color:#ffa657;}.cm{color:#2e4050;}.op{color:#c9d1d9;}
+
+  /* LAB */
+  .lab{border:2px solid var(--indigo-border);border-radius:16px;overflow:hidden;margin-bottom:14px;}
+  .lab-head{padding:16px 26px;background:var(--indigo-bg);border-bottom:1px solid var(--indigo-border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .lab-head h3{font-size:15px;font-weight:700;color:var(--white);}
+  .lab-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 12px;border-radius:100px;background:rgba(99,102,241,0.1);border:1px solid var(--indigo-border);color:var(--indigo);}
+  .lab-body{padding:26px;display:flex;flex-direction:column;gap:0;background:var(--surface);}
+  .lab-step{display:flex;gap:18px;position:relative;}
+  .lab-step:not(:last-child) .ls-left::after{content:'';position:absolute;left:19px;top:44px;bottom:0;width:2px;background:var(--border);z-index:0;}
+  .ls-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+  .ls-num{width:40px;height:40px;border-radius:50%;background:var(--indigo-bg);border:2px solid var(--indigo-border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--indigo);z-index:1;position:relative;}
+  .ls-content{flex:1;padding-bottom:22px;padding-top:4px;}
+  .ls-title{font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px;}
+  .ls-desc{font-size:13px;color:var(--text-dim);margin-bottom:8px;}
+  .ls-out{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--indigo-bg);border:1px solid var(--indigo-border);color:var(--indigo);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+  .ls-out-g{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+
+  /* SCEN */
+  .scen-list{display:flex;flex-direction:column;gap:12px;margin-bottom:14px;}
+  .scen-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;}
+  .si-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--indigo);background:var(--indigo-bg);border:1px solid var(--indigo-border);border-radius:6px;padding:4px 8px;flex-shrink:0;margin-top:2px;}
+  .scen-item p{font-size:14px;color:var(--text-dim);}
+  .scen-item p strong{color:var(--white);}
+
+  .outcome{background:linear-gradient(135deg,var(--indigo-bg) 0%,var(--surface) 100%);border:1px solid var(--indigo-border);border-radius:16px;padding:32px;margin-top:48px;}
+  .outcome h3{font-size:20px;font-weight:700;color:var(--indigo);margin-bottom:18px;}
+  .outcome ul{display:flex;flex-direction:column;gap:9px;list-style:none;}
+  .outcome ul li{font-size:14px;color:var(--text-dim);padding-left:22px;position:relative;}
+  .outcome ul li::before{content:'✓';position:absolute;left:0;color:var(--indigo);font-family:'JetBrains Mono',monospace;}
+
+  @media(max-width:680px){.three-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 6.5</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-wk">Week 6.5</span>
+      <span class="tb-badge tb-d">Day 3</span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="day-label">Week 6.5 · Day 3</div>
+    <h1>Application <span>Monitoring</span></h1>
+    <p class="hero-desc">System metrics tell you the server is struggling. Application metrics tell you which part of your software is causing it. Today you learn to read API latency, error rate, and throughput — the three numbers that reveal your application's health.</p>
+    <div class="tags">
+      <span class="tag tag-i">API Latency</span>
+      <span class="tag tag-t">Error Rate</span>
+      <span class="tag tag-a">Throughput</span>
+      <span class="tag">App Health Checks</span>
+      <span class="tag">Slow API</span>
+    </div>
+  </div>
+
+  <!-- ANALOGY -->
+  <div class="sec"><span class="sn">01</span> The Simple Idea First</div>
+
+  <div class="analogy">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Think of your payment application like a <strong>post office counter</strong>. System metrics (CPU, disk, memory) tell you how tired the staff are. Application metrics tell you something more specific — <strong>how long each customer is waiting at the counter, how many letters got lost, and how many customers are being served per hour.</strong><br><br>
+      A post office where staff are not tired but customers wait 20 minutes — that is an application problem, not a server problem.<br><br>
+      <strong>Application monitoring catches that.</strong> It watches the software itself — how fast it responds, how often it fails, and how much work it is doing.
+    </p>
+  </div>
+
+  <!-- WHY DIFFERENT -->
+  <div class="card">
+    <h3>Why Application Monitoring is different from System Monitoring</h3>
+    <p><strong>System monitoring</strong> (Day 2) watches the hardware layer — CPU%, disk%, RAM. It tells you the machine is stressed but not which part of the application is causing it.</p>
+    <p><strong>Application monitoring</strong> watches the software layer — each specific API endpoint, each service, each function. It tells you that your /payment/initiate endpoint takes 4 seconds to respond while /account/balance takes 80ms. That specificity is what lets you find the root cause instead of guessing.</p>
+    <p>In fintech, application monitoring is especially critical because different endpoints carry different risk. A slow /health endpoint is fine. A slow /payment/process endpoint at 8 seconds means real money is being held up for thousands of customers.</p>
+  </div>
+
+  <!-- 3 CORE APP METRICS -->
+  <div class="sec"><span class="sn">02</span> The 3 Core Application Metrics</div>
+
+  <div class="three-grid">
+    <div class="tg-card tc-i">
+      <div class="tc-icon">⏱️</div>
+      <div class="tc-label">Metric 1</div>
+      <h4>API Latency</h4>
+      <p>How long an API endpoint takes to respond to a request. Measured in milliseconds. Low latency = fast response. High latency = slow, customers waiting.</p>
+      <div class="tc-val">Normal: &lt; 500ms<br>Warning: 500ms – 2s<br>Critical: &gt; 3s</div>
+    </div>
+    <div class="tg-card tc-t">
+      <div class="tc-icon">❌</div>
+      <div class="tc-label">Metric 2</div>
+      <h4>Error Rate</h4>
+      <p>The percentage of requests that result in an error (HTTP 5xx, timeout, exception). A rising error rate means the application is failing for a portion of users.</p>
+      <div class="tc-val">Normal: &lt; 1%<br>Warning: 1% – 5%<br>Critical: &gt; 5%</div>
+    </div>
+    <div class="tg-card tc-a">
+      <div class="tc-icon">📦</div>
+      <div class="tc-label">Metric 3</div>
+      <h4>Throughput</h4>
+      <p>How many requests per second (RPS) the application is handling. Unusually low throughput means traffic dropped or requests are piling up. Unusually high can cause overload.</p>
+      <div class="tc-val">Know your baseline<br>Drop: investigate<br>Spike: may overload</div>
+    </div>
+  </div>
+
+  <!-- LATENCY TYPES -->
+  <div class="sec"><span class="sn">03</span> Understanding API Latency in Detail</div>
+
+  <div class="card">
+    <h3>Latency is not one number — it is a distribution</h3>
+    <p>Instead of just an average, monitoring tools show you <strong>percentiles</strong>. This matters because averages hide problems.</p>
+    <p><strong>p50 (median)</strong> — 50% of requests are faster than this. Your typical customer experience.</p>
+    <p><strong>p95</strong> — 95% of requests are faster than this. Shows the slower edge of your users.</p>
+    <p><strong>p99</strong> — 99% of requests are faster than this. Shows the slowest 1% — often your most important customers doing large transactions.</p>
+    <p><strong>Example:</strong> p50 = 120ms, p95 = 340ms, p99 = 4,200ms. The average might show 200ms and look fine. But 1 in 100 customers is waiting 4.2 seconds — that is the outlier hidden by the average. Percentiles reveal it.</p>
+  </div>
+
+  <div class="ref-table">
+    <div class="rt-head">📊 Latency Percentiles — What Each One Tells You</div>
+    <table class="rt">
+      <thead><tr><th>Percentile</th><th>What it means</th><th>When it matters</th></tr></thead>
+      <tbody>
+        <tr><td>p50 (median)</td><td>Half of requests are faster than this</td><td>Your typical customer experience — the baseline</td></tr>
+        <tr><td>p95</td><td>95% of requests complete within this time</td><td>Shows if most users have a good experience</td></tr>
+        <tr><td>p99</td><td>99% of requests complete within this time</td><td>Shows worst-case experience for almost everyone</td></tr>
+        <tr><td>p99.9</td><td>99.9% of requests complete within this time</td><td>Rare outliers — timeouts, stuck requests</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SIMULATED API HEALTH TABLE -->
+  <div class="sec"><span class="sn">04</span> Reading an API Health Table</div>
+
+  <div class="card">
+    <h3>This is what you read when checking application health</h3>
+    <p>Every row is a different API endpoint. Every column is a different health metric. Your job is to scan this table and immediately identify which endpoint is problematic and what kind of problem it has.</p>
+  </div>
+
+  <div class="api-table-block">
+    <div class="atb-header">
+      <h3>Payment Application — API Health Dashboard</h3>
+      <span class="atb-live">● LIVE</span>
+    </div>
+    <table class="at">
+      <thead>
+        <tr>
+          <th>Endpoint</th>
+          <th>Latency p50</th>
+          <th>Latency p99</th>
+          <th>Error Rate</th>
+          <th>Req/sec</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>/payment/initiate</td>
+          <td class="lat-ok">142ms</td>
+          <td class="lat-ok">380ms</td>
+          <td class="err-ok">0.2%</td>
+          <td>84</td>
+          <td><span class="status-pill sp-g">OK</span></td>
+        </tr>
+        <tr>
+          <td>/payment/status</td>
+          <td class="lat-warn">1,840ms</td>
+          <td class="lat-crit">8,200ms</td>
+          <td class="err-warn">3.4%</td>
+          <td>210</td>
+          <td><span class="status-pill sp-a">WARNING</span></td>
+        </tr>
+        <tr>
+          <td>/account/balance</td>
+          <td class="lat-ok">68ms</td>
+          <td class="lat-ok">190ms</td>
+          <td class="err-ok">0.1%</td>
+          <td>340</td>
+          <td><span class="status-pill sp-g">OK</span></td>
+        </tr>
+        <tr>
+          <td>/raast/transfer</td>
+          <td class="lat-crit">6,100ms</td>
+          <td class="lat-crit">31,000ms</td>
+          <td class="err-crit">12.8%</td>
+          <td>22</td>
+          <td><span class="status-pill sp-r">CRITICAL</span></td>
+        </tr>
+        <tr>
+          <td>/ibft/transfer</td>
+          <td class="lat-ok">220ms</td>
+          <td class="lat-ok">640ms</td>
+          <td class="err-ok">0.4%</td>
+          <td>56</td>
+          <td><span class="status-pill sp-g">OK</span></td>
+        </tr>
+        <tr>
+          <td>/health</td>
+          <td class="lat-ok">12ms</td>
+          <td class="lat-ok">28ms</td>
+          <td class="err-ok">0%</td>
+          <td>18</td>
+          <td><span class="status-pill sp-g">OK</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note n-r">🚨 <strong>Reading this table:</strong> /raast/transfer is CRITICAL — p99 latency of 31 seconds and 12.8% error rate. This means 1 in 8 RAAST transactions is failing and some are waiting 31 seconds. Investigate this endpoint first. /payment/status is WARNING — high p99 latency may indicate a DB query issue on the status lookup.</div>
+
+  <!-- HEALTH CHECK ENDPOINTS -->
+  <div class="sec"><span class="sn">05</span> Health Check Endpoints — What They Are</div>
+
+  <div class="card">
+    <h3>What is a health check endpoint?</h3>
+    <p>A health check endpoint is a special API route — usually <code style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--indigo);">/health</code> or <code style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--indigo);">/status</code> — that the application exposes specifically for monitoring. It returns a simple response telling you whether the application and its dependencies are working.</p>
+    <p>A good health check response tells you: Is the application running? Can it reach the database? Can it reach the message queue? Can it reach external APIs? All in one response, in under 100ms.</p>
+  </div>
+
+  <div class="cbox">
+    <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">What a health check response looks like</span></div>
+    <div class="cbox-code">
+<span class="cm"># Call the health endpoint with curl</span><br>
+<span class="fn">curl</span> -s https://payment-api.company.com/health<br>
+<br>
+<span class="cm"># Healthy response</span><br>
+{<br>
+&nbsp;&nbsp;<span class="str">"status"</span>: <span class="str">"OK"</span>,<br>
+&nbsp;&nbsp;<span class="str">"database"</span>: <span class="str">"connected"</span>,<br>
+&nbsp;&nbsp;<span class="str">"message_queue"</span>: <span class="str">"connected"</span>,<br>
+&nbsp;&nbsp;<span class="str">"sbp_gateway"</span>: <span class="str">"reachable"</span>,<br>
+&nbsp;&nbsp;<span class="str">"response_time_ms"</span>: <span class="op">48</span><br>
+}<br>
+<br>
+<span class="cm"># Unhealthy response — DB is down</span><br>
+{<br>
+&nbsp;&nbsp;<span class="str">"status"</span>: <span class="str">"DEGRADED"</span>,<br>
+&nbsp;&nbsp;<span class="str">"database"</span>: <span class="str">"disconnected"</span>,<br>
+&nbsp;&nbsp;<span class="str">"message_queue"</span>: <span class="str">"connected"</span>,<br>
+&nbsp;&nbsp;<span class="str">"sbp_gateway"</span>: <span class="str">"reachable"</span>,<br>
+&nbsp;&nbsp;<span class="str">"response_time_ms"</span>: <span class="op">2100</span><br>
+}
+    </div>
+  </div>
+
+  <div class="note n-i">💡 <strong>As L2</strong> — whenever you suspect an application issue, calling the health endpoint is one of the first things you do. The response tells you which dependency is broken in seconds, without reading logs.</div>
+
+  <!-- LAB -->
+  <div class="sec"><span class="sn">06</span> Hands-on Lab — Find the Slow API</div>
+
+  <div class="lab">
+    <div class="lab-head">
+      <h3>🔬 Lab: Identify and Investigate a Slow API Endpoint</h3>
+      <span class="lab-badge">Log Analysis · App Health</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Create a simulated API access log with latency data</div>
+          <div class="ls-desc">This log shows every API call with its response time — exactly what a real web server log looks like.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="fn">cat</span> &gt; ~/api-access.log &lt;&lt; <span class="str">'EOF'</span><br>
+2024-03-15 14:00:01 POST /payment/initiate       200  142ms<br>
+2024-03-15 14:00:02 GET  /account/balance         200   68ms<br>
+2024-03-15 14:00:03 POST /raast/transfer          200 6240ms<br>
+2024-03-15 14:00:04 GET  /payment/status          200 1820ms<br>
+2024-03-15 14:00:05 POST /payment/initiate        200  138ms<br>
+2024-03-15 14:00:06 POST /raast/transfer          500 8100ms<br>
+2024-03-15 14:00:07 GET  /account/balance         200   71ms<br>
+2024-03-15 14:00:08 POST /raast/transfer          500 9400ms<br>
+2024-03-15 14:00:09 GET  /payment/status          200 2100ms<br>
+2024-03-15 14:00:10 POST /ibft/transfer           200  218ms<br>
+2024-03-15 14:00:11 POST /raast/transfer          500 31000ms<br>
+2024-03-15 14:00:12 POST /payment/initiate        200  155ms<br>
+2024-03-15 14:00:13 GET  /account/balance         200   74ms<br>
+2024-03-15 14:00:14 POST /raast/transfer          200 7200ms<br>
+2024-03-15 14:00:15 GET  /health                  200   12ms<br>
+EOF
+          </div></div>
+          <span class="ls-out">→ API log created with 15 entries across 5 endpoints. Some fast, some slow, some failing.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 1 — Find which endpoint is slowest</div>
+          <div class="ls-desc">Sort all API calls by response time to immediately see the worst offender.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="cm"># Sort all requests by response time — slowest first</span><br>
+<span class="fn">sort</span> -k5 -rn ~/api-access.log<br>
+<br>
+<span class="cm"># Show only requests slower than 1000ms</span><br>
+<span class="fn">awk</span> <span class="str">'{gsub("ms",""); if($5+0 > 1000) print $0}'</span> ~/api-access.log
+          </div></div>
+          <span class="ls-out">→ /raast/transfer appears at the top — slowest response times including one at 31,000ms. /payment/status is second with 1,820ms and 2,100ms.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 2 — Find which endpoint has the highest error rate</div>
+          <div class="ls-desc">HTTP 5xx means server error. Find which endpoints are returning errors.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="cm"># Show all 5xx errors</span><br>
+<span class="fn">grep</span> <span class="str">" 500 "</span> ~/api-access.log<br>
+<br>
+<span class="cm"># Count errors per endpoint</span><br>
+<span class="fn">grep</span> <span class="str">" 500 "</span> ~/api-access.log | <span class="fn">awk</span> <span class="str">'{print $4}'</span> | <span class="fn">sort</span> | <span class="fn">uniq</span> -c | <span class="fn">sort</span> -rn<br>
+<br>
+<span class="cm"># Error rate for raast/transfer (errors / total calls)</span><br>
+<span class="fn">echo</span> <span class="str">"Total raast calls:  $(grep 'raast' ~/api-access.log | wc -l)"</span><br>
+<span class="fn">echo</span> <span class="str">"Failed raast calls: $(grep 'raast' ~/api-access.log | grep ' 500 ' | wc -l)"</span>
+          </div></div>
+          <span class="ls-out">→ 3 out of 5 raast/transfer calls failed with 500 error = 60% error rate. This is CRITICAL. All other endpoints show 0 errors.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 3 — Calculate throughput per endpoint</div>
+          <div class="ls-desc">How many requests is each endpoint receiving? Low volume can mean clients stopped sending — they may have given up.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="cm"># Count requests per endpoint</span><br>
+<span class="fn">awk</span> <span class="str">'{print $4}'</span> ~/api-access.log | <span class="fn">sort</span> | <span class="fn">uniq</span> -c | <span class="fn">sort</span> -rn<br>
+<br>
+<span class="cm"># Compare success vs failure throughput for raast</span><br>
+<span class="fn">echo</span> <span class="str">"Successful raast: $(grep 'raast' ~/api-access.log | grep ' 200 ' | wc -l)"</span><br>
+<span class="fn">echo</span> <span class="str">"Failed raast    : $(grep 'raast' ~/api-access.log | grep ' 500 ' | wc -l)"</span>
+          </div></div>
+          <span class="ls-out">→ /account/balance has most calls (3). /raast/transfer has 5 calls but 3 are errors — effective successful throughput is only 2. Very low for a critical payment endpoint.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">05</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 4 — Build an app health check script</div>
+          <div class="ls-desc">Automate the check — this script reads the log and reports the health of each endpoint.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">app-health-check.sh</span></div><div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># App health check — reads API log and reports per endpoint</span><br>
+<span class="cm"># chmod +x app-health-check.sh && ./app-health-check.sh</span><br>
+<br>
+<span class="var">LOG</span>=<span class="str">"$HOME/api-access.log"</span><br>
+<span class="var">LATENCY_WARN</span>=<span class="op">1000</span>   <span class="cm"># ms</span><br>
+<span class="var">ERROR_WARN</span>=<span class="op">1</span>        <span class="cm"># count</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"============================================"</span><br>
+<span class="fn">echo</span> <span class="str">" App Health Check — $(date)"</span><br>
+<span class="fn">echo</span> <span class="str">"============================================"</span><br>
+<br>
+<span class="cm"># Slow requests</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"[LATENCY] Requests above ${LATENCY_WARN}ms:"</span><br>
+<span class="fn">awk</span> <span class="str">'{gsub("ms",""); if($5+0 > 1000) print "  "$4" — "$5"ms"}'</span> <span class="str">"$LOG"</span><br>
+<br>
+<span class="cm"># Errors</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"[ERRORS ] 5xx errors by endpoint:"</span><br>
+<span class="fn">grep</span> <span class="str">" 500 "</span> <span class="str">"$LOG"</span> | <span class="fn">awk</span> <span class="str">'{print "  "$4}'</span> | <span class="fn">sort</span> | <span class="fn">uniq</span> -c<br>
+<br>
+<span class="cm"># Throughput</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"[TRAFFIC] Requests per endpoint:"</span><br>
+<span class="fn">awk</span> <span class="str">'{print "  "$4}'</span> <span class="str">"$LOG"</span> | <span class="fn">sort</span> | <span class="fn">uniq</span> -c | <span class="fn">sort</span> -rn<br>
+<br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"============================================"</span>
+          </div></div>
+          <span class="ls-out-g">→ Single script covers latency, errors, and throughput for every endpoint. Run it to get a full app health report in 2 seconds. ✅</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCEN -->
+  <div class="sec"><span class="sn">07</span> Real L2 Scenarios</div>
+  <div class="scen-list">
+    <div class="scen-item"><div class="si-id">01</div>
+      <p>Client says: <strong>"RAAST transfers are failing."</strong> You open the API health table — /raast/transfer shows 12.8% error rate and p99 latency of 31 seconds. You call the /health endpoint — database shows disconnected. <strong>Root cause found immediately</strong> — DB is down, causing RAAST to fail. You declare P1 and call the DBA.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">02</div>
+      <p>System metrics show CPU and disk are perfectly normal. But users are complaining of slowness. You check the API health dashboard — <strong>/payment/status has p99 latency of 8.2 seconds.</strong> All other endpoints are fast. This is not a server problem — it is a specific slow query on the status-check endpoint. L3 to optimise that query.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">03</div>
+      <p>Throughput on /ibft/transfer dropped from 56 req/sec to 4 req/sec in the last 10 minutes. Error rate is still 0%. <strong>No errors but traffic disappeared</strong> — clients stopped sending. This means the issue is upstream — the client's system is not generating transfers, or they got errors on their end and stopped retrying. You investigate the client's side.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">04</div>
+      <p>Monitoring alert fires: error rate above 5%. You open the app dashboard — <strong>only /raast/transfer is affected, all other endpoints are green.</strong> This tells you immediately it is not a system-wide outage. It is isolated to RAAST. You check the SBP status page — SBP is experiencing issues. You inform the bridge and the client: our system is healthy, SBP is degraded.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 6.5 · Day 3 Outcomes</h3>
+    <ul>
+      <li>Explain the difference between system monitoring and application monitoring — and why both are needed</li>
+      <li>Define the 3 core application metrics — API latency, error rate, and throughput — and know the healthy thresholds for each</li>
+      <li>Understand latency percentiles — p50, p95, p99 — and why p99 is more important than the average</li>
+      <li>Read an API health dashboard table and instantly identify which endpoint is problematic and what kind of problem it has</li>
+      <li>Explain what a health check endpoint is and how to use it to identify a broken dependency in seconds</li>
+      <li>Complete the lab — create an API access log, find the slowest endpoint by sorting response times, calculate error rate per endpoint, measure throughput, and build app-health-check.sh that reports all three metrics automatically</li>
+      <li>Distinguish between a system issue (affects all endpoints equally) and an application issue (affects only one specific endpoint)</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

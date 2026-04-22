@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 1 · Day 1 — SaaS vs On-Prem</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0d0f14;
+    --card: #13161e;
+    --border: #1e2330;
+    --accent: #4fffb0;
+    --accent2: #4f8fff;
+    --accent3: #ff8c4f;
+    --muted: #5a6175;
+    --text: #dde2f0;
+    --text-dim: #8891a8;
+    --tag-saas: #1a3a2a;
+    --tag-saas-t: #4fffb0;
+    --tag-onprem: #1a2a3a;
+    --tag-onprem-t: #4f8fff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    padding: 40px 20px 80px;
+  }
+
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  /* TOP META BAR */
+  .meta-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 36px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .meta-bar .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block; }
+  .meta-bar span { color: var(--text-dim); }
+
+  /* HERO HEADER */
+  .hero {
+    margin-bottom: 48px;
+  }
+  .week-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 6vw, 56px);
+    font-weight: 800;
+    line-height: 1.05;
+    color: #fff;
+    margin-bottom: 16px;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero-sub {
+    color: var(--text-dim);
+    font-size: 16px;
+    max-width: 560px;
+    line-height: 1.6;
+  }
+
+  /* SKILL TAGS */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 24px 0 40px;
+  }
+  .tag {
+    padding: 5px 14px;
+    border-radius: 100px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    background: var(--card);
+  }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 16px;
+  }
+  .card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 10px;
+  }
+  .card p { color: var(--text-dim); margin-bottom: 12px; }
+  .card p:last-child { margin-bottom: 0; }
+
+  /* COMPARISON TABLE */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  .compare-col {
+    border-radius: 16px;
+    padding: 28px;
+    border: 1px solid var(--border);
+  }
+  .compare-col.saas { background: linear-gradient(135deg, #0e201a 0%, #111a16 100%); border-color: #1e3a2a; }
+  .compare-col.onprem { background: linear-gradient(135deg, #0e1620 0%, #11161a 100%); border-color: #1e2e3a; }
+  .compare-col .col-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    display: inline-block;
+  }
+  .saas .col-label { background: var(--tag-saas); color: var(--tag-saas-t); }
+  .onprem .col-label { background: var(--tag-onprem); color: var(--tag-onprem-t); }
+  .compare-col h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .compare-col .tagline {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+    font-style: italic;
+  }
+  .compare-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .compare-col ul li {
+    font-size: 14px;
+    color: var(--text);
+    padding-left: 20px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .compare-col ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+  }
+  .saas ul li::before { color: var(--tag-saas-t); }
+  .onprem ul li::before { color: var(--tag-onprem-t); }
+
+  /* ANALOGY BLOCK */
+  .analogy {
+    background: #13121e;
+    border: 1px solid #2a2040;
+    border-left: 4px solid var(--accent2);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 16px;
+  }
+  .analogy .label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 10px;
+  }
+  .analogy p { color: var(--text); font-size: 15px; }
+  .analogy strong { color: #fff; }
+
+  /* ARCHITECTURE DIAGRAM */
+  .arch-diagram {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 16px;
+  }
+  .arch-diagram h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  .arch-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 0;
+    flex-wrap: wrap;
+  }
+
+  .arch-box {
+    text-align: center;
+    padding: 14px 18px;
+    border-radius: 10px;
+    min-width: 100px;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+  }
+  .arch-box .icon { font-size: 22px; margin-bottom: 4px; }
+  .arch-box .label { color: var(--text-dim); font-size: 10px; margin-top: 4px; }
+
+  .arch-box.user { background: #1a1a2e; border: 1px solid #2a2a4e; color: var(--accent2); }
+  .arch-box.internet { background: #1a2a1a; border: 1px solid #2a3a2a; color: var(--accent); }
+  .arch-box.server { background: #2a1a1a; border: 1px solid #3a2a2a; color: var(--accent3); }
+  .arch-box.cloud { background: #1a1e2a; border: 1px solid #2a2e3a; color: #c084fc; }
+  .arch-box.vpn { background: #1e1a2a; border: 1px solid #2e2a3a; color: #facc15; }
+  .arch-box.firewall { background: #2a1a1e; border: 1px solid #3a2a2e; color: #f87171; }
+  .arch-box.dc { background: #1a2420; border: 1px solid #2a3430; color: #34d399; }
+
+  .arch-arrow {
+    font-size: 20px;
+    color: var(--muted);
+    padding: 0 8px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .two-arch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+  .arch-half {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+  }
+  .arch-half.saas-arch { border-top: 3px solid var(--tag-saas-t); }
+  .arch-half.onprem-arch { border-top: 3px solid var(--tag-onprem-t); }
+  .arch-half h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .flow-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .flow-step .box {
+    flex: 1;
+    text-align: center;
+    padding: 8px 6px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    line-height: 1.3;
+  }
+  .flow-step .arrow { color: var(--muted); font-size: 14px; flex-shrink: 0; }
+  .saas-arch .flow-step .box { background: var(--tag-saas); color: var(--tag-saas-t); border: 1px solid #2a5a3a; }
+  .onprem-arch .flow-step .box { background: var(--tag-onprem); color: var(--tag-onprem-t); border: 1px solid #2a3a5a; }
+
+  /* CONCEPTS */
+  .concepts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 40px;
+  }
+  .concept-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 24px;
+  }
+  .concept-card .icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+  }
+  .concept-card h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+  .concept-card p { font-size: 13px; color: var(--text-dim); }
+
+  /* SCENARIO */
+  .scenario {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 16px;
+  }
+  .scenario h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 18px;
+  }
+  .scenario-item {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+  }
+  .scenario-item:last-child { margin-bottom: 0; }
+  .scenario-item .badge {
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+    height: fit-content;
+    margin-top: 2px;
+  }
+  .badge-saas { background: var(--tag-saas); color: var(--tag-saas-t); }
+  .badge-onprem { background: var(--tag-onprem); color: var(--tag-onprem-t); }
+  .scenario-item p { font-size: 14px; color: var(--text-dim); }
+  .scenario-item p strong { color: var(--text); }
+
+  /* OUTCOME BOX */
+  .outcome {
+    background: linear-gradient(135deg, #0e1e1a 0%, #0d1218 100%);
+    border: 1px solid #1e3a30;
+    border-radius: 16px;
+    padding: 32px;
+    margin-top: 40px;
+  }
+  .outcome h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .outcome ul { display: flex; flex-direction: column; gap: 10px; }
+  .outcome ul li {
+    color: var(--text-dim);
+    font-size: 14px;
+    padding-left: 24px;
+    position: relative;
+  }
+  .outcome ul li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* QUICK REF */
+  .quick-ref {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 40px;
+  }
+  .qr-header {
+    padding: 16px 24px;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border);
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    padding: 12px 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 14px 20px;
+    font-size: 13px;
+    color: var(--text-dim);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+  }
+  td:first-child {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    white-space: nowrap;
+    width: 180px;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  @media (max-width: 640px) {
+    .compare-grid, .two-arch, .concepts-grid { grid-template-columns: 1fr; }
+    .arch-row { gap: 4px; }
+    .arch-box { min-width: 70px; padding: 10px 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- META -->
+  <div class="meta-bar">
+    <span class="dot"></span>
+    <span>L2 Technical Support Engineer · Fintech</span>
+    <span style="color:var(--border)">|</span>
+    <span>Week 1 · Day 1</span>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="week-label">Today's Topic</div>
+    <h1>SaaS vs <span>On-Prem</span></h1>
+    <p class="hero-sub">Where does the software live — at someone else's place, or at your company's own place? That's the whole question. Let's break it down like a human.</p>
+    <div class="tags">
+      <span class="tag">Architecture</span>
+      <span class="tag">VPN</span>
+      <span class="tag">Data Center Model</span>
+      <span class="tag">Environment Segregation</span>
+    </div>
+  </div>
+
+  <!-- SECTION 1 — THE SIMPLE IDEA -->
+  <div class="section-title">The Simple Idea First</div>
+
+  <div class="analogy">
+    <div class="label">Real-life Analogy</div>
+    <p>
+      Imagine you need a car. You have two choices:<br><br>
+      <strong>Option A (SaaS):</strong> You use <strong>Uber</strong>. Someone else owns the car, maintains it, fills the petrol. You just open the app and go. But you don't control the car — Uber does.<br><br>
+      <strong>Option B (On-Prem):</strong> You <strong>buy your own car</strong>. It's parked in YOUR garage. You maintain it, fix it, pay for petrol. Full control — but all the responsibility is yours.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>Now apply this to software…</h3>
+    <p>In fintech, you're dealing with software like payment gateways, banking dashboards, fraud detection tools — the big question is always: <strong>where does this software live and who takes care of it?</strong></p>
+    <p>SaaS = Software lives on the vendor's servers (their "house"). You access it via internet. On-Prem = Software lives on your company's own servers (your "house"). You manage everything yourself.</p>
+  </div>
+
+  <!-- SECTION 2 — COMPARE -->
+  <div class="section-title" style="margin-top:40px">Head to Head</div>
+
+  <div class="compare-grid">
+    <div class="compare-col saas">
+      <div class="col-label">SaaS</div>
+      <h3>Software as a Service</h3>
+      <p class="tagline">"You rent it. They run it."</p>
+      <ul>
+        <li>Software is hosted on the vendor's cloud servers (like AWS, Azure)</li>
+        <li>You access it through a browser or app — just log in</li>
+        <li>Vendor handles all updates, security patches, backups</li>
+        <li>You pay monthly/yearly like a subscription (Netflix-style)</li>
+        <li>Easy to scale — need more users? Just upgrade your plan</li>
+        <li>You have less control over where your data actually sits</li>
+        <li>Examples: Salesforce, Stripe, QuickBooks Online, Slack</li>
+      </ul>
+    </div>
+    <div class="compare-col onprem">
+      <div class="col-label">On-Prem</div>
+      <h3>On-Premises</h3>
+      <p class="tagline">"You own it. You run it."</p>
+      <ul>
+        <li>Software is installed on your company's own physical servers</li>
+        <li>Your IT team manages everything — hardware, software, network</li>
+        <li>You are responsible for updates, security, backups — all of it</li>
+        <li>Big upfront cost to buy servers and set everything up</li>
+        <li>More control — your data never leaves your building</li>
+        <li>Banks and government bodies often prefer this for compliance reasons</li>
+        <li>Examples: SAP on company servers, Oracle DB in your data center</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SECTION 3 — ARCHITECTURE DIAGRAMS -->
+  <div class="section-title">Architecture Diagrams (Draw This! 🖊️)</div>
+
+  <div class="two-arch">
+    <div class="arch-half saas-arch">
+      <h4>☁️ SaaS Architecture</h4>
+      <div class="flow-step">
+        <div class="box">👤 You<br/>(Browser/App)</div>
+        <div class="arrow">→</div>
+        <div class="box">🌐 Internet</div>
+      </div>
+      <div class="flow-step">
+        <div class="box">🌐 Internet</div>
+        <div class="arrow">→</div>
+        <div class="box">☁️ Vendor's Cloud</div>
+      </div>
+      <div class="flow-step">
+        <div class="box">☁️ Vendor's Cloud</div>
+        <div class="arrow">→</div>
+        <div class="box">🗄️ Vendor's DB & App</div>
+      </div>
+      <div style="margin-top:16px; padding:12px; background: rgba(79,255,176,0.05); border-radius:8px; border:1px solid #1e3a2a;">
+        <p style="font-size:12px; color: var(--text-dim); font-family:'DM Mono',monospace;">No VPN needed. Everything goes through the internet. Vendor manages firewall + security.</p>
+      </div>
+    </div>
+
+    <div class="arch-half onprem-arch">
+      <h4>🏢 On-Prem Architecture</h4>
+      <div class="flow-step">
+        <div class="box">👤 You<br/>(Office PC)</div>
+        <div class="arrow">→</div>
+        <div class="box">🔐 VPN / Firewall</div>
+      </div>
+      <div class="flow-step">
+        <div class="box">🔐 VPN / Firewall</div>
+        <div class="arrow">→</div>
+        <div class="box">🏗️ Internal Network</div>
+      </div>
+      <div class="flow-step">
+        <div class="box">🏗️ Internal Network</div>
+        <div class="arrow">→</div>
+        <div class="box">🗄️ Your Servers<br/>(Data Center)</div>
+      </div>
+      <div style="margin-top:16px; padding:12px; background: rgba(79,143,255,0.05); border-radius:8px; border:1px solid #1e2e3a;">
+        <p style="font-size:12px; color: var(--text-dim); font-family:'DM Mono',monospace;">VPN is a must for remote access. Your IT team runs the firewall + everything inside.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4 — KEY CONCEPTS -->
+  <div class="section-title">4 Key Concepts You Need to Know</div>
+
+  <div class="concepts-grid">
+    <div class="concept-card">
+      <div class="icon">🔐</div>
+      <h4>VPN (Virtual Private Network)</h4>
+      <p>Think of it as a secret tunnel through the internet. When you work from home and need to access your company's internal system, VPN creates a safe private connection so no one can spy on your traffic. In On-Prem setups, VPN is essential for remote workers.</p>
+    </div>
+    <div class="concept-card">
+      <div class="icon">🏗️</div>
+      <h4>DC Model (Data Center)</h4>
+      <p>A Data Center is basically a big room (or building) full of servers — powerful computers that run your company's software and store all your data. In On-Prem, YOU own and manage this room. In SaaS, the vendor has their own data center and you don't have to worry about it.</p>
+    </div>
+    <div class="concept-card">
+      <div class="icon">🌐</div>
+      <h4>Architecture</h4>
+      <p>Architecture just means "how is everything connected and set up?" Like a blueprint of a house — who talks to who, where does the data go, what happens when you click a button. Drawing architecture diagrams is how engineers explain complex systems simply.</p>
+    </div>
+    <div class="concept-card">
+      <div class="icon">🔵</div>
+      <h4>Environment Segregation</h4>
+      <p>Companies never test new features directly on the live system (imagine testing a broken payment button on real customers!). So they have separate environments: <strong>DEV</strong> (where developers build stuff), <strong>UAT/QA</strong> (where testers check it), and <strong>PROD</strong> (the real live system customers use). Keeping these separate = Environment Segregation.</p>
+    </div>
+  </div>
+
+  <!-- ENV SEGREGATION DETAIL -->
+  <div class="card" style="margin-top:-8px; margin-bottom:40px;">
+    <h3>🔵 Environment Segregation — More Detail</h3>
+    <p>In fintech, this is super important. A bug in a payment system can freeze someone's account. So you always have:</p>
+    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:14px;">
+      <div style="flex:1; min-width:160px; background:#0f1a10; border:1px solid #1e3a1e; border-radius:10px; padding:14px;">
+        <div style="font-family:'DM Mono',monospace; font-size:10px; color:#4fffb0; margin-bottom:6px;">DEV</div>
+        <p style="font-size:13px; color:var(--text-dim);">Developers write and break things here. No real data. Anything goes.</p>
+      </div>
+      <div style="flex:1; min-width:160px; background:#1a1a0f; border:1px solid #3a3a1e; border-radius:10px; padding:14px;">
+        <div style="font-family:'DM Mono',monospace; font-size:10px; color:#facc15; margin-bottom:6px;">UAT / QA</div>
+        <p style="font-size:13px; color:var(--text-dim);">Testers and clients verify everything works as expected. Fake data used.</p>
+      </div>
+      <div style="flex:1; min-width:160px; background:#1a0f0f; border:1px solid #3a1e1e; border-radius:10px; padding:14px;">
+        <div style="font-family:'DM Mono',monospace; font-size:10px; color:#f87171; margin-bottom:6px;">PROD</div>
+        <p style="font-size:13px; color:var(--text-dim);">The real live system. Real customers, real money. Handle with care!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5 — QUICK REF TABLE -->
+  <div class="section-title">Quick Reference Table</div>
+
+  <div class="quick-ref" style="margin-bottom:40px;">
+    <div class="qr-header">SaaS vs On-Prem at a Glance</div>
+    <table>
+      <thead>
+        <tr>
+          <th>What</th>
+          <th>SaaS</th>
+          <th>On-Prem</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Where it lives</td><td>Vendor's cloud servers</td><td>Your company's servers</td></tr>
+        <tr><td>Who maintains it</td><td>The vendor</td><td>Your IT team</td></tr>
+        <tr><td>Cost type</td><td>Monthly/yearly subscription</td><td>Big upfront investment</td></tr>
+        <tr><td>Data control</td><td>Vendor holds your data</td><td>You hold your own data</td></tr>
+        <tr><td>VPN needed?</td><td>Usually no (just internet)</td><td>Yes, for remote access</td></tr>
+        <tr><td>Setup time</td><td>Minutes (just sign up)</td><td>Weeks/months to set up</td></tr>
+        <tr><td>Scaling</td><td>Easy — just upgrade plan</td><td>Buy more hardware</td></tr>
+        <tr><td>Used by</td><td>Startups, fast-growing companies</td><td>Banks, govt, regulated industries</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 6 — FINTECH SCENARIOS -->
+  <div class="section-title">Real Fintech Scenarios</div>
+
+  <div class="scenario">
+    <h3>As an L2 Support Engineer, you'll deal with both. Here's how they look in real life:</h3>
+
+    <div class="scenario-item">
+      <span class="badge badge-saas">SaaS</span>
+      <p>A client says <strong>"I can't log in to the payment dashboard."</strong> — You check if the SaaS vendor (say, Stripe) has an outage. Go to their status page. You can't "fix" the server — you just raise a ticket with the vendor and tell the client to wait.</p>
+    </div>
+    <div class="scenario-item">
+      <span class="badge badge-onprem">On-Prem</span>
+      <p>A client says <strong>"The transaction service is down."</strong> — You SSH into your company's server, check logs, restart services. It's YOUR server, so YOU fix it. No waiting on a vendor.</p>
+    </div>
+    <div class="scenario-item">
+      <span class="badge badge-onprem">On-Prem</span>
+      <p>A remote employee can't access the internal banking app — you check their <strong>VPN connection first</strong>. No VPN = no access to on-prem systems. That's your first question: "Are you connected to VPN?"</p>
+    </div>
+    <div class="scenario-item">
+      <span class="badge badge-saas">SaaS</span>
+      <p>Client asks <strong>"Where is my financial data stored?"</strong> — With SaaS, you tell them: "It's on the vendor's cloud infrastructure, typically in [region] data centers." You'll need to check the vendor's data policy for compliance questions.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Day 1 Outcomes — Can You Do This?</h3>
+    <ul>
+      <li>Explain to anyone what SaaS means — software you rent online, vendor manages everything</li>
+      <li>Explain On-Prem — software installed on your company's own servers, you manage it</li>
+      <li>Tell someone why a company might choose On-Prem (control, compliance, data security)</li>
+      <li>Tell someone why a company might choose SaaS (fast setup, less maintenance, lower upfront cost)</li>
+      <li>Explain what a VPN is and why On-Prem needs it for remote access</li>
+      <li>Describe what a Data Center is in simple terms</li>
+      <li>Draw a simple architecture diagram for both SaaS and On-Prem setups</li>
+      <li>Explain what DEV, UAT, and PROD environments are and why they're kept separate</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 5 · Day 1 & 2 — Bash & Log Automation</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#f4f7ff;--surface:#ffffff;--surface2:#edf1ff;--surface3:#e4eaff;
+    --border:#d0d8f0;--ink:#1a1d30;--ink-dim:#5a6080;--ink-faint:#a0aac0;
+    --white:#ffffff;
+    --blue:#2554e8;--blue-bg:#eef2ff;--blue-border:#c0ccf8;
+    --green:#18a058;--green-bg:#edfaf3;--green-border:#b0e8cc;
+    --orange:#e86820;--orange-bg:#fff4ee;--orange-border:#fad0b0;
+    --red:#d02040;--red-bg:#fff0f2;--red-border:#f8c0c8;
+    --purple:#7038d8;--purple-bg:#f5f0ff;--purple-border:#d0b8f8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--ink);font-family:'Nunito',sans-serif;font-size:15px;line-height:1.7;padding:40px 20px 80px;}
+  .page{max-width:900px;margin:0 auto;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:48px;padding-bottom:16px;border-bottom:2px solid var(--border);}
+  .topbar-left{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-faint);letter-spacing:1px;text-transform:uppercase;}
+  .tb-right{display:flex;gap:8px;}
+  .tb-b{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 14px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;}
+  .tb-wk{background:var(--surface2);border:1px solid var(--border);color:var(--ink-dim);}
+  .tb-d1{background:var(--blue-bg);border:1px solid var(--blue-border);color:var(--blue);}
+  .tb-d2{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+
+  .hero{margin-bottom:48px;}
+  .dl{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:12px;}
+  .hero h1{font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.05;color:var(--ink);margin-bottom:16px;}
+  .hero h1 .b{color:var(--blue);} .hero h1 .g{color:var(--green);}
+  .hero-desc{color:var(--ink-dim);font-size:15px;max-width:520px;}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;}
+  .tag{padding:4px 12px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface);border:1px solid var(--border);color:var(--ink-dim);}
+  .tag-b{background:var(--blue-bg);border-color:var(--blue-border);color:var(--blue);}
+  .tag-g{background:var(--green-bg);border-color:var(--green-border);color:var(--green);}
+
+  .day-div{display:flex;align-items:center;gap:14px;margin:52px 0 24px;}
+  .dd-pill{font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 18px;border-radius:100px;letter-spacing:2px;text-transform:uppercase;font-weight:700;flex-shrink:0;}
+  .dd-b{background:var(--blue-bg);border:2px solid var(--blue-border);color:var(--blue);}
+  .dd-g{background:var(--green-bg);border:2px solid var(--green-border);color:var(--green);}
+  .dd-lb{flex:1;height:2px;background:var(--blue-border);}
+  .dd-lg{flex:1;height:2px;background:var(--green-border);}
+  .dd-title{font-size:17px;font-weight:800;}
+  .dd-tb{color:var(--blue);} .dd-tg{color:var(--green);}
+
+  .sec{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--ink-faint);margin-bottom:16px;margin-top:40px;display:flex;align-items:center;gap:10px;}
+  .sec .sn{font-size:12px;font-weight:700;}
+  .sn-b{color:var(--blue);} .sn-g{color:var(--green);}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .analogy{border-left:4px solid;border-radius:12px;padding:20px 26px;margin-bottom:14px;}
+  .an-b{background:var(--blue-bg);border-color:var(--blue);}
+  .an-g{background:var(--green-bg);border-color:var(--green);}
+  .analogy .al{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+  .an-b .al{color:var(--blue);} .an-g .al{color:var(--green);}
+  .analogy p{color:var(--ink);font-size:14px;}
+  .analogy strong{font-weight:700;}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 26px;margin-bottom:12px;}
+  .card h3{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:8px;}
+  .card p{color:var(--ink-dim);font-size:14px;margin-bottom:8px;}
+  .card p:last-child{margin-bottom:0;}
+
+  /* SCRIPT BLOCKS */
+  .script-wrap{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px;}
+  .sw-head{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .sw-info .sw-file{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-faint);margin-bottom:3px;}
+  .sw-info h3{font-size:15px;font-weight:700;color:var(--ink);}
+  .sw-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 12px;border-radius:100px;}
+  .sb-b{background:var(--blue-bg);border:1px solid var(--blue-border);color:var(--blue);}
+  .sb-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .sb-o{background:var(--orange-bg);border:1px solid var(--orange-border);color:var(--orange);}
+
+  .cbox{background:var(--ink);border-radius:0;overflow:hidden;}
+  .cb-bar{padding:7px 14px;background:#252840;display:flex;align-items:center;gap:7px;}
+  .d{width:8px;height:8px;border-radius:50%;}.dr{background:#ff5f56;}.dy{background:#ffbd2e;}.dg{background:#27c93f;}
+  .ct{font-family:'JetBrains Mono',monospace;font-size:10px;color:#606880;margin-left:4px;letter-spacing:1px;}
+  .cbox-code{padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:2.0;overflow-x:auto;}
+  .kw{color:#ff7b72;}.fn{color:#79c0ff;}.str{color:#a5d6ff;}.var{color:#ffa657;}.cm{color:#4a5a6a;}.op{color:#e0e8f8;}.gt{color:#3fb950;}
+
+  .note{border-radius:10px;padding:10px 16px;font-size:13px;margin:10px 16px 14px;}
+  .n-b{background:var(--blue-bg);border:1px solid var(--blue-border);color:var(--blue);}
+  .n-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .n-o{background:var(--orange-bg);border:1px solid var(--orange-border);color:var(--orange);}
+  .n-r{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);}
+  .note strong{color:var(--ink);}
+
+  /* RESULT BOX */
+  .result-box{background:var(--ink);border-radius:10px;padding:14px 18px;margin:10px 16px 14px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#3fb950;line-height:1.9;}
+  .result-box .rh{color:#606880;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+
+  /* HOW TO RUN */
+  .run-block{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+  .rb-head{padding:12px 20px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:14px;font-weight:700;color:var(--ink);}
+  .rb-body{padding:16px 20px;display:flex;flex-direction:column;gap:10px;}
+  .rb-step{display:flex;gap:12px;align-items:flex-start;}
+  .rb-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue);background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:6px;padding:2px 8px;flex-shrink:0;margin-top:2px;}
+  .rb-step p{font-size:13px;color:var(--ink-dim);}
+  .rb-step p strong{color:var(--ink);}
+  .rb-cmd{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--ink);color:#3fb950;border-radius:6px;padding:6px 12px;display:inline-block;margin-top:4px;}
+
+  /* CRON TABLE */
+  .cron-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+  .cron-head{padding:12px 20px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:14px;font-weight:700;color:var(--ink);}
+  .cron-fields{display:grid;grid-template-columns:repeat(5,1fr) auto;gap:0;border-bottom:1px solid var(--border);}
+  .cf{padding:12px 14px;text-align:center;border-right:1px solid var(--border);}
+  .cf:last-child{border-right:none;}
+  .cf-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-faint);margin-bottom:4px;}
+  .cf-sym{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;}
+  .cf-range{font-size:11px;color:var(--ink-faint);margin-top:2px;font-family:'JetBrains Mono',monospace;}
+  .s1 .cf-sym{color:var(--blue);} .s2 .cf-sym{color:var(--orange);}
+  .s3 .cf-sym{color:var(--green);} .s4 .cf-sym{color:var(--red);}
+  .s5 .cf-sym{color:var(--purple);} .s6 .cf-sym{color:var(--ink);font-size:13px;}
+  table.ce{width:100%;border-collapse:collapse;}
+  table.ce th{padding:9px 16px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-faint);text-align:left;border-bottom:1px solid var(--border);font-weight:400;background:var(--surface2);}
+  table.ce td{padding:11px 16px;font-size:13px;color:var(--ink-dim);border-bottom:1px solid var(--border);}
+  table.ce tr:last-child td{border-bottom:none;}
+  table.ce td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--orange);}
+
+  /* SCENARIOS */
+  .scen-list{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+  .scen-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;display:flex;gap:12px;align-items:flex-start;}
+  .si-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue);background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:6px;padding:3px 8px;flex-shrink:0;margin-top:2px;}
+  .scen-item p{font-size:14px;color:var(--ink-dim);}
+  .scen-item p strong{color:var(--ink);}
+
+  .outcome{background:var(--ink);border-radius:16px;padding:32px;margin-top:48px;}
+  .outcome h3{font-size:20px;font-weight:800;color:#79c0ff;margin-bottom:18px;}
+  .outcome ul{display:flex;flex-direction:column;gap:8px;list-style:none;}
+  .outcome ul li{font-size:14px;color:rgba(255,255,255,0.65);padding-left:22px;position:relative;}
+  .outcome ul li::before{content:'✓';position:absolute;left:0;color:#3fb950;font-family:'JetBrains Mono',monospace;}
+  .outcome ul li.d2::before{color:#79c0ff;}
+
+  @media(max-width:640px){.cron-fields{grid-template-columns:repeat(3,1fr);}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 5</div>
+    <div class="tb-right">
+      <span class="tb-b tb-wk">Week 5</span>
+      <span class="tb-b tb-d1">Day 1</span>
+      <span class="tb-b tb-d2">Day 2</span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="dl">Week 5 · Day 1 & Day 2</div>
+    <h1>Bash <span class="b">Basics</span> &<br>Log <span class="g">Automation</span></h1>
+    <p class="hero-desc">Day 1 — write your first real scripts using variables, loops and cron. Day 2 — automate log monitoring so errors are detected automatically without you watching.</p>
+    <div class="tags">
+      <span class="tag tag-b">Day 1 — Bash Basics</span>
+      <span class="tag tag-g">Day 2 — Log Automation</span>
+      <span class="tag">Variables</span><span class="tag">Loops</span>
+      <span class="tag">grep</span><span class="tag">cron</span>
+    </div>
+  </div>
+
+  <!-- ===== DAY 1 ===== -->
+  <div class="day-div">
+    <span class="dd-pill dd-b">Day 1</span>
+    <span class="dd-lb"></span>
+    <span class="dd-title dd-tb">Bash Basics — Variables, Loops & Cron</span>
+  </div>
+
+  <div class="sec"><span class="sn sn-b">01</span> The Simple Idea</div>
+
+  <div class="analogy an-b">
+    <div class="al">Real-life Analogy</div>
+    <p>Imagine you check 5 servers every morning — same commands, same steps, every single day. That's like brushing your teeth the exact same way every morning. You don't think about it, you just do it.<br><br><strong>A bash script is the automation of that habit.</strong> Write the steps once. Run one command. The computer does all 5 servers in 10 seconds while you drink your coffee.</p>
+  </div>
+
+  <div class="sec"><span class="sn sn-b">02</span> Day 1 Scripts — Written from Scratch</div>
+
+  <!-- SCRIPT 1 -->
+  <div class="script-wrap">
+    <div class="sw-head">
+      <div class="sw-info">
+        <div class="sw-file">script-1.sh</div>
+        <h3>Variables + echo — Your First Script</h3>
+      </div>
+      <span class="sw-badge sb-b">Start Here</span>
+    </div>
+    <div class="cbox">
+      <div class="cb-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">script-1.sh</span></div>
+      <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Script 1 — Variables and echo</span><br>
+<span class="cm"># Variables store values. $ reads them back.</span><br>
+<br>
+<span class="var">NAME</span>=<span class="str">"Urwah"</span><br>
+<span class="var">ROLE</span>=<span class="str">"L2 Support Engineer"</span><br>
+<span class="var">DATE</span>=<span class="op">$(</span><span class="fn">date</span><span class="op">)</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"Hello $NAME!"</span><br>
+<span class="fn">echo</span> <span class="str">"Role  : $ROLE"</span><br>
+<span class="fn">echo</span> <span class="str">"Today : $DATE"</span><br>
+<span class="fn">echo</span> <span class="str">"Starting your shift..."</span>
+      </div>
+    </div>
+    <div class="result-box">
+      <div class="rh">Expected output when you run it</div>
+      Hello Urwah!<br>
+      Role  : L2 Support Engineer<br>
+      Today : Thu Apr 3 09:00:00 PKT 2025<br>
+      Starting your shift...
+    </div>
+    <div class="note n-b">✅ <strong>How to run:</strong> Save as script-1.sh → chmod +x script-1.sh → ./script-1.sh</div>
+  </div>
+
+  <!-- SCRIPT 2 -->
+  <div class="script-wrap">
+    <div class="sw-head">
+      <div class="sw-info">
+        <div class="sw-file">script-2.sh</div>
+        <h3>for Loop — Check Multiple Items Automatically</h3>
+      </div>
+      <span class="sw-badge sb-b">Loops</span>
+    </div>
+    <div class="cbox">
+      <div class="cb-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">script-2.sh</span></div>
+      <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Script 2 — for loop</span><br>
+<span class="cm"># Instead of checking servers one by one,</span><br>
+<span class="cm"># the loop does it for each item in the list.</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"=== Checking Servers ==="</span><br>
+<br>
+<span class="kw">for</span> <span class="var">SERVER</span> <span class="kw">in</span> <span class="str">payment-server api-server db-server</span>; <span class="kw">do</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"Checking: $SERVER"</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"  Disk  : $(df -h / | awk 'NR==2{print $5}')"</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"  Done."</span><br>
+<span class="kw">done</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"All servers checked."</span>
+      </div>
+    </div>
+    <div class="result-box">
+      <div class="rh">Expected output</div>
+      === Checking Servers ===<br>
+      Checking: payment-server<br>
+      &nbsp;&nbsp;Disk  : 62%<br>
+      &nbsp;&nbsp;Done.<br>
+      Checking: api-server<br>
+      &nbsp;&nbsp;Disk  : 62%<br>
+      &nbsp;&nbsp;Done.<br>
+      Checking: db-server<br>
+      &nbsp;&nbsp;Disk  : 62%<br>
+      &nbsp;&nbsp;Done.<br>
+      All servers checked.
+    </div>
+    <div class="note n-b">✅ <strong>How to run:</strong> chmod +x script-2.sh → ./script-2.sh</div>
+  </div>
+
+  <!-- SCRIPT 3 -->
+  <div class="script-wrap">
+    <div class="sw-head">
+      <div class="sw-info">
+        <div class="sw-file">script-3.sh</div>
+        <h3>if/else + Variables — Smart Disk Alert</h3>
+      </div>
+      <span class="sw-badge sb-b">if/else</span>
+    </div>
+    <div class="cbox">
+      <div class="cb-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">script-3.sh</span></div>
+      <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Script 3 — if/else decision making</span><br>
+<span class="cm"># If disk is above limit: warn. If not: OK.</span><br>
+<br>
+<span class="var">LIMIT</span>=<span class="op">80</span><br>
+<span class="var">DISK</span>=<span class="op">$(</span><span class="fn">df</span> / | <span class="fn">awk</span> <span class="str">'NR==2{print $5}'</span> | <span class="fn">tr</span> -d <span class="str">'%'</span><span class="op">)</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"Disk usage: $DISK%"</span><br>
+<br>
+<span class="kw">if</span> [ <span class="var">$DISK</span> -gt <span class="var">$LIMIT</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"WARNING: Disk above $LIMIT%! Act now."</span><br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"OK: Disk is fine at $DISK%"</span><br>
+<span class="kw">fi</span>
+      </div>
+    </div>
+    <div class="result-box">
+      <div class="rh">Expected output — if disk is at 62%</div>
+      Disk usage: 62%<br>
+      OK: Disk is fine at 62%<br>
+      <br>
+      — if disk is above 80% —<br>
+      Disk usage: 87%<br>
+      WARNING: Disk above 80%! Act now.
+    </div>
+    <div class="note n-b">✅ <strong>How to run:</strong> chmod +x script-3.sh → ./script-3.sh</div>
+  </div>
+
+  <!-- CRON SECTION -->
+  <div class="sec"><span class="sn sn-b">03</span> Cron — Schedule Scripts to Run Automatically</div>
+
+  <div class="card">
+    <h3>What is Cron?</h3>
+    <p>Cron is Linux's built-in scheduler. You give it a time + a command and it runs that command automatically every day/hour/minute — even when you're not there. To edit your schedule, run: <code style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--blue);">crontab -e</code></p>
+  </div>
+
+  <div class="cron-wrap">
+    <div class="cron-head">⏱️ Cron Syntax — 5 fields then your command</div>
+    <div class="cron-fields">
+      <div class="cf s1"><div class="cf-label">Minute</div><div class="cf-sym">*</div><div class="cf-range">0–59</div></div>
+      <div class="cf s2"><div class="cf-label">Hour</div><div class="cf-sym">*</div><div class="cf-range">0–23</div></div>
+      <div class="cf s3"><div class="cf-label">Day/Month</div><div class="cf-sym">*</div><div class="cf-range">1–31</div></div>
+      <div class="cf s4"><div class="cf-label">Month</div><div class="cf-sym">*</div><div class="cf-range">1–12</div></div>
+      <div class="cf s5"><div class="cf-label">Day/Week</div><div class="cf-sym">*</div><div class="cf-range">0=Sun</div></div>
+      <div class="cf s6"><div class="cf-label">Command</div><div class="cf-sym">/path/script.sh</div><div class="cf-range">full path</div></div>
+    </div>
+    <table class="ce">
+      <thead><tr><th>Cron Line</th><th>When it runs</th></tr></thead>
+      <tbody>
+        <tr><td>0 8 * * *</td><td>Every day at 8:00 AM</td></tr>
+        <tr><td>*/30 * * * *</td><td>Every 30 minutes</td></tr>
+        <tr><td>0 8 * * 1-5</td><td>Weekdays only at 8 AM</td></tr>
+        <tr><td>0 0 * * 0</td><td>Every Sunday midnight</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== DAY 2 ===== -->
+  <div class="day-div" style="margin-top:56px;">
+    <span class="dd-pill dd-g">Day 2</span>
+    <span class="dd-lg"></span>
+    <span class="dd-title dd-tg">Log Automation — grep + Cron Monitoring</span>
+  </div>
+
+  <div class="sec"><span class="sn sn-g">04</span> The Simple Idea</div>
+
+  <div class="analogy an-g">
+    <div class="al">Real-life Analogy</div>
+    <p>Think of a <strong>smoke detector</strong>. It doesn't wait for you to smell smoke. It monitors the air 24/7 and screams the moment it detects something wrong — automatically.<br><br><strong>Your log monitoring script is that smoke detector.</strong> It watches the log file, counts errors, and alerts you automatically — whether you're at your desk or asleep.</p>
+  </div>
+
+  <div class="sec"><span class="sn sn-g">05</span> Day 2 Scripts — Written from Scratch</div>
+
+  <!-- SCRIPT 4 -->
+  <div class="script-wrap">
+    <div class="sw-head">
+      <div class="sw-info">
+        <div class="sw-file">script-4-create-log.sh</div>
+        <h3>Step 0 — Create a Sample Log File First</h3>
+      </div>
+      <span class="sw-badge sb-o">Run First</span>
+    </div>
+    <div class="cbox">
+      <div class="cb-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">script-4-create-log.sh</span></div>
+      <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Creates a sample payment log to test against</span><br>
+<span class="cm"># Run this first so the other scripts have a file to read</span><br>
+<br>
+<span class="fn">cat</span> &gt; <span class="str">"$HOME/payment.log"</span> &lt;&lt; <span class="str">'EOF'</span><br>
+[2024-03-15 09:00] [INFO ] Service started OK<br>
+[2024-03-15 09:01] [INFO ] TXN-001 received Amount: 5000<br>
+[2024-03-15 09:02] [INFO ] TXN-001 SUCCESS<br>
+[2024-03-15 09:03] [ERROR] DB_TIMEOUT connection failed<br>
+[2024-03-15 09:03] [ERROR] TXN-002 FAILED unable to write<br>
+[2024-03-15 09:04] [WARN ] Disk at 84%<br>
+[2024-03-15 09:05] [ERROR] DB_TIMEOUT connection failed<br>
+[2024-03-15 09:05] [ERROR] TXN-003 FAILED unable to write<br>
+[2024-03-15 09:06] [INFO ] TXN-004 SUCCESS<br>
+[2024-03-15 09:07] [ERROR] SOCKET_TIMEOUT gateway unreachable<br>
+EOF<br>
+<br>
+<span class="fn">echo</span> <span class="str">"Log file created at $HOME/payment.log"</span><br>
+<span class="fn">echo</span> <span class="str">"Lines: $(wc -l < $HOME/payment.log)"</span>
+      </div>
+    </div>
+    <div class="result-box">
+      <div class="rh">Expected output</div>
+      Log file created at /home/kali/payment.log<br>
+      Lines: 10
+    </div>
+    <div class="note n-o">⚠️ <strong>Run this first</strong> before scripts 5 and 6. It creates the log file that they read.</div>
+  </div>
+
+  <!-- SCRIPT 5 -->
+  <div class="script-wrap">
+    <div class="sw-head">
+      <div class="sw-info">
+        <div class="sw-file">script-5-error-check.sh</div>
+        <h3>Auto-Detect Errors in Log File</h3>
+      </div>
+      <span class="sw-badge sb-g">Day 2 Lab</span>
+    </div>
+    <div class="cbox">
+      <div class="cb-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">script-5-error-check.sh</span></div>
+      <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Auto-detect errors in the payment log</span><br>
+<span class="cm"># Counts errors and warns if too many found</span><br>
+<br>
+<span class="var">LOG</span>=<span class="str">"$HOME/payment.log"</span><br>
+<span class="var">REPORT</span>=<span class="str">"$HOME/error-report.txt"</span><br>
+<span class="var">LIMIT</span>=<span class="op">3</span><br>
+<br>
+<span class="cm"># Write header to report</span><br>
+<span class="fn">echo</span> <span class="str">"=== Error Check: $(date) ==="</span> &gt;&gt; <span class="str">"$REPORT"</span><br>
+<br>
+<span class="cm"># Check if log file exists</span><br>
+<span class="kw">if</span> [ ! -f <span class="str">"$LOG"</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"ERROR: Log file not found at $LOG"</span><br>
+&nbsp;&nbsp;<span class="kw">exit</span> <span class="op">1</span><br>
+<span class="kw">fi</span><br>
+<br>
+<span class="cm"># Count errors</span><br>
+<span class="var">ERR</span>=<span class="op">$(</span><span class="fn">grep</span> -c <span class="str">"ERROR"</span> <span class="str">"$LOG"</span><span class="op">)</span><br>
+<span class="var">WARN</span>=<span class="op">$(</span><span class="fn">grep</span> -c <span class="str">"WARN"</span> <span class="str">"$LOG"</span><span class="op">)</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"Errors  : $ERR"</span> | <span class="fn">tee</span> -a <span class="str">"$REPORT"</span><br>
+<span class="fn">echo</span> <span class="str">"Warnings: $WARN"</span> | <span class="fn">tee</span> -a <span class="str">"$REPORT"</span><br>
+<br>
+<span class="cm"># Alert if errors exceed the limit</span><br>
+<span class="kw">if</span> [ <span class="var">$ERR</span> -gt <span class="var">$LIMIT</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"ALERT: $ERR errors found! Above limit of $LIMIT."</span> | <span class="fn">tee</span> -a <span class="str">"$REPORT"</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"--- Top errors ---"</span> | <span class="fn">tee</span> -a <span class="str">"$REPORT"</span><br>
+&nbsp;&nbsp;<span class="fn">grep</span> <span class="str">"ERROR"</span> <span class="str">"$LOG"</span> | <span class="fn">awk</span> <span class="str">'{print $4}'</span> | <span class="fn">sort</span> | <span class="fn">uniq</span> -c | <span class="fn">sort</span> -rn | <span class="fn">tee</span> -a <span class="str">"$REPORT"</span><br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"OK: Error count ($ERR) is within limit."</span> | <span class="fn">tee</span> -a <span class="str">"$REPORT"</span><br>
+<span class="kw">fi</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"Report saved: $REPORT"</span>
+      </div>
+    </div>
+    <div class="result-box">
+      <div class="rh">Expected output</div>
+      Errors  : 5<br>
+      Warnings: 1<br>
+      ALERT: 5 errors found! Above limit of 3.<br>
+      --- Top errors ---<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2 DB_TIMEOUT<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2 TXN-002<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 SOCKET_TIMEOUT<br>
+      Report saved: /home/kali/error-report.txt
+    </div>
+    <div class="note n-g">✅ <strong>How to run:</strong> chmod +x script-5-error-check.sh → ./script-5-error-check.sh</div>
+  </div>
+
+  <!-- SCRIPT 6 -->
+  <div class="script-wrap">
+    <div class="sw-head">
+      <div class="sw-info">
+        <div class="sw-file">script-6-full-monitor.sh</div>
+        <h3>Full Monitoring Script — Disk + Memory + Log Errors</h3>
+      </div>
+      <span class="sw-badge sb-g">⭐ Main Script</span>
+    </div>
+    <div class="cbox">
+      <div class="cb-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">script-6-full-monitor.sh</span></div>
+      <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Full monitoring script</span><br>
+<span class="cm"># Checks disk, memory and log errors in one run</span><br>
+<span class="cm"># Saves everything to a dated report file</span><br>
+<br>
+<span class="var">LOG</span>=<span class="str">"$HOME/payment.log"</span><br>
+<span class="var">REPORT</span>=<span class="str">"$HOME/monitor-$(date +%Y-%m-%d).txt"</span><br>
+<span class="var">DISK_LIMIT</span>=<span class="op">80</span><br>
+<span class="var">ERR_LIMIT</span>=<span class="op">3</span><br>
+<span class="var">ISSUES</span>=<span class="op">0</span><br>
+<br>
+<span class="cm"># Helper to print and save at the same time</span><br>
+<span class="fn">log</span>() { <span class="fn">echo</span> <span class="str">"$1"</span>; <span class="fn">echo</span> <span class="str">"$1"</span> &gt;&gt; <span class="str">"$REPORT"</span>; }<br>
+<br>
+<span class="fn">log</span> <span class="str">"========================================="</span><br>
+<span class="fn">log</span> <span class="str">" MONITOR REPORT — $(date)"</span><br>
+<span class="fn">log</span> <span class="str">"========================================="</span><br>
+<br>
+<span class="cm"># --- 1. Disk check ---</span><br>
+<span class="var">DISK</span>=<span class="op">$(</span><span class="fn">df</span> / | <span class="fn">awk</span> <span class="str">'NR==2{print $5}'</span> | <span class="fn">tr</span> -d <span class="str">'%'</span><span class="op">)</span><br>
+<span class="kw">if</span> [ <span class="var">$DISK</span> -ge <span class="var">$DISK_LIMIT</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">log</span> <span class="str">"[DISK] WARNING: $DISK% — above $DISK_LIMIT%"</span><br>
+&nbsp;&nbsp;<span class="var">ISSUES</span>=<span class="op">$((ISSUES+1))</span><br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">log</span> <span class="str">"[DISK] OK: $DISK%"</span><br>
+<span class="kw">fi</span><br>
+<br>
+<span class="cm"># --- 2. Memory check ---</span><br>
+<span class="var">SWAP</span>=<span class="op">$(</span><span class="fn">free</span> -m | <span class="fn">awk</span> <span class="str">'NR==3{print $3}'</span><span class="op">)</span><br>
+<span class="kw">if</span> [ <span class="var">$SWAP</span> -gt <span class="op">100</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">log</span> <span class="str">"[MEM ] WARNING: Swap at ${SWAP}MB — RAM running low"</span><br>
+&nbsp;&nbsp;<span class="var">ISSUES</span>=<span class="op">$((ISSUES+1))</span><br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">log</span> <span class="str">"[MEM ] OK: Swap at ${SWAP}MB"</span><br>
+<span class="kw">fi</span><br>
+<br>
+<span class="cm"># --- 3. Log error check ---</span><br>
+<span class="kw">if</span> [ -f <span class="str">"$LOG"</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="var">ERR</span>=<span class="op">$(</span><span class="fn">grep</span> -c <span class="str">"ERROR"</span> <span class="str">"$LOG"</span><span class="op">)</span><br>
+&nbsp;&nbsp;<span class="kw">if</span> [ <span class="var">$ERR</span> -gt <span class="var">$ERR_LIMIT</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">log</span> <span class="str">"[LOG ] ALERT: $ERR errors found in log!"</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">ISSUES</span>=<span class="op">$((ISSUES+1))</span><br>
+&nbsp;&nbsp;<span class="kw">else</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">log</span> <span class="str">"[LOG ] OK: $ERR errors — within limit"</span><br>
+&nbsp;&nbsp;<span class="kw">fi</span><br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">log</span> <span class="str">"[LOG ] NOTE: Log file not found"</span><br>
+<span class="kw">fi</span><br>
+<br>
+<span class="cm"># --- Summary ---</span><br>
+<span class="fn">log</span> <span class="str">"-----------------------------------------"</span><br>
+[ <span class="var">$ISSUES</span> -eq <span class="op">0</span> ] &amp;&amp; <span class="fn">log</span> <span class="str">"RESULT: All OK"</span> || <span class="fn">log</span> <span class="str">"RESULT: $ISSUES issue(s) found — check above"</span><br>
+<span class="fn">log</span> <span class="str">"Report: $REPORT"</span>
+      </div>
+    </div>
+    <div class="result-box">
+      <div class="rh">Expected output</div>
+      =========================================<br>
+      &nbsp;MONITOR REPORT — Thu Apr 3 09:00:00 2025<br>
+      =========================================<br>
+      [DISK] OK: 62%<br>
+      [MEM ] OK: Swap at 0MB<br>
+      [LOG ] ALERT: 5 errors found in log!<br>
+      -----------------------------------------<br>
+      RESULT: 1 issue(s) found — check above<br>
+      Report: /home/kali/monitor-2025-04-03.txt
+    </div>
+    <div class="note n-g">✅ <strong>How to run:</strong> chmod +x script-6-full-monitor.sh → ./script-6-full-monitor.sh</div>
+  </div>
+
+  <!-- SCRIPT 7 — SCHEDULE -->
+  <div class="script-wrap">
+    <div class="sw-head">
+      <div class="sw-info">
+        <div class="sw-file">script-7-schedule.sh</div>
+        <h3>Schedule Everything with Crontab — Run Last</h3>
+      </div>
+      <span class="sw-badge sb-o">Run Last</span>
+    </div>
+    <div class="cbox">
+      <div class="cb-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">script-7-schedule.sh</span></div>
+      <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Gives all scripts permission and schedules them</span><br>
+<span class="cm"># Run this LAST after all scripts are in place</span><br>
+<br>
+<span class="cm"># Give permission to all scripts</span><br>
+<span class="fn">chmod</span> +x <span class="str">"$HOME"</span>/script-*.sh<br>
+<span class="fn">echo</span> <span class="str">"Permissions set for all scripts."</span><br>
+<br>
+<span class="cm"># Schedule: full monitor every day at 8 AM</span><br>
+(<span class="fn">crontab</span> -l <span class="op">2</span>&gt;/dev/null; <span class="fn">echo</span> <span class="str">"0 8 * * * $HOME/script-6-full-monitor.sh >> $HOME/cron.log 2>&1"</span>) | <span class="fn">crontab</span> -<br>
+<br>
+<span class="cm"># Schedule: error check every 30 minutes</span><br>
+(<span class="fn">crontab</span> -l <span class="op">2</span>&gt;/dev/null; <span class="fn">echo</span> <span class="str">"*/30 * * * * $HOME/script-5-error-check.sh >> $HOME/errors.log 2>&1"</span>) | <span class="fn">crontab</span> -<br>
+<br>
+<span class="fn">echo</span> <span class="str">"Cron jobs scheduled. Your schedule:"</span><br>
+<span class="fn">crontab</span> -l
+      </div>
+    </div>
+    <div class="result-box">
+      <div class="rh">Expected output</div>
+      Permissions set for all scripts.<br>
+      Cron jobs scheduled. Your schedule:<br>
+      0 8 * * * /home/kali/script-6-full-monitor.sh >> /home/kali/cron.log 2>&1<br>
+      */30 * * * * /home/kali/script-5-error-check.sh >> /home/kali/errors.log 2>&1
+    </div>
+    <div class="note n-o">✅ <strong>How to run:</strong> chmod +x script-7-schedule.sh → ./script-7-schedule.sh</div>
+  </div>
+
+  <!-- HOW TO RUN -->
+  <div class="sec"><span class="sn sn-b">06</span> How to Run Everything — Step by Step</div>
+
+  <div class="run-block">
+    <div class="rb-head">📋 Complete Run Order on Kali Linux</div>
+    <div class="rb-body">
+      <div class="rb-step">
+        <div class="rb-num">01</div>
+        <div>
+          <p><strong>Copy all 7 scripts to your home folder</strong> — /home/kali/</p>
+        </div>
+      </div>
+      <div class="rb-step">
+        <div class="rb-num">02</div>
+        <div>
+          <p><strong>Give all scripts permission at once</strong></p>
+          <code class="rb-cmd">chmod +x ~/script-*.sh</code>
+        </div>
+      </div>
+      <div class="rb-step">
+        <div class="rb-num">03</div>
+        <div>
+          <p><strong>Create the sample log file first</strong> — other scripts need this</p>
+          <code class="rb-cmd">./script-4-create-log.sh</code>
+        </div>
+      </div>
+      <div class="rb-step">
+        <div class="rb-num">04</div>
+        <div>
+          <p><strong>Test each Day 1 script individually</strong></p>
+          <code class="rb-cmd">./script-1.sh<br>./script-2.sh<br>./script-3.sh</code>
+        </div>
+      </div>
+      <div class="rb-step">
+        <div class="rb-num">05</div>
+        <div>
+          <p><strong>Run the error checker</strong> — counts errors and saves report</p>
+          <code class="rb-cmd">./script-5-error-check.sh</code>
+        </div>
+      </div>
+      <div class="rb-step">
+        <div class="rb-num">06</div>
+        <div>
+          <p><strong>Run the full monitor</strong> — main script, does everything</p>
+          <code class="rb-cmd">./script-6-full-monitor.sh</code>
+        </div>
+      </div>
+      <div class="rb-step">
+        <div class="rb-num">07</div>
+        <div>
+          <p><strong>Schedule everything with crontab — run last</strong></p>
+          <code class="rb-cmd">./script-7-schedule.sh</code>
+        </div>
+      </div>
+      <div class="rb-step">
+        <div class="rb-num">08</div>
+        <div>
+          <p><strong>Confirm cron jobs are active</strong></p>
+          <code class="rb-cmd">crontab -l</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn sn-g">07</span> Real L2 Scenarios</div>
+  <div class="scen-list">
+    <div class="scen-item"><div class="si-id">01</div>
+      <p>It's 8 AM and you haven't even opened your laptop yet. <strong>The monitor script already ran at 8:00 via cron</strong> and saved today's report. You open it and instantly know the status — no manual checking needed.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">02</div>
+      <p>Errors start appearing in the log at 2 AM. The error check script runs every 30 minutes via cron. <strong>By 2:30 AM it detects 5 errors</strong> and logs the alert to errors.log. You see it first thing in the morning — before any client calls.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">03</div>
+      <p>You are asked to check multiple servers. <strong>Instead of checking one by one, your for loop script</strong> runs through all of them in sequence automatically. What used to take 10 minutes now takes 5 seconds.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 5 · Day 1 & 2 Outcomes</h3>
+    <ul>
+      <li>Create variables and use them in a script with the $ sign</li>
+      <li>Use echo to print messages and show results on screen</li>
+      <li>Write a for loop that repeats actions across a list of servers</li>
+      <li>Use if/else to make decisions — alert if disk is too high, OK if not</li>
+      <li>Build and run script-1, 2, and 3 on Kali Linux successfully</li>
+      <li class="d2">Use grep to count error lines in a log file automatically</li>
+      <li class="d2">Build the error-check script that detects failures without manual watching</li>
+      <li class="d2">Build the full monitoring script combining disk, memory, and log checks</li>
+      <li class="d2">Schedule scripts with crontab — monitor at 8 AM daily, error check every 30 minutes</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

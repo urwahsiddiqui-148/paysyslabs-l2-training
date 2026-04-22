@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 3 · Day 1 & 2 — Bash Scripting</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2128;
+    --surface3: #21262d;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --text-dim: #6e7681;
+    --text-faint: #272d35;
+    --white: #f0f6fc;
+
+    --green: #3fb950;
+    --green-bg: #0d1f12;
+    --green-border: #1a4023;
+
+    --blue: #58a6ff;
+    --blue-bg: #051020;
+    --blue-border: #0d2840;
+
+    --purple: #bc8cff;
+    --purple-bg: #180d30;
+    --purple-border: #301860;
+
+    --orange: #ff8c4b;
+    --orange-bg: #1f0d00;
+    --orange-border: #402000;
+
+    --yellow: #e3b341;
+    --yellow-bg: #1f1600;
+    --yellow-border: #403000;
+
+    --red: #f85149;
+    --red-bg: #1f0505;
+    --red-border: #401010;
+
+    --teal: #39d0c8;
+    --teal-bg: #041818;
+    --teal-border: #083838;
+  }
+
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; font-size:15px; line-height:1.7; padding:48px 24px 100px; }
+  .page { max-width:960px; margin:0 auto; }
+
+  /* TOPBAR */
+  .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:52px; padding-bottom:18px; border-bottom:1px solid var(--border); }
+  .topbar-left { font-family:'Fira Code',monospace; font-size:11px; color:var(--text-faint); letter-spacing:1px; text-transform:uppercase; }
+  .tb-right { display:flex; gap:8px; }
+  .tb-badge { font-family:'Fira Code',monospace; font-size:10px; padding:4px 14px; border-radius:100px; letter-spacing:1px; text-transform:uppercase; }
+  .tb-week { background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); }
+  .tb-day1 { background:var(--green-bg); border:1px solid var(--green-border); color:var(--green); }
+  .tb-day2 { background:var(--purple-bg); border:1px solid var(--purple-border); color:var(--purple); }
+
+  /* HERO */
+  .hero { margin-bottom:52px; }
+  .day-label { font-family:'Fira Code',monospace; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--green); margin-bottom:14px; }
+  .hero h1 { font-size:clamp(32px,6vw,60px); font-weight:800; line-height:1.05; color:var(--white); margin-bottom:18px; }
+  .hero h1 .g { color:var(--green); }
+  .hero h1 .p { color:var(--purple); }
+  .hero-desc { color:var(--text-dim); font-size:16px; max-width:560px; }
+  .tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:22px; }
+  .tag { padding:5px 14px; border-radius:100px; font-family:'Fira Code',monospace; font-size:11px; background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); }
+  .tag-d1 { background:var(--green-bg); border-color:var(--green-border); color:var(--green); }
+  .tag-d2 { background:var(--purple-bg); border-color:var(--purple-border); color:var(--purple); }
+
+  /* DAY DIVIDER */
+  .day-divider { display:flex; align-items:center; gap:16px; margin:52px 0 32px; }
+  .dd-badge { font-family:'Fira Code',monospace; font-size:11px; padding:6px 18px; border-radius:100px; letter-spacing:2px; text-transform:uppercase; font-weight:600; flex-shrink:0; }
+  .dd-1 { background:var(--green-bg); border:2px solid var(--green-border); color:var(--green); }
+  .dd-2 { background:var(--purple-bg); border:2px solid var(--purple-border); color:var(--purple); }
+  .dd-line { flex:1; height:1px; }
+  .dd-1 ~ .dd-line { background:var(--green-border); }
+  .dd-2-line { flex:1; height:1px; background:var(--purple-border); }
+  .dd-title { font-size:20px; font-weight:700; color:var(--white); }
+
+  /* SECTION */
+  .sec { font-family:'Fira Code',monospace; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--text-faint); margin-bottom:20px; margin-top:44px; display:flex; align-items:center; gap:12px; }
+  .sec .sn { font-size:12px; }
+  .sn-g { color:var(--green); }
+  .sn-p { color:var(--purple); }
+  .sec::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* ANALOGY */
+  .analogy { border-left:4px solid; border-radius:12px; padding:26px 30px; margin-bottom:16px; }
+  .an-g { background:var(--green-bg); border-color:var(--green); }
+  .an-p { background:var(--purple-bg); border-color:var(--purple); }
+  .analogy .al { font-family:'Fira Code',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; margin-bottom:10px; }
+  .an-g .al { color:var(--green); }
+  .an-p .al { color:var(--purple); }
+  .analogy p { color:var(--text); font-size:15px; }
+  .analogy strong { color:var(--white); }
+
+  /* CARD */
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:26px 30px; margin-bottom:14px; }
+  .card h3 { font-size:17px; font-weight:700; color:var(--white); margin-bottom:10px; }
+  .card p { color:var(--text-dim); margin-bottom:10px; }
+  .card p:last-child { margin-bottom:0; }
+  .card strong { color:var(--text); }
+
+  /* CODE BLOCK */
+  .code-block { background:var(--bg); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:14px; }
+  .cb-bar { padding:8px 16px; background:var(--surface3); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+  .cb-bar .dot { width:8px; height:8px; border-radius:50%; }
+  .dot-r{background:#ff5f56;} .dot-y{background:#ffbd2e;} .dot-g{background:#27c93f;}
+  .cb-bar .cb-title { font-family:'Fira Code',monospace; font-size:11px; color:var(--text-faint); margin-left:4px; letter-spacing:1px; }
+  .cb-code { padding:20px 24px; font-family:'Fira Code',monospace; font-size:13px; line-height:2.0; overflow-x:auto; }
+
+  /* SYNTAX COLORS */
+  .kw  { color:#ff7b72; }   /* keyword */
+  .fn  { color:#d2a8ff; }   /* function/command */
+  .str { color:#a5d6ff; }   /* string */
+  .var { color:#ffa657; }   /* variable */
+  .cm  { color:#4a5568; }   /* comment */
+  .op  { color:#c9d1d9; }   /* normal text */
+  .num { color:#79c0ff; }   /* numbers */
+  .gt  { color:#3fb950; }   /* green text / output */
+  .yt  { color:#e3b341; }   /* yellow */
+
+  /* CONCEPT BLOCK */
+  .concept { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:16px; }
+  .con-header { padding:18px 28px; background:var(--surface2); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:14px; }
+  .con-icon { font-size:26px; }
+  .con-info .con-label { font-family:'Fira Code',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; margin-bottom:3px; }
+  .con-info .con-title { font-size:18px; font-weight:700; color:var(--white); }
+  .con-info .con-sub   { font-size:13px; font-style:italic; }
+  .con-tag { font-family:'Fira Code',monospace; font-size:10px; padding:4px 12px; border-radius:100px; margin-left:auto; letter-spacing:1px; text-transform:uppercase; }
+  .ct-g { background:var(--green-bg); border:1px solid var(--green-border); color:var(--green); }
+  .ct-b { background:var(--blue-bg);  border:1px solid var(--blue-border);  color:var(--blue); }
+  .ct-o { background:var(--orange-bg);border:1px solid var(--orange-border);color:var(--orange); }
+  .ct-p { background:var(--purple-bg);border:1px solid var(--purple-border);color:var(--purple); }
+  .ct-t { background:var(--teal-bg);  border:1px solid var(--teal-border);  color:var(--teal); }
+  .ct-y { background:var(--yellow-bg);border:1px solid var(--yellow-border);color:var(--yellow); }
+
+  .c-green  { border-top:3px solid var(--green); }
+  .c-blue   { border-top:3px solid var(--blue); }
+  .c-orange { border-top:3px solid var(--orange); }
+  .c-purple { border-top:3px solid var(--purple); }
+  .c-teal   { border-top:3px solid var(--teal); }
+  .c-yellow { border-top:3px solid var(--yellow); }
+
+  .c-green  .con-label { color:var(--green); }  .c-green  .con-sub { color:var(--green); }
+  .c-blue   .con-label { color:var(--blue); }   .c-blue   .con-sub { color:var(--blue); }
+  .c-orange .con-label { color:var(--orange); } .c-orange .con-sub { color:var(--orange); }
+  .c-purple .con-label { color:var(--purple); } .c-purple .con-sub { color:var(--purple); }
+  .c-teal   .con-label { color:var(--teal); }   .c-teal   .con-sub { color:var(--teal); }
+  .c-yellow .con-label { color:var(--yellow); } .c-yellow .con-sub { color:var(--yellow); }
+
+  .con-body { padding:24px 28px; display:flex; flex-direction:column; gap:14px; }
+  .con-what { font-size:14px; color:var(--text-dim); line-height:1.65; }
+  .con-what strong { color:var(--white); }
+
+  /* NOTE */
+  .note { border-radius:10px; padding:12px 18px; font-size:13px; }
+  .n-g { background:var(--green-bg);  border:1px solid var(--green-border);  color:var(--green); }
+  .n-b { background:var(--blue-bg);   border:1px solid var(--blue-border);   color:var(--blue); }
+  .n-o { background:var(--orange-bg); border:1px solid var(--orange-border); color:var(--orange); }
+  .n-p { background:var(--purple-bg); border:1px solid var(--purple-border); color:var(--purple); }
+  .n-y { background:var(--yellow-bg); border:1px solid var(--yellow-border); color:var(--yellow); }
+  .n-r { background:var(--red-bg);    border:1px solid var(--red-border);    color:var(--red); }
+  .note strong { color:var(--white); }
+
+  /* LAB */
+  .lab-wrap { border:2px solid; border-radius:16px; overflow:hidden; margin-bottom:14px; }
+  .lab-d1 { border-color:var(--green-border); }
+  .lab-d2 { border-color:var(--purple-border); }
+  .lab-header { padding:20px 28px; border-bottom:1px solid; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  .lab-d1 .lab-header { background:var(--green-bg); border-color:var(--green-border); }
+  .lab-d2 .lab-header { background:var(--purple-bg); border-color:var(--purple-border); }
+  .lab-header h3 { font-size:16px; font-weight:700; color:var(--white); }
+  .lab-badge { font-family:'Fira Code',monospace; font-size:10px; padding:4px 12px; border-radius:100px; }
+  .lab-d1 .lab-badge { background:rgba(63,185,80,0.15); border:1px solid var(--green-border); color:var(--green); }
+  .lab-d2 .lab-badge { background:rgba(188,140,255,0.15); border:1px solid var(--purple-border); color:var(--purple); }
+  .lab-body { padding:28px; display:flex; flex-direction:column; gap:0; background:var(--surface); }
+  .lab-step { display:flex; gap:20px; position:relative; }
+  .lab-step:not(:last-child) .ls-left::after { content:''; position:absolute; left:19px; top:46px; bottom:0; width:2px; background:var(--border); z-index:0; }
+  .ls-left { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+  .ls-num { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Fira Code',monospace; font-size:13px; z-index:1; position:relative; }
+  .lab-d1 .ls-num { background:var(--green-bg); border:2px solid var(--green-border); color:var(--green); }
+  .lab-d2 .ls-num { background:var(--purple-bg); border:2px solid var(--purple-border); color:var(--purple); }
+  .ls-content { flex:1; padding-bottom:26px; padding-top:4px; }
+  .ls-title { font-size:15px; font-weight:600; color:var(--white); margin-bottom:4px; }
+  .ls-desc  { font-size:13px; color:var(--text-dim); margin-bottom:10px; }
+  .ls-out   { font-family:'Fira Code',monospace; font-size:12px; border-radius:8px; padding:10px 14px; display:block; margin-top:8px; line-height:1.7; }
+  .lab-d1 .ls-out { background:var(--green-bg); border:1px solid var(--green-border); color:var(--green); }
+  .lab-d2 .ls-out { background:var(--purple-bg); border:1px solid var(--purple-border); color:var(--purple); }
+
+  /* CHEATSHEET */
+  .cheat { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:14px; }
+  .cheat-header { padding:16px 24px; background:var(--surface2); border-bottom:1px solid var(--border); font-size:16px; font-weight:700; color:var(--white); display:flex; align-items:center; gap:10px; }
+  .cheat-grid { display:grid; grid-template-columns:1fr 1fr; gap:0; }
+  .cheat-item { padding:13px 22px; border-bottom:1px solid var(--border); border-right:1px solid var(--border); display:flex; gap:12px; align-items:flex-start; }
+  .cheat-item:nth-child(even) { border-right:none; }
+  .cheat-item:nth-last-child(-n+2) { border-bottom:none; }
+  .ci-cmd { font-family:'Fira Code',monospace; font-size:11px; color:var(--green); background:var(--green-bg); border:1px solid var(--green-border); padding:4px 10px; border-radius:6px; white-space:nowrap; flex-shrink:0; }
+  .ci-desc { font-size:13px; color:var(--text-dim); padding-top:2px; }
+
+  /* SCENARIOS */
+  .scen-list { display:flex; flex-direction:column; gap:12px; margin-bottom:14px; }
+  .scen-item { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 22px; display:flex; gap:16px; align-items:flex-start; }
+  .si-id { font-family:'Fira Code',monospace; font-size:11px; background:var(--green-bg); border:1px solid var(--green-border); color:var(--green); border-radius:6px; padding:4px 8px; flex-shrink:0; margin-top:2px; }
+  .scen-item p { font-size:14px; color:var(--text-dim); }
+  .scen-item p strong { color:var(--white); }
+
+  /* OUTCOME */
+  .outcome { background:linear-gradient(135deg, var(--green-bg) 0%, var(--surface) 50%, var(--purple-bg) 100%); border:1px solid var(--border); border-radius:16px; padding:36px; margin-top:48px; }
+  .outcome h3 { font-size:22px; font-weight:700; color:var(--green); margin-bottom:20px; }
+  .outcome ul { display:flex; flex-direction:column; gap:10px; list-style:none; }
+  .outcome ul li { font-size:14px; color:var(--text-dim); padding-left:24px; position:relative; }
+  .outcome ul li::before { content:'✓'; position:absolute; left:0; color:var(--green); font-family:'Fira Code',monospace; }
+  .outcome ul li.d2::before { color:var(--purple); }
+
+  @media(max-width:640px){
+    .cheat-grid { grid-template-columns:1fr; }
+    .cheat-item { border-right:none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 3</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-week">Week 3</span>
+      <span class="tb-badge tb-day1">Day 1</span>
+      <span class="tb-badge tb-day2">Day 2</span>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="day-label">Week 3 · Day 1 & Day 2</div>
+    <h1>Bash <span class="g">Basics</span> &<br>Automation <span class="p">Scripts</span></h1>
+    <p class="hero-desc">Instead of typing the same commands every single day, you write a script that does it for you automatically. That's bash scripting — and as an L2 engineer it saves you hours every week.</p>
+    <div class="tags">
+      <span class="tag tag-d1">Day 1 — Bash Basics</span>
+      <span class="tag tag-d2">Day 2 — Automation</span>
+      <span class="tag">Variables</span>
+      <span class="tag">echo / read</span>
+      <span class="tag">Loops</span>
+      <span class="tag">if/else</span>
+    </div>
+  </div>
+
+  <!-- ==================== DAY 1 ==================== -->
+  <div class="day-divider">
+    <span class="dd-badge dd-1">Day 1</span>
+    <span style="flex:1; height:1px; background:var(--green-border);"></span>
+    <span class="dd-title" style="color:var(--green);">Bash Basics</span>
+  </div>
+
+  <!-- ANALOGY D1 -->
+  <div class="sec"><span class="sn sn-g">01</span> The Simple Idea First</div>
+
+  <div class="analogy an-g">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Imagine you go to the same coffee shop every morning and order the exact same thing — large coffee, no sugar, extra shot. Every day you say the same words.<br><br>
+      Now imagine you write it on a card and just hand it to the cashier. <strong>That card is a bash script.</strong><br><br>
+      Instead of typing 10 Linux commands every morning to check server health, you write those 10 commands in a script file — and next time you just run one command and it does everything automatically.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>What is Bash?</h3>
+    <p><strong>Bash</strong> is the language of the Linux terminal. When you type commands like <code style="font-family:'Fira Code',monospace;font-size:12px;background:var(--surface2);padding:2px 6px;border-radius:4px;color:var(--green);">grep</code>, <code style="font-family:'Fira Code',monospace;font-size:12px;background:var(--surface2);padding:2px 6px;border-radius:4px;color:var(--green);">tail</code>, or <code style="font-family:'Fira Code',monospace;font-size:12px;background:var(--surface2);padding:2px 6px;border-radius:4px;color:var(--green);">df -h</code>, you are using Bash. A <strong>Bash script</strong> is a file that contains a list of these commands so you can run them all at once by executing just one file.</p>
+    <p>As an L2 engineer you'll use scripts to automate health checks, send alerts, search logs, and restart services — saving hours of manual work every week.</p>
+  </div>
+
+  <!-- CONCEPT 1 — SHEBANG + STRUCTURE -->
+  <div class="sec"><span class="sn sn-g">02</span> Day 1 Concepts</div>
+
+  <div class="concept c-green">
+    <div class="con-header">
+      <div class="con-icon">📄</div>
+      <div class="con-info">
+        <div class="con-label">Concept 1</div>
+        <div class="con-title">Script Structure — How Every Script Starts</div>
+        <div class="con-sub">"The blueprint of every bash script"</div>
+      </div>
+      <span class="con-tag ct-g">Structure</span>
+    </div>
+    <div class="con-body">
+      <div class="con-what"><strong>What it is:</strong> Every bash script has a specific structure. It always starts with a special line called the <strong>shebang</strong> — this tells Linux "this file is a bash script, run it with bash." Without it, Linux doesn't know how to run your file.</div>
+      <div class="code-block">
+        <div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="cb-title">basic-script-structure.sh</span></div>
+        <div class="cb-code">
+<span class="cm">#!/bin/bash</span>          <span class="cm"># ← This is the shebang. ALWAYS first line.</span><br>
+<span class="cm"># This is a comment — bash ignores this line</span><br>
+<span class="cm"># Comments help YOU understand the script later</span><br>
+<br>
+<span class="cm"># Your commands go below</span><br>
+<span class="fn">echo</span> <span class="str">"Script is running..."</span><br>
+<span class="fn">df</span> -h<br>
+<span class="fn">free</span> -h
+        </div>
+      </div>
+      <div class="note n-g">💡 After creating the script, you must give it permission to run: <code style="font-family:'Fira Code',monospace;font-size:12px;">chmod +x script.sh</code> — then run it with: <code style="font-family:'Fira Code',monospace;font-size:12px;">./script.sh</code></div>
+    </div>
+  </div>
+
+  <!-- CONCEPT 2 — ECHO -->
+  <div class="concept c-blue">
+    <div class="con-header">
+      <div class="con-icon">📢</div>
+      <div class="con-info">
+        <div class="con-label">Concept 2</div>
+        <div class="con-title">echo — Print Text to the Screen</div>
+        <div class="con-sub">"The print statement of bash — shows output"</div>
+      </div>
+      <span class="con-tag ct-b">Output</span>
+    </div>
+    <div class="con-body">
+      <div class="con-what"><strong>What it does:</strong> <code style="font-family:'Fira Code',monospace;font-size:12px;color:var(--blue);">echo</code> prints text to the screen. You use it to show messages, display results, or tell the user what the script is doing at each step. Think of it as the script's way of talking to you.</div>
+      <div class="code-block">
+        <div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="cb-title">echo examples</span></div>
+        <div class="cb-code">
+<span class="cm">#!/bin/bash</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"Hello World"</span>                    <span class="cm"># prints: Hello World</span><br>
+<span class="fn">echo</span> <span class="str">"Checking disk space now..."</span>      <span class="cm"># prints the message</span><br>
+<span class="fn">echo</span> <span class="str">"Script finished successfully"</span>    <span class="cm"># use to mark script end</span><br>
+<br>
+<span class="cm"># echo with no text prints a blank line (useful for spacing)</span><br>
+<span class="fn">echo</span> <span class="str">""</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONCEPT 3 — VARIABLES -->
+  <div class="concept c-orange">
+    <div class="con-header">
+      <div class="con-icon">📦</div>
+      <div class="con-info">
+        <div class="con-label">Concept 3</div>
+        <div class="con-title">Variables — Store and Reuse Values</div>
+        <div class="con-sub">"A named box that holds a value you can use later"</div>
+      </div>
+      <span class="con-tag ct-o">Variables</span>
+    </div>
+    <div class="con-body">
+      <div class="con-what"><strong>What it is:</strong> A variable is a name that stores a value. Instead of typing the same thing over and over, you store it in a variable once and use the name. To use a variable's value, put a <code style="font-family:'Fira Code',monospace;font-size:12px;color:var(--orange);">$</code> in front of the name.</div>
+      <div class="code-block">
+        <div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="cb-title">variables.sh</span></div>
+        <div class="cb-code">
+<span class="cm">#!/bin/bash</span><br>
+<br>
+<span class="cm"># Creating a variable — NO spaces around the = sign</span><br>
+<span class="var">SERVER_NAME</span>=<span class="str">"Payment-Server-01"</span><br>
+<span class="var">LOG_PATH</span>=<span class="str">"/var/logs/payment.log"</span><br>
+<span class="var">MAX_DISK</span>=<span class="num">90</span><br>
+<br>
+<span class="cm"># Using the variable — put $ before the name</span><br>
+<span class="fn">echo</span> <span class="str">"Checking server: <span class="var">$SERVER_NAME</span>"</span><br>
+<span class="fn">echo</span> <span class="str">"Log file is at: <span class="var">$LOG_PATH</span>"</span><br>
+<span class="fn">echo</span> <span class="str">"Max disk allowed: <span class="var">$MAX_DISK</span>%"</span><br>
+<br>
+<span class="cm"># Store command output in a variable</span><br>
+<span class="var">CURRENT_DATE</span>=<span class="op">$(</span><span class="fn">date</span><span class="op">)</span><br>
+<span class="fn">echo</span> <span class="str">"Today is: <span class="var">$CURRENT_DATE</span>"</span>
+        </div>
+      </div>
+      <div class="note n-o">⚠️ <strong>Common mistake:</strong> Never put spaces around = when creating a variable. <code style="font-family:'Fira Code',monospace;font-size:12px;">NAME = "Ali"</code> will FAIL. It must be <code style="font-family:'Fira Code',monospace;font-size:12px;">NAME="Ali"</code></div>
+    </div>
+  </div>
+
+  <!-- CONCEPT 4 — READ -->
+  <div class="concept c-teal">
+    <div class="con-header">
+      <div class="con-icon">⌨️</div>
+      <div class="con-info">
+        <div class="con-label">Concept 4</div>
+        <div class="con-title">read — Take Input from the User</div>
+        <div class="con-sub">"Ask the user a question and store their answer"</div>
+      </div>
+      <span class="con-tag ct-t">Input</span>
+    </div>
+    <div class="con-body">
+      <div class="con-what"><strong>What it does:</strong> <code style="font-family:'Fira Code',monospace;font-size:12px;color:var(--teal);">read</code> pauses the script and waits for the user to type something. Whatever they type gets stored in a variable. This makes your scripts interactive — instead of hardcoding values, you ask the user.</div>
+      <div class="code-block">
+        <div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="cb-title">read-input.sh</span></div>
+        <div class="cb-code">
+<span class="cm">#!/bin/bash</span><br>
+<br>
+<span class="cm"># Ask for input and store it</span><br>
+<span class="fn">echo</span> <span class="str">"Enter the transaction ID to search:"</span><br>
+<span class="kw">read</span> <span class="var">TXN_ID</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"Searching for: <span class="var">$TXN_ID</span>"</span><br>
+<span class="fn">grep</span> <span class="str">"<span class="var">$TXN_ID</span>"</span> /var/logs/payment.log<br>
+<br>
+<span class="cm"># Ask for server name</span><br>
+<span class="fn">echo</span> <span class="str">"Enter server name to check:"</span><br>
+<span class="kw">read</span> <span class="var">SERVER</span><br>
+<span class="fn">echo</span> <span class="str">"Checking <span class="var">$SERVER</span> now..."</span>
+        </div>
+      </div>
+      <div class="note n-b">💡 <strong>L2 Use:</strong> Build a script that asks you for a Transaction ID, then automatically searches all log files for it. One script, one input — saves 5 minutes of manual grep commands.</div>
+    </div>
+  </div>
+
+  <!-- DAY 1 LAB -->
+  <div class="sec"><span class="sn sn-g">03</span> Day 1 Lab — Hello Script</div>
+
+  <div class="card">
+    <h3>What you'll build</h3>
+    <p>A simple interactive script that greets you by name, shows the current date and time, and displays basic server health — all in one go. Fully performable on your <strong>Kali Linux VirtualBox.</strong></p>
+  </div>
+
+  <div class="lab-wrap lab-d1">
+    <div class="lab-header">
+      <h3>🔬 Lab: Build Your First Bash Script</h3>
+      <span class="lab-badge">Kali Linux · VirtualBox</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Open terminal and create the script file</div>
+          <div class="ls-desc">Navigate to your home directory and create a new script file using vi.</div>
+          <div class="code-block"><div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="cb-title">terminal</span></div><div class="cb-code">
+<span class="fn">cd</span> ~<br>
+<span class="fn">vi</span> hello.sh
+          </div></div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Type the script — press i to enter edit mode first</div>
+          <div class="ls-desc">Copy this exactly into vi. Press i to start typing, then paste or type the script.</div>
+          <div class="code-block"><div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="cb-title">hello.sh</span></div><div class="cb-code">
+<span class="cm">#!/bin/bash</span><br>
+<br>
+<span class="cm"># Step 1 — Greet the user</span><br>
+<span class="fn">echo</span> <span class="str">"============================="</span><br>
+<span class="fn">echo</span> <span class="str">"   L2 Engineer Health Check  "</span><br>
+<span class="fn">echo</span> <span class="str">"============================="</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<br>
+<span class="cm"># Step 2 — Ask for the engineer's name</span><br>
+<span class="fn">echo</span> <span class="str">"What is your name?"</span><br>
+<span class="kw">read</span> <span class="var">NAME</span><br>
+<span class="fn">echo</span> <span class="str">"Hello <span class="var">$NAME</span>! Starting health check..."</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<br>
+<span class="cm"># Step 3 — Show date and time</span><br>
+<span class="var">NOW</span>=<span class="op">$(</span><span class="fn">date</span><span class="op">)</span><br>
+<span class="fn">echo</span> <span class="str">"Date and Time : <span class="var">$NOW</span>"</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<br>
+<span class="cm"># Step 4 — Show disk space</span><br>
+<span class="fn">echo</span> <span class="str">"--- Disk Space ---"</span><br>
+<span class="fn">df</span> -h<br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<br>
+<span class="cm"># Step 5 — Show RAM</span><br>
+<span class="fn">echo</span> <span class="str">"--- Memory Usage ---"</span><br>
+<span class="fn">free</span> -h<br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"Health check complete. Have a good shift <span class="var">$NAME</span>!"</span>
+          </div></div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Save the file and give it permission to run</div>
+          <div class="ls-desc">Press Esc, then type :wq to save. Then make it executable.</div>
+          <div class="code-block"><div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="cb-title">terminal</span></div><div class="cb-code">
+<span class="cm"># Give the script permission to run</span><br>
+<span class="fn">chmod</span> +x hello.sh<br>
+<br>
+<span class="cm"># Run it!</span><br>
+<span class="op">./</span>hello.sh
+          </div></div>
+          <div class="ls-out">→ Script will ask your name, then show date, disk space and RAM — all in one go ✅</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== DAY 2 ==================== -->
+  <div class="day-divider" style="margin-top:60px;">
+    <span class="dd-badge dd-2">Day 2</span>
+    <span style="flex:1; height:1px; background:var(--purple-border);"></span>
+    <span class="dd-title" style="color:var(--purple);">Loops & Automation Scripts</span>
+  </div>
+
+  <!-- ANALOGY D2 -->
+  <div class="sec"><span class="sn sn-p">04</span> The Simple Idea First</div>
+
+  <div class="analogy an-p">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Think of a <strong>security guard doing rounds</strong> in a building. Every hour they check the same 10 rooms in the same order. They don't decide differently each time — they follow a fixed pattern.<br><br>
+      <strong>A loop is that fixed pattern.</strong> It tells the script: "do this action for each item in this list" or "keep doing this until the condition changes."<br><br>
+      And <strong>if/else is the guard's decision:</strong> "If the door is locked — move on. If the door is open — raise an alert."
+    </p>
+  </div>
+
+  <!-- CONCEPT 5 — IF ELSE -->
+  <div class="sec"><span class="sn sn-p">05</span> Day 2 Concepts</div>
+
+  <div class="concept c-purple">
+    <div class="con-header">
+      <div class="con-icon">🔀</div>
+      <div class="con-info">
+        <div class="con-label">Concept 5</div>
+        <div class="con-title">if / else — Make Decisions in Your Script</div>
+        <div class="con-sub">"If this is true — do this. Otherwise — do that."</div>
+      </div>
+      <span class="con-tag ct-p">Logic</span>
+    </div>
+    <div class="con-body">
+      <div class="con-what"><strong>What it does:</strong> if/else lets your script <strong>make decisions</strong>. If a condition is true, run one block of commands. If not, run a different block. This is how you make intelligent scripts — like "if disk is above 90%, send an alert."</div>
+      <div class="code-block">
+        <div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="cb-title">if-else syntax</span></div>
+        <div class="cb-code">
+<span class="cm">#!/bin/bash</span><br>
+<br>
+<span class="cm"># Basic structure</span><br>
+<span class="kw">if</span> <span class="op">[ </span><span class="var">condition</span><span class="op"> ]</span>; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="cm"># commands if condition is TRUE</span><br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="cm"># commands if condition is FALSE</span><br>
+<span class="kw">fi</span>   <span class="cm"># fi closes the if block — always needed</span><br>
+<br>
+<span class="cm"># Real example — check if a file exists</span><br>
+<span class="kw">if</span> <span class="op">[ -f </span><span class="str">"/var/logs/payment.log"</span><span class="op"> ]</span>; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"Log file found. Checking for errors..."</span><br>
+&nbsp;&nbsp;<span class="fn">grep</span> <span class="str">"ERROR"</span> /var/logs/payment.log<br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"WARNING: Log file not found!"</span><br>
+<span class="kw">fi</span>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="cb-title">comparison operators</span></div>
+        <div class="cb-code">
+<span class="cm"># Number comparisons</span><br>
+<span class="op">-eq</span>   <span class="cm"># equal to         → [ $A -eq $B ]</span><br>
+<span class="op">-ne</span>   <span class="cm"># not equal to      → [ $A -ne $B ]</span><br>
+<span class="op">-gt</span>   <span class="cm"># greater than      → [ $A -gt 90 ]</span><br>
+<span class="op">-lt</span>   <span class="cm"># less than         → [ $A -lt 10 ]</span><br>
+<br>
+<span class="cm"># File checks</span><br>
+<span class="op">-f</span>    <span class="cm"># file exists       → [ -f "/path/file" ]</span><br>
+<span class="op">-d</span>    <span class="cm"># directory exists  → [ -d "/path/dir" ]</span>
+        </div>
+      </div>
+      <div class="note n-p">💡 <strong>L2 Use:</strong> <code style="font-family:'Fira Code',monospace;font-size:12px;">if [ $DISK -gt 90 ]; then echo "ALERT: Disk critical!"</code> — your script can now automatically alert you when disk is dangerously full.</div>
+    </div>
+  </div>
+
+  <!-- CONCEPT 6 — FOR LOOP -->
+  <div class="concept c-yellow">
+    <div class="con-header">
+      <div class="con-icon">🔁</div>
+      <div class="con-info">
+        <div class="con-label">Concept 6</div>
+        <div class="con-title">for loop — Repeat an Action for Each Item</div>
+        <div class="con-sub">"Do this same thing for every item in a list"</div>
+      </div>
+      <span class="con-tag ct-y">Loop</span>
+    </div>
+    <div class="con-body">
+      <div class="con-what"><strong>What it does:</strong> A for loop repeats a block of commands for each item in a list. Instead of writing the same command 10 times for 10 servers, you put the servers in a list and the loop runs the command for each one automatically.</div>
+      <div class="code-block">
+        <div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="cb-title">for loop syntax</span></div>
+        <div class="cb-code">
+<span class="cm">#!/bin/bash</span><br>
+<br>
+<span class="cm"># Basic structure</span><br>
+<span class="kw">for</span> <span class="var">ITEM</span> <span class="kw">in</span> <span class="op">list_of_items</span>; <span class="kw">do</span><br>
+&nbsp;&nbsp;<span class="cm"># commands to run for each item</span><br>
+<span class="kw">done</span><br>
+<br>
+<span class="cm"># Example — check disk space on multiple servers</span><br>
+<span class="kw">for</span> <span class="var">SERVER</span> <span class="kw">in</span> <span class="str">payment-server db-server api-server</span>; <span class="kw">do</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"Checking: <span class="var">$SERVER</span>"</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"--- done ---"</span><br>
+<span class="kw">done</span><br>
+<br>
+<span class="cm"># Example — search multiple log files</span><br>
+<span class="kw">for</span> <span class="var">LOGFILE</span> <span class="kw">in</span> <span class="op">$(</span><span class="fn">ls</span> /var/logs/*.log<span class="op">)</span>; <span class="kw">do</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"Searching <span class="var">$LOGFILE</span>..."</span><br>
+&nbsp;&nbsp;<span class="fn">grep</span> <span class="str">"ERROR"</span> <span class="var">$LOGFILE</span><br>
+<span class="kw">done</span>
+        </div>
+      </div>
+      <div class="note n-y">💡 <strong>L2 Use:</strong> After an S1, search for errors across 20 different log files automatically — the loop does it for each file without you typing grep 20 times.</div>
+    </div>
+  </div>
+
+  <!-- CONCEPT 7 — WHILE LOOP -->
+  <div class="concept c-teal">
+    <div class="con-header">
+      <div class="con-icon">⏳</div>
+      <div class="con-info">
+        <div class="con-label">Concept 7</div>
+        <div class="con-title">while loop — Keep Running Until Condition Changes</div>
+        <div class="con-sub">"Keep doing this as long as something is true"</div>
+      </div>
+      <span class="con-tag ct-t">Loop</span>
+    </div>
+    <div class="con-body">
+      <div class="con-what"><strong>What it does:</strong> A while loop keeps running as long as a condition remains true. Useful for monitoring — keep checking the service every 10 seconds until it comes back up.</div>
+      <div class="code-block">
+        <div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="cb-title">while loop syntax</span></div>
+        <div class="cb-code">
+<span class="cm">#!/bin/bash</span><br>
+<br>
+<span class="cm"># Keep checking disk every 30 seconds</span><br>
+<span class="kw">while</span> <span class="kw">true</span>; <span class="kw">do</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"Disk check at: <span class="op">$(</span><span class="fn">date</span><span class="op">)</span>"</span><br>
+&nbsp;&nbsp;<span class="fn">df</span> -h<br>
+&nbsp;&nbsp;<span class="fn">sleep</span> <span class="num">30</span>    <span class="cm"># wait 30 seconds before next check</span><br>
+<span class="kw">done</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY 2 LAB -->
+  <div class="sec"><span class="sn sn-p">06</span> Day 2 Lab — Automate Service Restart Script</div>
+
+  <div class="card">
+    <h3>What you'll build</h3>
+    <p>A real-world automation script that <strong>checks if a service is running</strong>, shows disk and memory status, searches logs for errors, and if disk is above a threshold — shows a warning. This is a script you would actually use as an L2 engineer. Fully performable on <strong>Kali Linux.</strong></p>
+  </div>
+
+  <div class="lab-wrap lab-d2">
+    <div class="lab-header">
+      <h3>🔬 Lab: Build a Service Health Check & Auto-Alert Script</h3>
+      <span class="lab-badge">Kali Linux · VirtualBox</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Create the script file</div>
+          <div class="ls-desc">Open a new script file in your terminal.</div>
+          <div class="code-block"><div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="cb-title">terminal</span></div><div class="cb-code">
+<span class="fn">cd</span> ~<br>
+<span class="fn">vi</span> health-check.sh
+          </div></div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Write the full automation script</div>
+          <div class="ls-desc">Press i to enter edit mode, then type this script exactly.</div>
+          <div class="code-block"><div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="cb-title">health-check.sh — Full Script</span></div><div class="cb-code">
+<span class="cm">#!/bin/bash</span><br>
+<br>
+<span class="cm"># ========================================</span><br>
+<span class="cm"># L2 Engineer — Server Health Check Script</span><br>
+<span class="cm"># ========================================</span><br>
+<br>
+<span class="cm"># Variables</span><br>
+<span class="var">DISK_LIMIT</span>=<span class="num">80</span>           <span class="cm"># alert if disk above 80%</span><br>
+<span class="var">LOG_FILE</span>=<span class="str">"~/payment-service.log"</span><br>
+<span class="var">REPORT_FILE</span>=<span class="str">"~/health-report.txt"</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"========================================="</span><br>
+<span class="fn">echo</span> <span class="str">" Server Health Check — <span class="op">$(</span><span class="fn">date</span><span class="op">)</span>"</span><br>
+<span class="fn">echo</span> <span class="str">"========================================="</span><br>
+<br>
+<span class="cm"># STEP 1 — Check disk space with if/else alert</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"[1] Disk Space Check:"</span><br>
+<span class="var">DISK_USED</span>=<span class="op">$(</span><span class="fn">df</span> / <span class="op">|</span> <span class="fn">awk</span> <span class="str">'NR==2 {print $5}'</span> <span class="op">|</span> <span class="fn">tr</span> -d <span class="str">'%'</span><span class="op">)</span><br>
+<span class="fn">echo</span> <span class="str">"Current disk usage: <span class="var">$DISK_USED</span>%"</span><br>
+<br>
+<span class="kw">if</span> <span class="op">[ </span><span class="var">$DISK_USED</span> <span class="op">-gt </span><span class="var">$DISK_LIMIT</span><span class="op"> ]</span>; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"⚠️  WARNING: Disk above <span class="var">$DISK_LIMIT</span>% — Please clean up logs!"</span><br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"✅ Disk is OK — below threshold"</span><br>
+<span class="kw">fi</span><br>
+<br>
+<span class="cm"># STEP 2 — Check RAM</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"[2] Memory Check:"</span><br>
+<span class="fn">free</span> -h<br>
+<br>
+<span class="cm"># STEP 3 — Search log file for errors using loop</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"[3] Searching logs for errors..."</span><br>
+<br>
+<span class="kw">if</span> <span class="op">[ -f </span><span class="var">$LOG_FILE</span><span class="op"> ]</span>; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="var">ERROR_COUNT</span>=<span class="op">$(</span><span class="fn">grep</span> -c <span class="str">"ERROR"</span> <span class="var">$LOG_FILE</span><span class="op">)</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"Total errors found: <span class="var">$ERROR_COUNT</span>"</span><br>
+&nbsp;&nbsp;<span class="kw">if</span> <span class="op">[ </span><span class="var">$ERROR_COUNT</span> <span class="op">-gt </span><span class="num">0</span><span class="op"> ]</span>; <span class="kw">then</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"⚠️  Errors detected — listing them:"</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">grep</span> <span class="str">"ERROR"</span> <span class="var">$LOG_FILE</span><br>
+&nbsp;&nbsp;<span class="kw">else</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"✅ No errors found in log"</span><br>
+&nbsp;&nbsp;<span class="kw">fi</span><br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"Log file not found at <span class="var">$LOG_FILE</span>"</span><br>
+<span class="kw">fi</span><br>
+<br>
+<span class="cm"># STEP 4 — Check multiple services using a loop</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"[4] Checking services status:"</span><br>
+<span class="kw">for</span> <span class="var">SERVICE</span> <span class="kw">in</span> <span class="str">ssh cron</span>; <span class="kw">do</span><br>
+&nbsp;&nbsp;<span class="kw">if</span> <span class="op">$(</span><span class="fn">systemctl</span> is-active --quiet <span class="var">$SERVICE</span><span class="op">)</span>; <span class="kw">then</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"✅ <span class="var">$SERVICE</span> is RUNNING"</span><br>
+&nbsp;&nbsp;<span class="kw">else</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"❌ <span class="var">$SERVICE</span> is STOPPED — needs attention!"</span><br>
+&nbsp;&nbsp;<span class="kw">fi</span><br>
+<span class="kw">done</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"========================================="</span><br>
+<span class="fn">echo</span> <span class="str">" Health check complete."</span><br>
+<span class="fn">echo</span> <span class="str">"========================================="</span>
+          </div></div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Save, give permission, and run</div>
+          <div class="ls-desc">Press Esc → :wq to save. Then make it executable and run it.</div>
+          <div class="code-block"><div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="cb-title">terminal</span></div><div class="cb-code">
+<span class="fn">chmod</span> +x health-check.sh<br>
+<span class="op">./</span>health-check.sh
+          </div></div>
+          <div class="ls-out">→ Script runs all 4 checks automatically — disk alert if above 80%, memory, log errors, service status ✅</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Schedule it to run automatically every day</div>
+          <div class="ls-desc">Use crontab to schedule the script to run every morning at 8 AM automatically.</div>
+          <div class="code-block"><div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="cb-title">crontab</span></div><div class="cb-code">
+<span class="cm"># Open crontab editor</span><br>
+<span class="fn">crontab</span> -e<br>
+<br>
+<span class="cm"># Add this line — runs health-check.sh every day at 8 AM</span><br>
+<span class="num">0 8 * * *</span> <span class="op">/home/kali/health-check.sh</span> <span class="op">&gt;&gt;</span> <span class="op">/home/kali/health-report.txt</span>
+          </div></div>
+          <div class="ls-out">→ Script now runs automatically every morning at 8 AM and saves output to health-report.txt ✅</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CHEATSHEET -->
+  <div class="sec"><span class="sn sn-g">07</span> Quick Cheat Sheet — Both Days</div>
+
+  <div class="cheat">
+    <div class="cheat-header">⌨️ Bash Scripting Cheat Sheet</div>
+    <div class="cheat-grid">
+      <div class="cheat-item"><span class="ci-cmd">#!/bin/bash</span><span class="ci-desc">Always the first line of every script</span></div>
+      <div class="cheat-item"><span class="ci-cmd">echo "text"</span><span class="ci-desc">Print text to the screen</span></div>
+      <div class="cheat-item"><span class="ci-cmd">NAME="Ali"</span><span class="ci-desc">Create a variable — no spaces around =</span></div>
+      <div class="cheat-item"><span class="ci-cmd">echo $NAME</span><span class="ci-desc">Use a variable — always $ before name</span></div>
+      <div class="cheat-item"><span class="ci-cmd">read VARNAME</span><span class="ci-desc">Ask user for input and store it</span></div>
+      <div class="cheat-item"><span class="ci-cmd">VAR=$(command)</span><span class="ci-desc">Store command output in a variable</span></div>
+      <div class="cheat-item"><span class="ci-cmd">if [ $A -gt 90 ]</span><span class="ci-desc">If A is greater than 90</span></div>
+      <div class="cheat-item"><span class="ci-cmd">if [ -f "file" ]</span><span class="ci-desc">If file exists</span></div>
+      <div class="cheat-item"><span class="ci-cmd">for X in list; do</span><span class="ci-desc">Loop through a list of items</span></div>
+      <div class="cheat-item"><span class="ci-cmd">while true; do</span><span class="ci-desc">Keep looping until manually stopped</span></div>
+      <div class="cheat-item"><span class="ci-cmd">chmod +x script.sh</span><span class="ci-desc">Give script permission to run</span></div>
+      <div class="cheat-item"><span class="ci-cmd">./script.sh</span><span class="ci-desc">Run the script</span></div>
+    </div>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn sn-g">08</span> Real L2 Scenarios</div>
+
+  <div class="scen-list">
+    <div class="scen-item">
+      <div class="si-id">01</div>
+      <p>Every morning you manually run <code style="font-family:'Fira Code',monospace;font-size:12px;background:var(--surface2);color:var(--green);padding:2px 6px;border-radius:4px;">df -h</code>, <code style="font-family:'Fira Code',monospace;font-size:12px;background:var(--surface2);color:var(--green);padding:2px 6px;border-radius:4px;">free -h</code>, and <code style="font-family:'Fira Code',monospace;font-size:12px;background:var(--surface2);color:var(--green);padding:2px 6px;border-radius:4px;">grep ERROR logs</code> on 5 servers. <strong>With a script, you run one command and it checks all 5 servers automatically</strong> using a for loop — saving 20 minutes every morning.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">02</div>
+      <p>During an S1, someone asks <strong>"how many ERROR lines are in each log file?"</strong> Instead of checking each file one by one, your loop script searches all log files in the folder and prints the error count for each — in 5 seconds.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">03</div>
+      <p>You want to be <strong>automatically alerted when disk goes above 85%</strong>. You write a script with an if/else check, schedule it with crontab to run every hour, and it prints a warning message when the threshold is crossed. No more manual checking.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">04</div>
+      <p>A client reports a transaction failed. You have the TXN ID. Instead of typing the same grep command across 10 log files, <strong>your script asks for the TXN ID using read, then loops through all log files and searches for it</strong> — giving you the result in seconds.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 3 · Day 1 & 2 Outcomes</h3>
+    <ul>
+      <li>Understand what a bash script is and why it saves time as an L2 engineer</li>
+      <li>Write the correct shebang line and basic script structure</li>
+      <li>Use echo to display messages and status in a script</li>
+      <li>Create variables and use them with $ throughout the script</li>
+      <li>Use read to take input from the user and act on it</li>
+      <li class="d2">Use if/else to make decisions — check disk thresholds, file existence, service status</li>
+      <li class="d2">Use for loops to repeat actions across a list of servers or log files</li>
+      <li class="d2">Use while loops for continuous monitoring with sleep intervals</li>
+      <li>Complete Day 1 lab — build and run the Hello / Health Check script on Kali Linux</li>
+      <li class="d2">Complete Day 2 lab — build the full service health check automation script</li>
+      <li class="d2">Schedule a script to run automatically using crontab</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

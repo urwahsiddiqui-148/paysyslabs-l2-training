@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 6.5 · Day 6 — Logs Monitoring</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#07080d;
+    --surface:#0d1018;
+    --surface2:#121620;
+    --surface3:#171c28;
+    --border:#1e2535;
+    --text:#a8b8cc;
+    --text-dim:#3e5268;
+    --text-faint:#162035;
+    --white:#eaf2fc;
+
+    --lime:#84cc16;
+    --lime-bg:#0c1400;
+    --lime-border:#243200;
+
+    --teal:#2dd4bf;
+    --teal-bg:#001818;
+    --teal-border:#003838;
+
+    --rose:#fb7185;
+    --rose-bg:#180008;
+    --rose-border:#3c0018;
+
+    --amber:#fbbf24;
+    --amber-bg:#180c00;
+    --amber-border:#3c2800;
+
+    --blue:#60a5fa;
+    --blue-bg:#020e20;
+    --blue-border:#082240;
+
+    --green:#34d399;
+    --green-bg:#001810;
+    --green-border:#003828;
+
+    --violet:#c084fc;
+    --violet-bg:#0e0818;
+    --violet-border:#281840;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.7;padding:48px 24px 100px;}
+  .page{max-width:940px;margin:0 auto;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:52px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .topbar-left{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;}
+  .tb-right{display:flex;gap:8px;}
+  .tb-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 14px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;}
+  .tb-wk{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tb-d{background:var(--lime-bg);border:1px solid var(--lime-border);color:var(--lime);}
+
+  .hero{margin-bottom:52px;}
+  .day-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--lime);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,58px);font-weight:800;line-height:1.05;color:var(--white);margin-bottom:18px;}
+  .hero h1 span{color:var(--lime);}
+  .hero-desc{color:var(--text-dim);font-size:15px;max-width:540px;}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;}
+  .tag{padding:5px 14px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tag-l{background:var(--lime-bg);border-color:var(--lime-border);color:var(--lime);}
+  .tag-t{background:var(--teal-bg);border-color:var(--teal-border);color:var(--teal);}
+
+  .sec{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faint);margin-bottom:18px;margin-top:44px;display:flex;align-items:center;gap:12px;}
+  .sec .sn{color:var(--lime);font-size:12px;}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .analogy{background:var(--lime-bg);border:1px solid var(--lime-border);border-left:4px solid var(--lime);border-radius:12px;padding:22px 28px;margin-bottom:16px;}
+  .analogy .al{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--lime);margin-bottom:8px;}
+  .analogy p{color:var(--text);font-size:14px;}
+  .analogy strong{color:var(--white);}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 28px;margin-bottom:14px;}
+  .card h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:8px;}
+  .card p{color:var(--text-dim);margin-bottom:8px;font-size:14px;}
+  .card p:last-child{margin-bottom:0;}
+  .card strong{color:var(--text);}
+
+  /* LOG ANATOMY */
+  .log-line{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:14px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;overflow-x:auto;}
+  .ll-ts{color:var(--teal);}
+  .ll-lv-e{color:var(--rose);font-weight:700;}
+  .ll-lv-w{color:var(--amber);}
+  .ll-lv-i{color:var(--green);}
+  .ll-svc{color:var(--violet);}
+  .ll-msg{color:var(--text);}
+  .ll-meta{color:var(--text-dim);}
+  .ll-arrow{display:flex;gap:12px;align-items:flex-start;margin-top:12px;flex-wrap:wrap;}
+  .ll-part{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;}
+  .ll-part span{display:block;font-size:10px;color:var(--text-dim);margin-bottom:2px;letter-spacing:1px;text-transform:uppercase;}
+
+  /* SEARCH PATTERN TABLE */
+  .ref-table{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+  .rt-head{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:15px;font-weight:700;color:var(--white);}
+  table.rt{width:100%;border-collapse:collapse;}
+  table.rt th{padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);text-align:left;border-bottom:1px solid var(--border);font-weight:400;background:var(--surface3);}
+  table.rt td{padding:12px 18px;font-size:13px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;}
+  table.rt tr:last-child td{border-bottom:none;}
+  table.rt tr:hover td{background:rgba(255,255,255,0.02);}
+  table.rt td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--lime);white-space:nowrap;}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 9px;border-radius:100px;white-space:nowrap;}
+  .p-l{background:var(--lime-bg);border:1px solid var(--lime-border);color:var(--lime);}
+  .p-t{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+  .p-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .p-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .p-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+
+  /* CODE */
+  .cbox{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:8px 0;}
+  .cbox-bar{padding:7px 14px;background:var(--surface3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+  .d{width:8px;height:8px;border-radius:50%;}.dr{background:#ff5f56;}.dy{background:#ffbd2e;}.dg{background:#27c93f;}
+  .ct{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);margin-left:4px;letter-spacing:1px;}
+  .cbox-code{padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2.0;overflow-x:auto;}
+  .kw{color:#ff7b72;}.fn{color:#79c0ff;}.str{color:#a5d6ff;}.var{color:#ffa657;}.cm{color:#2e4050;}.op{color:#c9d1d9;}
+  .hi-l{color:var(--lime);font-weight:700;}
+  .hi-r{color:var(--rose);}
+  .hi-g{color:var(--green);}
+  .hi-a{color:var(--amber);}
+
+  /* NOTE */
+  .note{border-radius:10px;padding:10px 16px;font-size:13px;margin-bottom:10px;}
+  .n-l{background:var(--lime-bg);border:1px solid var(--lime-border);color:var(--lime);}
+  .n-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .n-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .n-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .n-t{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+  .note strong{color:var(--white);}
+
+  /* CENTRAL LOG FLOW */
+  .flow-block{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:14px;}
+  .flow-block h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:24px;text-align:center;}
+  .fs-item{display:flex;gap:18px;position:relative;}
+  .fs-item:not(:last-child) .fsi-left::after{content:'';position:absolute;left:19px;top:44px;bottom:0;width:2px;background:var(--border);z-index:0;}
+  .fsi-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+  .fsi-dot{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;z-index:1;position:relative;}
+  .fd-l{background:var(--lime-bg);border:2px solid var(--lime-border);}
+  .fd-t{background:var(--teal-bg);border:2px solid var(--teal-border);}
+  .fd-v{background:var(--violet-bg);border:2px solid var(--violet-border);}
+  .fd-g{background:var(--green-bg);border:2px solid var(--green-border);}
+  .fsi-content{flex:1;padding-bottom:22px;padding-top:4px;}
+  .fsi-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;}
+  .fl-l{color:var(--lime);}
+  .fl-t{color:var(--teal);}
+  .fl-v{color:var(--violet);}
+  .fl-g{color:var(--green);}
+  .fsi-title{font-size:15px;font-weight:700;color:var(--white);margin-bottom:4px;}
+  .fsi-desc{font-size:13px;color:var(--text-dim);}
+  .fsi-code{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 12px;margin-top:6px;display:inline-block;color:var(--text-dim);}
+
+  /* LAB */
+  .lab{border:2px solid var(--lime-border);border-radius:16px;overflow:hidden;margin-bottom:14px;}
+  .lab-head{padding:16px 26px;background:var(--lime-bg);border-bottom:1px solid var(--lime-border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .lab-head h3{font-size:15px;font-weight:700;color:var(--white);}
+  .lab-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 12px;border-radius:100px;background:rgba(132,204,22,0.1);border:1px solid var(--lime-border);color:var(--lime);}
+  .lab-body{padding:26px;display:flex;flex-direction:column;gap:0;background:var(--surface);}
+  .lab-step{display:flex;gap:18px;position:relative;}
+  .lab-step:not(:last-child) .ls-left::after{content:'';position:absolute;left:19px;top:44px;bottom:0;width:2px;background:var(--border);z-index:0;}
+  .ls-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+  .ls-num{width:40px;height:40px;border-radius:50%;background:var(--lime-bg);border:2px solid var(--lime-border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--lime);z-index:1;position:relative;}
+  .ls-content{flex:1;padding-bottom:22px;padding-top:4px;}
+  .ls-title{font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px;}
+  .ls-desc{font-size:13px;color:var(--text-dim);margin-bottom:8px;}
+  .ls-out{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--lime-bg);border:1px solid var(--lime-border);color:var(--lime);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+  .ls-out-g{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+
+  /* SCEN */
+  .scen-list{display:flex;flex-direction:column;gap:12px;margin-bottom:14px;}
+  .scen-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;}
+  .si-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--lime);background:var(--lime-bg);border:1px solid var(--lime-border);border-radius:6px;padding:4px 8px;flex-shrink:0;margin-top:2px;}
+  .scen-item p{font-size:14px;color:var(--text-dim);}
+  .scen-item p strong{color:var(--white);}
+
+  .outcome{background:linear-gradient(135deg,var(--lime-bg) 0%,var(--surface) 100%);border:1px solid var(--lime-border);border-radius:16px;padding:32px;margin-top:48px;}
+  .outcome h3{font-size:20px;font-weight:700;color:var(--lime);margin-bottom:18px;}
+  .outcome ul{display:flex;flex-direction:column;gap:9px;list-style:none;}
+  .outcome ul li{font-size:14px;color:var(--text-dim);padding-left:22px;position:relative;}
+  .outcome ul li::before{content:'✓';position:absolute;left:0;color:var(--lime);font-family:'JetBrains Mono',monospace;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 6.5</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-wk">Week 6.5</span>
+      <span class="tb-badge tb-d">Day 6</span>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="day-label">Week 6.5 · Day 6</div>
+    <h1>Logs <span>Monitoring</span></h1>
+    <p class="hero-desc">Logs are the most detailed record your system keeps. Central log monitoring means pulling logs from every service into one place and being able to search all of them at once — so finding root cause takes seconds, not hours.</p>
+    <div class="tags">
+      <span class="tag tag-l">Central Logs</span>
+      <span class="tag tag-l">Search Patterns</span>
+      <span class="tag tag-t">Root Cause</span>
+      <span class="tag">grep</span>
+      <span class="tag">Log Analysis</span>
+    </div>
+  </div>
+
+  <!-- ANALOGY -->
+  <div class="sec"><span class="sn">01</span> The Simple Idea First</div>
+
+  <div class="analogy">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Imagine you manage 10 branches of a bank across a city. Each branch has its own filing cabinet of daily reports. If you need to find a specific customer complaint — you drive to each branch, open each cabinet, and search manually. That takes all day.<br><br>
+      Now imagine all those reports are automatically sent to one central office every hour. You sit at one desk and search through all 10 branches simultaneously in under 10 seconds.<br><br>
+      <strong>That is central log monitoring.</strong> Instead of SSHing into 5 different servers one by one to grep through logs — all logs flow into one central system where you search everything from one screen, instantly.
+    </p>
+  </div>
+
+  <!-- WHAT IS CENTRAL LOGGING -->
+  <div class="card">
+    <h3>What is Central Log Monitoring?</h3>
+    <p>In a real fintech environment, you have many services — the payment service, the API gateway, the MQ consumer, the DB, the OpenConnect service — each running on different servers and writing their own log files. <strong>Central logging</strong> collects all of those logs and sends them to one central platform.</p>
+    <p>Tools like <strong>ELK Stack</strong> (Elasticsearch, Logstash, Kibana) or <strong>Splunk</strong> are the most common. Logstash collects and ships logs. Elasticsearch stores and indexes them. Kibana is the search interface where you run queries and see results.</p>
+    <p>Without central logging — an incident investigation requires logging into 5 servers and running grep on each one separately. With central logging — you search all 5 servers in one query in under 3 seconds.</p>
+  </div>
+
+  <!-- LOG ANATOMY -->
+  <div class="sec"><span class="sn">02</span> Anatomy of a Log Line — What Each Part Means</div>
+
+  <div class="card">
+    <h3>Every log line has the same structure</h3>
+    <p>Before you can search logs effectively, you need to understand what each part of a log line tells you. Every well-structured log line contains: when it happened, how serious it is, which service wrote it, and what the message says.</p>
+  </div>
+
+  <div class="log-line">
+    <span class="ll-ts">[2024-03-15 14:02:05]</span>&nbsp;
+    <span class="ll-lv-e">[ERROR]</span>&nbsp;
+    <span class="ll-svc">[payment-service]</span>&nbsp;
+    <span class="ll-msg">DB_CONNECTION_TIMEOUT failed after 30000ms</span>&nbsp;
+    <span class="ll-meta">txn_id=TXN-501 server=pay-01</span>
+    <div class="ll-arrow">
+      <div class="ll-part" style="color:var(--teal);"><span>Timestamp</span>When it happened</div>
+      <div class="ll-part" style="color:var(--rose);"><span>Level</span>How serious</div>
+      <div class="ll-part" style="color:var(--violet);"><span>Service</span>Which app wrote it</div>
+      <div class="ll-part" style="color:var(--text);"><span>Message</span>What happened</div>
+      <div class="ll-part" style="color:var(--text-dim);"><span>Metadata</span>Extra context</div>
+    </div>
+  </div>
+
+  <!-- CENTRAL LOG FLOW -->
+  <div class="sec"><span class="sn">03</span> How Central Logging Works — The Flow</div>
+
+  <div class="flow-block">
+    <h3>📡 Log Flow — From Service to Search</h3>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-l">⚙️</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-l">Step 1 — Services</div>
+        <div class="fsi-title">Every service writes its own log file</div>
+        <div class="fsi-desc">The payment service writes to payment-service.log. The MQ consumer writes to mq-consumer.log. The API gateway writes to api-gateway.log. Each server, each service — its own file.</div>
+        <span class="fsi-code">pay-server-01: /var/log/payment-service.log<br>mq-server-01: /var/log/mq-consumer.log</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-t">📤</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-t">Step 2 — Log Shipper</div>
+        <div class="fsi-title">Log agent ships logs to central platform</div>
+        <div class="fsi-desc">A lightweight agent (Filebeat, Logstash, Fluentd) runs on each server. It watches log files, reads new lines as they are written, and ships them to the central platform in real time.</div>
+        <span class="fsi-code">Filebeat → watches /var/log/*.log → ships to Elasticsearch</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-v">🗄️</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-v">Step 3 — Central Store</div>
+        <div class="fsi-title">Logs stored and indexed centrally</div>
+        <div class="fsi-desc">Elasticsearch (or Splunk) receives all logs and indexes them — meaning every word is catalogued so you can search for any term across all logs instantly, regardless of which server it came from.</div>
+        <span class="fsi-code">Elasticsearch indexes → 50 million log lines, all searchable</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-g">🔍</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-g">Step 4 — Search & Visualise</div>
+        <div class="fsi-title">You search everything from one screen</div>
+        <div class="fsi-desc">Kibana (or Splunk's UI) is your search interface. You type a query — "ERROR AND DB_CONNECTION_TIMEOUT" — and within 2 seconds you see every matching line from every service across every server, sorted by time.</div>
+        <span class="fsi-code">Kibana search: "ERROR" last 1 hour → 42 results, 5 services</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEARCH PATTERNS -->
+  <div class="sec"><span class="sn">04</span> Search Patterns — How to Find What You Need</div>
+
+  <div class="card">
+    <h3>What is a search pattern?</h3>
+    <p>A search pattern is a specific phrase, keyword, or combination of words you search for in logs to find relevant entries. Knowing the right pattern to search for is the difference between finding root cause in 30 seconds and reading logs for 30 minutes.</p>
+    <p>Good L2 engineers keep a mental (or written) library of patterns — the known error messages, the timeout text, the specific identifiers — so they can search for them immediately when an incident fires.</p>
+  </div>
+
+  <div class="ref-table">
+    <div class="rt-head">🔍 Essential Search Patterns for Fintech L2</div>
+    <table class="rt">
+      <thead><tr><th>Pattern to search</th><th>What it finds</th><th>Why you search it</th></tr></thead>
+      <tbody>
+        <tr><td>ERROR</td><td>All error-level log entries</td><td>First search in any investigation — how many errors and what type</td></tr>
+        <tr><td>DB_CONNECTION_TIMEOUT</td><td>Database connection failures</td><td>DB pool exhausted or DB is down</td></tr>
+        <tr><td>SOCKET_TIMEOUT</td><td>External API timeouts</td><td>SBP, 1LINK, or gateway not responding</td></tr>
+        <tr><td>FAILED AND TXN-</td><td>Specific failed transactions</td><td>Find all failures, then check individual TXN IDs</td></tr>
+        <tr><td>PENDING longer than 30</td><td>Stuck transactions</td><td>Transactions that never got a callback response</td></tr>
+        <tr><td>NullPointerException</td><td>Code-level crash</td><td>Application bug — escalate to L3/dev team</td></tr>
+        <tr><td>OutOfMemoryError</td><td>RAM exhausted</td><td>Application running out of memory — server resource issue</td></tr>
+        <tr><td>CALLBACK_ENDPOINT</td><td>Callback delivery issues</td><td>SBP callback not reaching your system</td></tr>
+        <tr><td>MAX_RETRY_EXCEEDED</td><td>Messages in dead letter</td><td>Something failed all retries and needs manual action</td></tr>
+        <tr><td>Consumer crashed</td><td>MQ consumer stopped</td><td>Queue will start piling up — restart needed</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- GREP DEEP DIVE -->
+  <div class="sec"><span class="sn">05</span> grep Search Patterns — From Simple to Powerful</div>
+
+  <div class="card">
+    <h3>grep is your log search tool on the command line</h3>
+    <p>In a central logging tool like Kibana, you use a search bar. On Kali Linux directly, you use grep. Both are doing the same thing — searching for patterns in log data. Knowing grep well means you can investigate even without a fancy tool.</p>
+  </div>
+
+  <div class="cbox">
+    <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">grep search patterns — from basic to advanced</span></div>
+    <div class="cbox-code">
+<span class="cm"># BASIC — find all ERROR lines</span><br>
+<span class="fn">grep</span> <span class="str">"ERROR"</span> payment-service.log<br>
+<br>
+<span class="cm"># COUNT — how many errors total</span><br>
+<span class="fn">grep</span> -c <span class="str">"ERROR"</span> payment-service.log<br>
+<br>
+<span class="cm"># CONTEXT — show 2 lines BEFORE and 3 lines AFTER each error</span><br>
+<span class="cm"># This shows what was happening just before the error</span><br>
+<span class="fn">grep</span> -B 2 -A 3 <span class="str">"ERROR"</span> payment-service.log<br>
+<br>
+<span class="cm"># TWO PATTERNS — find lines with ERROR that also mention timeout</span><br>
+<span class="fn">grep</span> <span class="str">"ERROR"</span> payment-service.log | <span class="fn">grep</span> <span class="str">"TIMEOUT"</span><br>
+<br>
+<span class="cm"># TIME RANGE — find errors only from 14:00 to 15:00</span><br>
+<span class="fn">grep</span> <span class="str">"2024-03-15 14:"</span> payment-service.log | <span class="fn">grep</span> <span class="str">"ERROR"</span><br>
+<br>
+<span class="cm"># SPECIFIC TXN — trace one transaction through the log</span><br>
+<span class="fn">grep</span> <span class="str">"TXN-501"</span> payment-service.log<br>
+<br>
+<span class="cm"># MULTIPLE FILES — search across ALL log files at once</span><br>
+<span class="fn">grep</span> -r <span class="str">"DB_CONNECTION_TIMEOUT"</span> ~/logs/<br>
+<br>
+<span class="cm"># UNIQUE ERRORS — count each error type once</span><br>
+<span class="fn">grep</span> <span class="str">"ERROR"</span> payment-service.log | <span class="fn">awk</span> <span class="str">'{print $4}'</span> | <span class="fn">sort</span> | <span class="fn">uniq</span> -c | <span class="fn">sort</span> -rn<br>
+<br>
+<span class="cm"># LIVE MONITORING — watch log as new lines appear in real time</span><br>
+<span class="fn">tail</span> -f payment-service.log | <span class="fn">grep</span> <span class="str">"--line-buffered"</span> <span class="str">"ERROR"</span>
+    </div>
+  </div>
+
+  <div class="note n-l">💡 <strong>The most powerful pattern for root cause:</strong> grep -B 3 "ERROR" — shows the 3 lines before each error. Almost always, those 3 lines contain the WARN messages that led to the error. This single command shows you the build-up and the crash together.</div>
+
+  <!-- LAB -->
+  <div class="sec"><span class="sn">06</span> Hands-on Lab — Find Root Cause from Logs</div>
+
+  <div class="card">
+    <h3>Lab scenario</h3>
+    <p>Client reports: <strong>"Multiple payments failed between 14:00 and 15:00. We don't know which ones or why."</strong> You have access to the payment service log. Your job is to find the root cause using search patterns only — no database access yet.</p>
+  </div>
+
+  <div class="lab">
+    <div class="lab-head">
+      <h3>🔬 Lab: Trace Root Cause Using Log Search Patterns</h3>
+      <span class="lab-badge">grep · Pattern Search · Kali Linux</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Create the investigation log — multi-service scenario</div>
+          <div class="ls-desc">This log combines entries from the payment service and the MQ consumer — simulating what a central log platform would show you when you search across services.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — create investigation log</span></div><div class="cbox-code">
+<span class="fn">cat</span> &gt; ~/investigation.log &lt;&lt; <span class="str">'EOF'</span><br>
+[2024-03-15 13:58:00] [INFO ] [payment-service] Service running normally. TXN rate: 142/sec<br>
+[2024-03-15 13:59:10] [INFO ] [mq-consumer   ] Queue depth: 2. Processing normally.<br>
+[2024-03-15 14:00:00] [INFO ] [payment-service] TXN-501 received. Amount: 15000<br>
+[2024-03-15 14:00:01] [INFO ] [payment-service] TXN-501 validated. Sending to DB.<br>
+[2024-03-15 14:00:01] [WARN ] [payment-service] DB connection pool at 81%<br>
+[2024-03-15 14:00:02] [WARN ] [payment-service] DB connection pool at 89%<br>
+[2024-03-15 14:00:03] [WARN ] [payment-service] DB connection pool at 96%<br>
+[2024-03-15 14:00:04] [ERROR] [payment-service] DB_CONNECTION_TIMEOUT TXN-501 failed after 30000ms<br>
+[2024-03-15 14:00:04] [ERROR] [payment-service] TXN-501 FAILED cannot write to database<br>
+[2024-03-15 14:00:05] [ERROR] [payment-service] DB_CONNECTION_TIMEOUT TXN-502 failed after 30000ms<br>
+[2024-03-15 14:00:05] [ERROR] [payment-service] TXN-502 FAILED cannot write to database<br>
+[2024-03-15 14:00:06] [ERROR] [mq-consumer   ] Cannot process message. DB unreachable. Retrying.<br>
+[2024-03-15 14:00:10] [WARN ] [mq-consumer   ] Queue depth growing: 15 messages pending<br>
+[2024-03-15 14:01:00] [ERROR] [payment-service] DB_CONNECTION_REFUSED connection refused on port 5432<br>
+[2024-03-15 14:01:00] [ERROR] [payment-service] TXN-503 FAILED DB service appears down<br>
+[2024-03-15 14:01:00] [ERROR] [mq-consumer   ] Queue depth: 28. Consumer paused. Waiting for DB.<br>
+[2024-03-15 14:15:00] [INFO ] [payment-service] DB connection restored. Pool at 12%.<br>
+[2024-03-15 14:15:01] [INFO ] [payment-service] TXN-504 processed successfully. Status: SUCCESS<br>
+[2024-03-15 14:15:02] [INFO ] [mq-consumer   ] Queue draining. Depth: 22. Processing resumed.<br>
+[2024-03-15 14:18:00] [INFO ] [mq-consumer   ] Queue depth: 0. All messages processed.<br>
+EOF
+          </div></div>
+          <span class="ls-out">→ investigation.log created with 20 entries spanning 2 services over a 20-minute incident window.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 1 — First search: count all errors and see what type they are</div>
+          <div class="ls-desc">The very first thing you do in any investigation — how many errors and what kind.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="cm"># Total error count</span><br>
+<span class="fn">echo</span> <span class="str">"Total errors: $(grep -c 'ERROR' ~/investigation.log)"</span><br>
+<br>
+<span class="cm"># Error types — what errors appeared and how many times each</span><br>
+<span class="fn">grep</span> <span class="str">"ERROR"</span> ~/investigation.log | <span class="fn">awk</span> <span class="str">'{print $5}'</span> | <span class="fn">sort</span> | <span class="fn">uniq</span> -c | <span class="fn">sort</span> -rn<br>
+<br>
+<span class="cm"># Which services had errors?</span><br>
+<span class="fn">grep</span> <span class="str">"ERROR"</span> ~/investigation.log | <span class="fn">awk</span> <span class="str">'{print $4}'</span> | <span class="fn">sort</span> | <span class="fn">uniq</span> -c
+          </div></div>
+          <span class="ls-out">→ 7 total errors. DB_CONNECTION_TIMEOUT appears 3 times. DB_CONNECTION_REFUSED once. Both payment-service and mq-consumer affected. Pattern: it is a DB issue.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 2 — Find the build-up before the first error</div>
+          <div class="ls-desc">Show 3 lines before the first ERROR — this reveals the warning signs that appeared before the crash.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="cm"># Show context before every error — the build-up</span><br>
+<span class="fn">grep</span> -B 3 <span class="str">"ERROR"</span> ~/investigation.log | <span class="fn">head</span> -15<br>
+<br>
+<span class="cm"># When did the first warning appear?</span><br>
+<span class="fn">grep</span> -m 1 <span class="str">"WARN"</span> ~/investigation.log<br>
+<br>
+<span class="cm"># When did the first error appear?</span><br>
+<span class="fn">grep</span> -m 1 <span class="str">"ERROR"</span> ~/investigation.log
+          </div></div>
+          <span class="ls-out">→ WARN lines appeared at 14:00:01, 14:00:02, 14:00:03 — DB pool climbing. First ERROR at 14:00:04. The 3 WARN lines showed the build-up. Root cause: DB connection pool exhausted.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 3 — List all affected transactions</div>
+          <div class="ls-desc">Which specific transactions failed? The client needs this for reconciliation.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="cm"># All failed transactions</span><br>
+<span class="fn">grep</span> <span class="str">"FAILED"</span> ~/investigation.log<br>
+<br>
+<span class="cm"># Just the TXN IDs of failures</span><br>
+<span class="fn">grep</span> <span class="str">"FAILED"</span> ~/investigation.log | <span class="fn">grep</span> -o <span class="str">"TXN-[0-9]*"</span><br>
+<br>
+<span class="cm"># When did recovery happen?</span><br>
+<span class="fn">grep</span> <span class="str">"restored\|SUCCESS\|resumed"</span> ~/investigation.log
+          </div></div>
+          <span class="ls-out">→ TXN-501, TXN-502, TXN-503 all failed. Recovery at 14:15. Outage window: 14:00:04 to 14:15:00 — approximately 15 minutes.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">05</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 4 — Search across multiple log files (simulate central logging)</div>
+          <div class="ls-desc">In a real environment you search all services at once. Here we simulate it by creating a second log file and searching both.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — multi-file search</span></div><div class="cbox-code">
+<span class="cm"># Create a second service log (simulating another server)</span><br>
+<span class="fn">echo</span> <span class="str">"[2024-03-15 14:00:05] [ERROR] [api-gateway] Upstream DB unreachable. 503 returned."</span> &gt; ~/api-gateway.log<br>
+<span class="fn">echo</span> <span class="str">"[2024-03-15 14:01:00] [ERROR] [api-gateway] All payment endpoints returning 503."</span> &gt;&gt; ~/api-gateway.log<br>
+<span class="fn">echo</span> <span class="str">"[2024-03-15 14:15:05] [INFO ] [api-gateway] Upstream restored. Endpoints healthy."</span> &gt;&gt; ~/api-gateway.log<br>
+<br>
+<span class="cm"># Now search ALL log files at once — central logging style</span><br>
+<span class="fn">grep</span> -r <span class="str">"ERROR"</span> ~/investigation.log ~/api-gateway.log<br>
+<br>
+<span class="cm"># Show which FILE each error came from</span><br>
+<span class="fn">grep</span> -rh <span class="str">"ERROR"</span> ~/investigation.log ~/api-gateway.log | <span class="fn">awk</span> <span class="str">'{print $4}'</span> | <span class="fn">sort</span> | <span class="fn">uniq</span> -c
+          </div></div>
+          <span class="ls-out">→ Errors found across all 3 services: payment-service, mq-consumer, api-gateway — all caused by the same DB outage. This is the power of central search.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">06</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 5 — Write the root cause from log evidence</div>
+          <div class="ls-desc">Produce the Jira RCA from what the logs told you — no guessing, only evidence.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">Jira RCA — log-based evidence</span></div><div class="cbox-code">
+<span class="cm">Incident   : Payment failures 14:00 – 14:15</span><br>
+<span class="cm">Evidence   : investigation.log + api-gateway.log</span><br>
+<br>
+<span class="cm">Timeline (from logs):</span><br>
+<span class="cm">  14:00:01 — DB pool WARN at 81%</span><br>
+<span class="cm">  14:00:03 — DB pool WARN at 96% (critical threshold)</span><br>
+<span class="cm">  14:00:04 — DB_CONNECTION_TIMEOUT — pool exhausted</span><br>
+<span class="cm">  14:00:04 — TXN-501, TXN-502 FAILED</span><br>
+<span class="cm">  14:01:00 — DB_CONNECTION_REFUSED — DB process down</span><br>
+<span class="cm">  14:01:00 — TXN-503 FAILED, api-gateway returning 503</span><br>
+<span class="cm">  14:15:00 — DB connection restored. Queue draining.</span><br>
+<span class="cm">  14:18:00 — All systems recovered</span><br>
+<br>
+<span class="cm">Root Cause : DB connection pool exhausted at 14:00:04.</span><br>
+<span class="cm">             DB process subsequently crashed at 14:01:00.</span><br>
+<span class="cm">             3 transactions failed. MQ and API gateway</span><br>
+<span class="cm">             both affected as downstream services.</span><br>
+<span class="cm">Next Steps : DBA to investigate pool exhaustion cause.</span><br>
+<span class="cm">             Reconcile TXN-501, TXN-502, TXN-503.</span>
+          </div></div>
+          <span class="ls-out-g">→ Complete log-based RCA. Every claim backed by a log entry with a timestamp. This is professional incident documentation. ✅</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn">07</span> Real L2 Scenarios</div>
+  <div class="scen-list">
+    <div class="scen-item"><div class="si-id">01</div>
+      <p>Incident fires. Instead of SSHing into 4 servers one by one, you open Kibana and type <strong>"ERROR AND DB_CONNECTION_TIMEOUT"</strong> with a time range of the last 30 minutes. <strong>In 3 seconds you see 48 results from 4 different services — all pointing to the same DB.</strong> Root cause identified before you even open a terminal.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">02</div>
+      <p>Client says: <strong>"TXN-9981 failed but we don't know why."</strong> You grep for TXN-9981 across all logs. You find: INFO received → WARN DB pool 94% → ERROR DB timeout → FAILED. <strong>Full story in 4 log lines.</strong> You tell the client: the transaction failed because the DB connection pool was exhausted. Escalated to DBA.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">03</div>
+      <p>Manager asks: <strong>"Did we have any errors yesterday between 2 AM and 4 AM?"</strong> In a central log tool you set the time range and search ERROR. Result: 0 errors in that window. <strong>Definitive answer in 5 seconds.</strong> Without central logging this would require SSHing into every server and grepping individual files — 20 minutes of work.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">04</div>
+      <p>You notice a pattern — the same WARN message about DB pool appears every day around 3 PM. It has never crossed into ERROR — but it is building. <strong>You raise a proactive ticket</strong> before it ever becomes an incident. This is log monitoring used for prevention, not just investigation. The DBA increases the pool size and the warning disappears.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 6.5 · Day 6 Outcomes</h3>
+    <ul>
+      <li>Explain what central log monitoring is and why it is faster than grepping individual servers</li>
+      <li>Describe how logs flow from services → log shipper → central store → search interface</li>
+      <li>Read a log line and identify all 5 parts — timestamp, level, service, message, metadata</li>
+      <li>Know the 10 essential search patterns for fintech L2 investigation — ERROR, DB_CONNECTION_TIMEOUT, TXN-, and more</li>
+      <li>Use grep with context flags — -B and -A — to see the build-up before an error, not just the error itself</li>
+      <li>Search across multiple log files simultaneously to simulate central logging behaviour</li>
+      <li>Complete the lab — create a multi-service investigation log, search for errors, identify the build-up pattern, list affected transactions, confirm the recovery timestamp, and produce a complete log-evidence-based Jira RCA</li>
+      <li>Understand how central logging enables proactive pattern detection — spotting recurring warnings before they become incidents</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

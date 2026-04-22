@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 5 · Day 3 & 4 — Slack & WhatsApp Alerts</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#07080c;
+    --surface:#0d0f18;
+    --surface2:#121520;
+    --surface3:#171a28;
+    --border:#1e2234;
+    --text:#a8b8d0;
+    --text-dim:#3e5068;
+    --text-faint:#162030;
+    --white:#eaf0fc;
+
+    --slack:#4a154b;
+    --slack-light:#7c3aed;
+    --slack-bg:#0e0818;
+    --slack-border:#281840;
+
+    --wa:#25d366;
+    --wa-bg:#001810;
+    --wa-border:#003820;
+
+    --amber:#ffaa00;
+    --amber-bg:#180c00;
+    --amber-border:#3c2800;
+
+    --rose:#ff3858;
+    --rose-bg:#180008;
+    --rose-border:#3c0018;
+
+    --blue:#3898ff;
+    --blue-bg:#020e20;
+    --blue-border:#082240;
+
+    --green:#22d46a;
+    --green-bg:#001810;
+    --green-border:#003820;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;font-size:15px;line-height:1.7;padding:48px 24px 100px;}
+  .page{max-width:960px;margin:0 auto;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:52px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .topbar-left{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;}
+  .tb-right{display:flex;gap:8px;}
+  .tb-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 14px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;}
+  .tb-wk{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tb-d3{background:var(--slack-bg);border:1px solid var(--slack-border);color:var(--slack-light);}
+  .tb-d4{background:var(--wa-bg);border:1px solid var(--wa-border);color:var(--wa);}
+
+  .hero{margin-bottom:52px;}
+  .day-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--slack-light);margin-bottom:14px;}
+  .hero h1{font-size:clamp(28px,5.5vw,54px);font-weight:800;line-height:1.05;color:var(--white);margin-bottom:18px;}
+  .hero h1 .s{color:var(--slack-light);} .hero h1 .w{color:var(--wa);}
+  .hero-desc{color:var(--text-dim);font-size:15px;max-width:540px;}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;}
+  .tag{padding:5px 14px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tag-s{background:var(--slack-bg);border-color:var(--slack-border);color:var(--slack-light);}
+  .tag-w{background:var(--wa-bg);border-color:var(--wa-border);color:var(--wa);}
+
+  .day-div{display:flex;align-items:center;gap:16px;margin:56px 0 28px;}
+  .dd-pill{font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 20px;border-radius:100px;letter-spacing:2px;text-transform:uppercase;font-weight:700;flex-shrink:0;}
+  .dd-s{background:var(--slack-bg);border:2px solid var(--slack-border);color:var(--slack-light);}
+  .dd-w{background:var(--wa-bg);border:2px solid var(--wa-border);color:var(--wa);}
+  .dd-ls{flex:1;height:1px;background:var(--slack-border);}
+  .dd-lw{flex:1;height:1px;background:var(--wa-border);}
+  .dd-title{font-size:17px;font-weight:700;}
+  .dd-ts{color:var(--slack-light);} .dd-tw{color:var(--wa);}
+
+  .sec{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faint);margin-bottom:18px;margin-top:44px;display:flex;align-items:center;gap:12px;}
+  .sec .sn{font-size:12px;}
+  .sn-s{color:var(--slack-light);} .sn-w{color:var(--wa);}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .analogy{border-left:4px solid;border-radius:12px;padding:20px 26px;margin-bottom:16px;}
+  .an-s{background:var(--slack-bg);border-color:var(--slack-light);}
+  .an-w{background:var(--wa-bg);border-color:var(--wa);}
+  .analogy .al{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+  .an-s .al{color:var(--slack-light);} .an-w .al{color:var(--wa);}
+  .analogy p{color:var(--text);font-size:14px;}
+  .analogy strong{color:var(--white);}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 26px;margin-bottom:14px;}
+  .card h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:8px;}
+  .card p{color:var(--text-dim);margin-bottom:8px;font-size:14px;}
+  .card p:last-child{margin-bottom:0;}
+  .card strong{color:var(--text);}
+
+  /* STEP BLOCKS — main setup steps */
+  .setup-block{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:16px;}
+  .setup-header{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+  .step-circle{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;flex-shrink:0;}
+  .sc-s{background:var(--slack-bg);border:2px solid var(--slack-border);color:var(--slack-light);}
+  .sc-w{background:var(--wa-bg);border:2px solid var(--wa-border);color:var(--wa);}
+  .setup-header h3{font-size:15px;font-weight:700;color:var(--white);}
+  .setup-body{padding:20px 22px;display:flex;flex-direction:column;gap:12px;}
+  .setup-body p{font-size:14px;color:var(--text-dim);}
+  .setup-body strong{color:var(--white);}
+
+  /* INLINE STEPS inside setup */
+  .inline-steps{display:flex;flex-direction:column;gap:8px;}
+  .is-item{display:flex;gap:12px;align-items:flex-start;}
+  .is-num{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;flex-shrink:0;margin-top:2px;color:var(--text-dim);}
+  .is-text{font-size:14px;color:var(--text-dim);}
+  .is-text strong{color:var(--white);}
+
+  /* CODE */
+  .cbox{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:8px 0;}
+  .cbox-bar{padding:7px 14px;background:var(--surface3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+  .d{width:8px;height:8px;border-radius:50%;}.dr{background:#ff5f56;}.dy{background:#ffbd2e;}.dg{background:#27c93f;}
+  .ct{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);margin-left:4px;letter-spacing:1px;}
+  .cbox-code{padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.9;overflow-x:auto;}
+  .kw{color:#ff7b72;}.fn{color:#79c0ff;}.str{color:#a5d6ff;}.var{color:#ffa657;}.cm{color:#2e4050;}.op{color:#c9d1d9;}
+
+  /* NOTE */
+  .note{border-radius:10px;padding:10px 16px;font-size:13px;margin-top:8px;}
+  .n-s{background:var(--slack-bg);border:1px solid var(--slack-border);color:var(--slack-light);}
+  .n-w{background:var(--wa-bg);border:1px solid var(--wa-border);color:var(--wa);}
+  .n-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .n-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .n-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .note strong{color:var(--white);}
+
+  /* IMAGE PLACEHOLDER — for UI steps */
+  .ui-step{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin:6px 0;display:flex;align-items:center;gap:12px;}
+  .ui-step .ui-icon{font-size:20px;flex-shrink:0;}
+  .ui-step .ui-text{font-size:13px;color:var(--text-dim);}
+  .ui-step .ui-text strong{color:var(--white);}
+  .ui-step .ui-arrow{margin-left:auto;color:var(--text-faint);font-size:18px;}
+
+  /* RESULT BOX */
+  .result-box{border-radius:10px;padding:14px 18px;margin-top:8px;border:1px solid;}
+  .rb-s{background:var(--slack-bg);border-color:var(--slack-border);}
+  .rb-w{background:var(--wa-bg);border-color:var(--wa-border);}
+  .rb-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+  .rb-s .rb-label{color:var(--slack-light);}
+  .rb-w .rb-label{color:var(--wa);}
+  .rb-text{font-size:13px;color:var(--text-dim);}
+  .rb-text strong{color:var(--white);}
+
+  /* SCENARIOS */
+  .scen-list{display:flex;flex-direction:column;gap:12px;margin-bottom:14px;}
+  .scen-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;}
+  .si-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slack-light);background:var(--slack-bg);border:1px solid var(--slack-border);border-radius:6px;padding:4px 8px;flex-shrink:0;margin-top:2px;}
+  .scen-item p{font-size:14px;color:var(--text-dim);}
+  .scen-item p strong{color:var(--white);}
+
+  .outcome{background:linear-gradient(135deg,var(--slack-bg) 0%,var(--surface) 50%,var(--wa-bg) 100%);border:1px solid var(--border);border-radius:16px;padding:32px;margin-top:48px;}
+  .outcome h3{font-size:20px;font-weight:700;color:var(--slack-light);margin-bottom:18px;}
+  .outcome ul{display:flex;flex-direction:column;gap:9px;list-style:none;}
+  .outcome ul li{font-size:14px;color:var(--text-dim);padding-left:22px;position:relative;}
+  .outcome ul li::before{content:'✓';position:absolute;left:0;color:var(--slack-light);font-family:'JetBrains Mono',monospace;}
+  .outcome ul li.dw::before{color:var(--wa);}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 5</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-wk">Week 5</span>
+      <span class="tb-badge tb-d3">Day 3</span>
+      <span class="tb-badge tb-d4">Day 4</span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="day-label">Week 5 · Day 3 & Day 4</div>
+    <h1><span class="s">Slack</span> Alerts &<br><span class="w">WhatsApp</span> Alerts</h1>
+    <p class="hero-desc">When something breaks on your server, you should not have to be staring at a screen to find out. Today you set up real alerts that ping you automatically — on Slack and WhatsApp.</p>
+    <div class="tags">
+      <span class="tag tag-s">Day 3 — Slack Webhook</span>
+      <span class="tag tag-w">Day 4 — WhatsApp API</span>
+      <span class="tag">Webhook</span><span class="tag">Bash Script</span>
+      <span class="tag">Cloud API</span><span class="tag">Automation</span>
+    </div>
+  </div>
+
+  <!-- ===== DAY 3 — SLACK ===== -->
+  <div class="day-div">
+    <span class="dd-pill dd-s">Day 3</span>
+    <span class="dd-ls"></span>
+    <span class="dd-title dd-ts">Slack Alerts — Webhook Integration</span>
+  </div>
+
+  <div class="sec"><span class="sn sn-s">01</span> The Simple Idea</div>
+
+  <div class="analogy an-s">
+    <div class="al">Real-life Analogy</div>
+    <p>Think of a webhook like a <strong>doorbell connected to your phone</strong>. When someone rings the doorbell at your house, your phone rings — no matter where you are.<br><br><strong>A Slack webhook is the same thing.</strong> When your script detects an error, it rings the Slack doorbell. Slack instantly sends a message to your team channel. Everyone is notified — no one has to keep watching a screen.</p>
+  </div>
+
+  <div class="card">
+    <h3>What is a Webhook?</h3>
+    <p>A webhook is just a <strong>URL (web address) that accepts messages</strong>. Slack gives you a special URL. When your script sends data to that URL, Slack automatically posts a message to your chosen channel. No login needed — just send to the URL and it works.</p>
+    <p>Think of it as Slack's inbox address. You drop a letter into it (your alert message) and it appears in your channel instantly.</p>
+  </div>
+
+  <!-- STEP 1 — CREATE SLACK WORKSPACE -->
+  <div class="sec"><span class="sn sn-s">02</span> Full Setup — Step by Step</div>
+
+  <div class="setup-block">
+    <div class="setup-header">
+      <div class="step-circle sc-s">1</div>
+      <h3>Create a Free Slack Workspace (skip if you already have one)</h3>
+    </div>
+    <div class="setup-body">
+      <div class="inline-steps">
+        <div class="is-item">
+          <span class="is-num">a</span>
+          <div class="is-text">Go to <strong>slack.com</strong> and click <strong>"Create a new workspace"</strong></div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">b</span>
+          <div class="is-text">Enter your email address and verify it</div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">c</span>
+          <div class="is-text">Give your workspace a name — e.g. <strong>"L2-Monitoring"</strong></div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">d</span>
+          <div class="is-text">Create a channel — e.g. <strong>#server-alerts</strong> — this is where your alerts will appear</div>
+        </div>
+      </div>
+      <div class="note n-s">💡 The free Slack plan is enough for this. You just need a workspace and one channel.</div>
+    </div>
+  </div>
+
+  <!-- STEP 2 — CREATE WEBHOOK -->
+  <div class="setup-block">
+    <div class="setup-header">
+      <div class="step-circle sc-s">2</div>
+      <h3>Create a Slack Incoming Webhook</h3>
+    </div>
+    <div class="setup-body">
+      <div class="inline-steps">
+        <div class="is-item">
+          <span class="is-num">a</span>
+          <div class="is-text">Go to <strong>api.slack.com/apps</strong> in your browser</div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">b</span>
+          <div class="is-text">Click <strong>"Create New App"</strong> → choose <strong>"From scratch"</strong></div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">c</span>
+          <div class="is-text">Name your app — e.g. <strong>"L2 Alert Bot"</strong> — then select your workspace</div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">d</span>
+          <div class="is-text">On the left menu click <strong>"Incoming Webhooks"</strong></div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">e</span>
+          <div class="is-text">Toggle the switch to <strong>"On"</strong></div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">f</span>
+          <div class="is-text">Scroll down and click <strong>"Add New Webhook to Workspace"</strong></div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">g</span>
+          <div class="is-text">Choose the channel — select <strong>#server-alerts</strong> — then click <strong>"Allow"</strong></div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">h</span>
+          <div class="is-text">You will now see a <strong>Webhook URL</strong> that looks like this:</div>
+        </div>
+      </div>
+      <div class="cbox">
+        <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">Your webhook URL will look like this</span></div>
+        <div class="cbox-code">SLACK_WEBHOOK_URL=YOUR_SLACK_WEBHOOK_HERE</div>
+      </div>
+      <div class="note n-a">⚠️ <strong>Copy this URL and save it somewhere safe.</strong> This is your webhook. Anyone with this URL can post to your channel — keep it private. Never share it publicly.</div>
+    </div>
+  </div>
+
+  <!-- STEP 3 — TEST THE WEBHOOK MANUALLY -->
+  <div class="setup-block">
+    <div class="setup-header">
+      <div class="step-circle sc-s">3</div>
+      <h3>Test the Webhook — Send a Manual Test Alert</h3>
+    </div>
+    <div class="setup-body">
+      <p>Before writing a script, test that your webhook actually works. Open your Kali terminal and run this command — replace the URL with your actual webhook URL.</p>
+      <div class="cbox">
+        <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">Kali terminal — paste and run this</span></div>
+        <div class="cbox-code">
+<span class="fn">curl</span> -X POST -H <span class="str">'Content-type: application/json'</span> \<br>
+--data <span class="str">'{"text": "Test alert from Kali Linux. Webhook is working!"}'</span> \<br>
+https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+        </div>
+      </div>
+      <div class="result-box rb-s">
+        <div class="rb-label">What you will see</div>
+        <div class="rb-text">Terminal shows: <strong>ok</strong><br>Slack channel shows: <strong>"Test alert from Kali Linux. Webhook is working!"</strong><br>If you see ok in terminal but nothing in Slack — double check the URL and the channel name.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4 — THE ALERT SCRIPT -->
+  <div class="setup-block">
+    <div class="setup-header">
+      <div class="step-circle sc-s">4</div>
+      <h3>Write the Slack Alert Script</h3>
+    </div>
+    <div class="setup-body">
+      <p>Now create this script on your Kali machine. It reads the log, counts errors, and sends a Slack message if errors are found.</p>
+      <div class="cbox">
+        <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">slack-alert.sh — write this exactly</span></div>
+        <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># =============================================</span><br>
+<span class="cm"># slack-alert.sh</span><br>
+<span class="cm"># Checks log for errors and sends Slack alert</span><br>
+<span class="cm"># Replace WEBHOOK_URL with your actual URL</span><br>
+<span class="cm"># =============================================</span><br>
+<br>
+<span class="var">WEBHOOK_URL</span>=<span class="str">"https://hooks.slack.com/services/YOUR/WEBHOOK/URL"</span><br>
+<span class="var">LOG_FILE</span>=<span class="str">"$HOME/payment-service.log"</span><br>
+<span class="var">ERROR_LIMIT</span>=<span class="op">3</span><br>
+<span class="var">SERVER_NAME</span>=<span class="str">"Payment-Server-01"</span><br>
+<br>
+<span class="cm"># Check log file exists</span><br>
+<span class="kw">if</span> [ ! -f <span class="str">"$LOG_FILE"</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"Log not found."</span>; <span class="kw">exit</span> <span class="op">1</span><br>
+<span class="kw">fi</span><br>
+<br>
+<span class="cm"># Count errors</span><br>
+<span class="var">ERROR_COUNT</span>=<span class="op">$(</span><span class="fn">grep</span> -c <span class="str">"ERROR"</span> <span class="str">"$LOG_FILE"</span><span class="op">)</span><br>
+<span class="var">TIMESTAMP</span>=<span class="op">$(</span><span class="fn">date</span><span class="op">)</span><br>
+<br>
+<span class="cm"># Only send alert if errors exceed limit</span><br>
+<span class="kw">if</span> [ <span class="str">"$ERROR_COUNT"</span> -gt <span class="str">"$ERROR_LIMIT"</span> ]; <span class="kw">then</span><br>
+<br>
+&nbsp;&nbsp;<span class="var">MESSAGE</span>=<span class="str">"🚨 *ALERT — $SERVER_NAME*\n> Errors found: *$ERROR_COUNT*\n> Time: $TIMESTAMP\n> Log: $LOG_FILE"</span><br>
+<br>
+&nbsp;&nbsp;<span class="fn">curl</span> -s -X POST -H <span class="str">'Content-type: application/json'</span> \<br>
+&nbsp;&nbsp;--data <span class="str">"{\"text\": \"$MESSAGE\"}"</span> \<br>
+&nbsp;&nbsp;<span class="str">"$WEBHOOK_URL"</span><br>
+<br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"Slack alert sent: $ERROR_COUNT errors"</span><br>
+<br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"No alert needed. Errors: $ERROR_COUNT"</span><br>
+<span class="kw">fi</span>
+        </div>
+      </div>
+      <div class="inline-steps" style="margin-top:10px;">
+        <div class="is-item">
+          <span class="is-num">1</span>
+          <div class="is-text">Open vi: <strong>vi ~/slack-alert.sh</strong> — press i to edit — paste the script above — replace YOUR/WEBHOOK/URL</div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">2</span>
+          <div class="is-text">Press Esc → type <strong>:wq</strong> → press Enter to save</div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">3</span>
+          <div class="is-text">Give permission: <strong>chmod +x ~/slack-alert.sh</strong></div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">4</span>
+          <div class="is-text">Run it: <strong>./slack-alert.sh</strong></div>
+        </div>
+      </div>
+      <div class="result-box rb-s">
+        <div class="rb-label">What you will see</div>
+        <div class="rb-text">Terminal: <strong>Slack alert sent: 4 errors</strong><br>Slack channel #server-alerts: <strong>🚨 ALERT — Payment-Server-01 / Errors found: 4 / Time: [timestamp]</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5 — SCHEDULE -->
+  <div class="setup-block">
+    <div class="setup-header">
+      <div class="step-circle sc-s">5</div>
+      <h3>Schedule the Alert — Runs Automatically Every 30 Minutes</h3>
+    </div>
+    <div class="setup-body">
+      <div class="cbox">
+        <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — add cron job</span></div>
+        <div class="cbox-code">
+<span class="cm"># Open crontab</span><br>
+<span class="fn">crontab</span> -e<br>
+<br>
+<span class="cm"># Add this line — runs every 30 minutes</span><br>
+<span class="op">*/30 * * * *</span> /home/kali/slack-alert.sh &gt;&gt; /home/kali/slack-cron.log 2&gt;&amp;1<br>
+<br>
+<span class="cm"># Save and exit (:wq) then confirm:</span><br>
+<span class="fn">crontab</span> -l
+        </div>
+      </div>
+      <div class="note n-s">✅ From now on — every 30 minutes the script checks the log automatically. If errors are above 3, you get a Slack message. No manual checking needed.</div>
+    </div>
+  </div>
+
+  <!-- ===== DAY 4 — WHATSAPP ===== -->
+  <div class="day-div" style="margin-top:60px;">
+    <span class="dd-pill dd-w">Day 4</span>
+    <span class="dd-lw"></span>
+    <span class="dd-title dd-tw">WhatsApp Alerts — Cloud API Templates</span>
+  </div>
+
+  <div class="sec"><span class="sn sn-w">03</span> The Simple Idea</div>
+
+  <div class="analogy an-w">
+    <div class="al">Real-life Analogy</div>
+    <p>WhatsApp is already on everyone's phone — team members, managers, clients. <strong>Sending a WhatsApp alert is like having your server send you a text message directly.</strong><br><br>Instead of opening a new tool, the alert lands where people already are. When an outage happens at 2 AM, a WhatsApp ping on the manager's phone is far more effective than an email sitting unread until morning.</p>
+  </div>
+
+  <div class="card">
+    <h3>How WhatsApp Business API Works</h3>
+    <p>WhatsApp has a <strong>Business API</strong> that lets systems send messages programmatically. You cannot use a personal WhatsApp account for this — you need a <strong>WhatsApp Business API provider</strong>.</p>
+    <p>The most popular free provider for testing is <strong>Twilio</strong> — they give you a free WhatsApp sandbox (test number) that lets you send messages without paying anything during testing. For production, your company would use an approved provider.</p>
+  </div>
+
+  <div class="card">
+    <h3>What are Message Templates?</h3>
+    <p>WhatsApp does not allow you to send freeform messages to people who haven't opted in first. So you use <strong>pre-approved message templates</strong>. A template is a fixed message format with placeholders — like a form letter. WhatsApp approves the template and then you fill in the variable parts (like the error count or server name) when sending.</p>
+    <p>Example template: <strong>"🚨 Alert: {{server_name}} has {{error_count}} errors at {{time}}. Please investigate."</strong></p>
+  </div>
+
+  <!-- WA SETUP -->
+  <div class="sec"><span class="sn sn-w">04</span> Full Setup — Step by Step (Using Twilio Sandbox)</div>
+
+  <div class="setup-block">
+    <div class="setup-header">
+      <div class="step-circle sc-w">1</div>
+      <h3>Create a Free Twilio Account</h3>
+    </div>
+    <div class="setup-body">
+      <div class="inline-steps">
+        <div class="is-item">
+          <span class="is-num">a</span>
+          <div class="is-text">Go to <strong>twilio.com</strong> and click <strong>"Sign Up"</strong></div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">b</span>
+          <div class="is-text">Enter your name, email, and password — verify your email</div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">c</span>
+          <div class="is-text">Verify your phone number (they send a code via SMS)</div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">d</span>
+          <div class="is-text">When asked "What are you building?" select <strong>Alerts &amp; Notifications</strong></div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">e</span>
+          <div class="is-text">You are now in the Twilio Console. Free trial gives you $15 credit — enough for testing.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="setup-block">
+    <div class="setup-header">
+      <div class="step-circle sc-w">2</div>
+      <h3>Activate the WhatsApp Sandbox</h3>
+    </div>
+    <div class="setup-body">
+      <div class="inline-steps">
+        <div class="is-item">
+          <span class="is-num">a</span>
+          <div class="is-text">In the Twilio Console left menu → go to <strong>Messaging → Try it out → Send a WhatsApp message</strong></div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">b</span>
+          <div class="is-text">You will see a <strong>Sandbox number</strong> — it looks like: <strong>+1 415 523 8886</strong></div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">c</span>
+          <div class="is-text">You will also see a <strong>join code</strong> — e.g. <strong>"join example-word"</strong></div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">d</span>
+          <div class="is-text">Open WhatsApp on your phone → add the sandbox number as a contact → send it the join code message</div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">e</span>
+          <div class="is-text">You will receive a WhatsApp reply confirming you joined the sandbox</div>
+        </div>
+      </div>
+      <div class="note n-w">💡 The sandbox only works for numbers that have sent the join message. This is how WhatsApp's opt-in requirement works. In production you would have proper approved numbers.</div>
+    </div>
+  </div>
+
+  <div class="setup-block">
+    <div class="setup-header">
+      <div class="step-circle sc-w">3</div>
+      <h3>Get Your Twilio Credentials</h3>
+    </div>
+    <div class="setup-body">
+      <div class="inline-steps">
+        <div class="is-item">
+          <span class="is-num">a</span>
+          <div class="is-text">In Twilio Console → go to your <strong>Account Dashboard</strong></div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">b</span>
+          <div class="is-text">Find and copy your <strong>Account SID</strong> — looks like: ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">c</span>
+          <div class="is-text">Find and copy your <strong>Auth Token</strong> — click the eye icon to reveal it</div>
+        </div>
+      </div>
+      <div class="cbox">
+        <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">What your credentials look like</span></div>
+        <div class="cbox-code">
+Account SID : ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx<br>
+Auth Token  : your_auth_token_here<br>
+From Number : whatsapp:+14155238886   <span class="cm"># Twilio sandbox number</span><br>
+To Number   : whatsapp:+923XXXXXXXXX  <span class="cm"># your WhatsApp number with country code</span>
+        </div>
+      </div>
+      <div class="note n-a">⚠️ <strong>Never put your Auth Token directly into a script you share.</strong> For this lab it is fine since it is local to your Kali machine. In production, store it as an environment variable.</div>
+    </div>
+  </div>
+
+  <div class="setup-block">
+    <div class="setup-header">
+      <div class="step-circle sc-w">4</div>
+      <h3>Send a Manual Test WhatsApp Message First</h3>
+    </div>
+    <div class="setup-body">
+      <p>Before writing the script, test that your credentials work. Run this in your Kali terminal — replace all values with your own.</p>
+      <div class="cbox">
+        <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">Kali terminal — manual test</span></div>
+        <div class="cbox-code">
+<span class="fn">curl</span> -X POST https://api.twilio.com/2010-04-01/Accounts/YOUR_ACCOUNT_SID/Messages.json \<br>
+--data-urlencode <span class="str">"From=whatsapp:+14155238886"</span> \<br>
+--data-urlencode <span class="str">"To=whatsapp:+923XXXXXXXXX"</span> \<br>
+--data-urlencode <span class="str">"Body=Test message from Kali Linux. WhatsApp alert is working!"</span> \<br>
+-u YOUR_ACCOUNT_SID:YOUR_AUTH_TOKEN
+        </div>
+      </div>
+      <div class="result-box rb-w">
+        <div class="rb-label">What you will see</div>
+        <div class="rb-text">Terminal shows: a JSON response with <strong>"status": "queued"</strong><br>Your WhatsApp shows: <strong>"Test message from Kali Linux. WhatsApp alert is working!"</strong><br>If it says error 21606 — your number has not joined the sandbox yet (Step 2).</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="setup-block">
+    <div class="setup-header">
+      <div class="step-circle sc-w">5</div>
+      <h3>Write the WhatsApp Alert Script</h3>
+    </div>
+    <div class="setup-body">
+      <div class="cbox">
+        <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">whatsapp-alert.sh — write this exactly</span></div>
+        <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># =============================================</span><br>
+<span class="cm"># whatsapp-alert.sh</span><br>
+<span class="cm"># Detects errors and sends WhatsApp message</span><br>
+<span class="cm"># Replace all values marked with YOUR_</span><br>
+<span class="cm"># =============================================</span><br>
+<br>
+<span class="var">ACCOUNT_SID</span>=<span class="str">"YOUR_ACCOUNT_SID"</span><br>
+<span class="var">AUTH_TOKEN</span>=<span class="str">"YOUR_AUTH_TOKEN"</span><br>
+<span class="var">FROM_NUM</span>=<span class="str">"whatsapp:+14155238886"</span><br>
+<span class="var">TO_NUM</span>=<span class="str">"whatsapp:+923XXXXXXXXX"</span>   <span class="cm"># your number</span><br>
+<span class="var">LOG_FILE</span>=<span class="str">"$HOME/payment-service.log"</span><br>
+<span class="var">ERROR_LIMIT</span>=<span class="op">3</span><br>
+<br>
+<span class="kw">if</span> [ ! -f <span class="str">"$LOG_FILE"</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"Log not found. Run create-sample-log.sh first."</span>; <span class="kw">exit</span> <span class="op">1</span><br>
+<span class="kw">fi</span><br>
+<br>
+<span class="var">ERROR_COUNT</span>=<span class="op">$(</span><span class="fn">grep</span> -c <span class="str">"ERROR"</span> <span class="str">"$LOG_FILE"</span><span class="op">)</span><br>
+<span class="var">TIME</span>=<span class="op">$(</span><span class="fn">date</span> +<span class="str">"%Y-%m-%d %H:%M"</span><span class="op">)</span><br>
+<br>
+<span class="kw">if</span> [ <span class="str">"$ERROR_COUNT"</span> -gt <span class="str">"$ERROR_LIMIT"</span> ]; <span class="kw">then</span><br>
+<br>
+&nbsp;&nbsp;<span class="var">MSG</span>=<span class="str">"ALERT: Payment server has $ERROR_COUNT errors at $TIME. Please investigate immediately."</span><br>
+<br>
+&nbsp;&nbsp;<span class="fn">curl</span> -s -X POST \<br>
+&nbsp;&nbsp;https://api.twilio.com/2010-04-01/Accounts/<span class="var">$ACCOUNT_SID</span>/Messages.json \<br>
+&nbsp;&nbsp;--data-urlencode <span class="str">"From=$FROM_NUM"</span> \<br>
+&nbsp;&nbsp;--data-urlencode <span class="str">"To=$TO_NUM"</span> \<br>
+&nbsp;&nbsp;--data-urlencode <span class="str">"Body=$MSG"</span> \<br>
+&nbsp;&nbsp;-u <span class="str">"$ACCOUNT_SID:$AUTH_TOKEN"</span> &gt; /dev/null<br>
+<br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"WhatsApp alert sent: $ERROR_COUNT errors"</span><br>
+<br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"All clear. Errors: $ERROR_COUNT"</span><br>
+<span class="kw">fi</span>
+        </div>
+      </div>
+      <div class="inline-steps" style="margin-top:10px;">
+        <div class="is-item">
+          <span class="is-num">1</span>
+          <div class="is-text">Open vi: <strong>vi ~/whatsapp-alert.sh</strong> → press i → paste the script → fill in YOUR_ values</div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">2</span>
+          <div class="is-text">Press Esc → <strong>:wq</strong> → Enter to save</div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">3</span>
+          <div class="is-text"><strong>chmod +x ~/whatsapp-alert.sh</strong></div>
+        </div>
+        <div class="is-item">
+          <span class="is-num">4</span>
+          <div class="is-text"><strong>./whatsapp-alert.sh</strong></div>
+        </div>
+      </div>
+      <div class="result-box rb-w">
+        <div class="rb-label">What you will see</div>
+        <div class="rb-text">Terminal: <strong>WhatsApp alert sent: 4 errors</strong><br>Your WhatsApp: <strong>"ALERT: Payment server has 4 errors at 2024-03-15 14:30. Please investigate immediately."</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="setup-block">
+    <div class="setup-header">
+      <div class="step-circle sc-w">6</div>
+      <h3>Schedule the WhatsApp Alert with Crontab</h3>
+    </div>
+    <div class="setup-body">
+      <div class="cbox">
+        <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div>
+        <div class="cbox-code">
+<span class="fn">crontab</span> -e<br>
+<br>
+<span class="cm"># Add this line — WhatsApp alert every hour</span><br>
+<span class="op">0 * * * *</span> /home/kali/whatsapp-alert.sh &gt;&gt; /home/kali/wa-cron.log 2&gt;&amp;1<br>
+<br>
+<span class="cm"># Confirm</span><br>
+<span class="fn">crontab</span> -l
+        </div>
+      </div>
+      <div class="note n-w">✅ Now every hour — if errors exceed 3 — a WhatsApp message lands on your phone automatically. You don't have to check anything.</div>
+    </div>
+  </div>
+
+  <!-- COMBINING BOTH -->
+  <div class="sec"><span class="sn sn-s">05</span> Running Both Together</div>
+
+  <div class="card">
+    <h3>Slack + WhatsApp — The Full Alert System</h3>
+    <p>Once both scripts are set up, you can run them both from one master script. When an error threshold is crossed — Slack notifies the team channel AND WhatsApp pings the on-call engineer's phone.</p>
+  </div>
+
+  <div class="cbox">
+    <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">combined-alerts.sh — runs both</span></div>
+    <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Runs both alert scripts in sequence</span><br>
+<span class="fn">echo</span> <span class="str">"Running alert checks at $(date)"</span><br>
+<span class="op">$HOME</span>/slack-alert.sh<br>
+<span class="op">$HOME</span>/whatsapp-alert.sh<br>
+<span class="fn">echo</span> <span class="str">"Done."</span>
+    </div>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn sn-s">06</span> Real L2 Scenarios</div>
+  <div class="scen-list">
+    <div class="scen-item"><div class="si-id">01</div>
+      <p>It is 3 AM. The payment service log fills with DB timeouts. <strong>Your cron job runs at 3:30 AM</strong> — it detects 8 errors, fires the Slack webhook, and sends a WhatsApp. The on-call engineer sees the WhatsApp ping, wakes up, and starts investigating before any client even notices.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">02</div>
+      <p>Your manager asks <strong>"Can we set up something so we get a message if payments fail overnight?"</strong> You show them the Slack alert already running. You add their number to the WhatsApp script. Problem solved — took 5 minutes.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">03</div>
+      <p>During a quiet day you test the alert by temporarily lowering ERROR_LIMIT to 0. You run the script — Slack gets a message, WhatsApp gets a message. <strong>You now know for certain your alert system works.</strong> You raise the limit back to 3 and schedule it.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 5 · Day 3 & 4 Outcomes</h3>
+    <ul>
+      <li>Explain what a webhook is — a URL that accepts messages and posts them to a channel</li>
+      <li>Create a Slack workspace, app, and incoming webhook from scratch</li>
+      <li>Send a manual test alert to Slack using curl from the terminal</li>
+      <li>Write and run slack-alert.sh — reads the log and sends a Slack message when errors exceed threshold</li>
+      <li>Schedule the Slack alert with crontab so it runs automatically every 30 minutes</li>
+      <li class="dw">Explain how WhatsApp Business API works and why templates are needed</li>
+      <li class="dw">Create a Twilio account and activate the WhatsApp sandbox</li>
+      <li class="dw">Send a manual test WhatsApp message from the terminal using curl</li>
+      <li class="dw">Write and run whatsapp-alert.sh — detects errors and sends a WhatsApp ping</li>
+      <li class="dw">Schedule the WhatsApp alert with crontab to run every hour automatically</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 6.5 · Day 5 — Alerts & Alertmanager</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#07080d;
+    --surface:#0c0f18;
+    --surface2:#111520;
+    --surface3:#161b28;
+    --border:#1d2535;
+    --text:#a8b8cc;
+    --text-dim:#3e5268;
+    --text-faint:#152030;
+    --white:#eaf2fc;
+
+    --fire:#f97316;
+    --fire-bg:#180800;
+    --fire-border:#3c2000;
+
+    --red:#ef4444;
+    --red-bg:#180004;
+    --red-border:#3c0010;
+
+    --amber:#f59e0b;
+    --amber-bg:#180c00;
+    --amber-border:#3c2800;
+
+    --green:#22d46a;
+    --green-bg:#001810;
+    --green-border:#003820;
+
+    --blue:#3b82f6;
+    --blue-bg:#020e20;
+    --blue-border:#082240;
+
+    --violet:#a855f7;
+    --violet-bg:#0e0818;
+    --violet-border:#281840;
+
+    --teal:#14b8a6;
+    --teal-bg:#001814;
+    --teal-border:#003830;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;font-size:15px;line-height:1.7;padding:48px 24px 100px;}
+  .page{max-width:940px;margin:0 auto;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:52px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .topbar-left{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;}
+  .tb-right{display:flex;gap:8px;}
+  .tb-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 14px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;}
+  .tb-wk{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tb-d{background:var(--fire-bg);border:1px solid var(--fire-border);color:var(--fire);}
+
+  .hero{margin-bottom:52px;}
+  .day-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--fire);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,58px);font-weight:800;line-height:1.05;color:var(--white);margin-bottom:18px;}
+  .hero h1 span{color:var(--fire);}
+  .hero-desc{color:var(--text-dim);font-size:15px;max-width:540px;}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;}
+  .tag{padding:5px 14px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tag-f{background:var(--fire-bg);border-color:var(--fire-border);color:var(--fire);}
+
+  .sec{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faint);margin-bottom:18px;margin-top:44px;display:flex;align-items:center;gap:12px;}
+  .sec .sn{color:var(--fire);font-size:12px;}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .analogy{background:var(--fire-bg);border:1px solid var(--fire-border);border-left:4px solid var(--fire);border-radius:12px;padding:22px 28px;margin-bottom:16px;}
+  .analogy .al{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--fire);margin-bottom:8px;}
+  .analogy p{color:var(--text);font-size:14px;}
+  .analogy strong{color:var(--white);}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 28px;margin-bottom:14px;}
+  .card h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:8px;}
+  .card p{color:var(--text-dim);margin-bottom:8px;font-size:14px;}
+  .card p:last-child{margin-bottom:0;}
+  .card strong{color:var(--text);}
+
+  /* SEVERITY CARDS */
+  .severity-list{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+  .sev-item{display:flex;gap:16px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;}
+  .sev-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+  .sd-crit{background:var(--red);}
+  .sd-warn{background:var(--amber);}
+  .sd-info{background:var(--blue);}
+  .sd-ok{background:var(--green);}
+  .sev-label{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;margin-bottom:3px;}
+  .sl-crit{color:var(--red);}
+  .sl-warn{color:var(--amber);}
+  .sl-info{color:var(--blue);}
+  .sl-ok{color:var(--green);}
+  .sev-item p{font-size:13px;color:var(--text-dim);}
+  .sev-item p strong{color:var(--white);}
+
+  /* ALERTMANAGER FLOW */
+  .flow-block{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:14px;}
+  .flow-block h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:24px;text-align:center;}
+  .fs-item{display:flex;gap:18px;position:relative;}
+  .fs-item:not(:last-child) .fsi-left::after{content:'';position:absolute;left:19px;top:44px;bottom:0;width:2px;background:var(--border);z-index:0;}
+  .fsi-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+  .fsi-dot{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;z-index:1;position:relative;}
+  .fd-f{background:var(--fire-bg);border:2px solid var(--fire-border);}
+  .fd-v{background:var(--violet-bg);border:2px solid var(--violet-border);}
+  .fd-a{background:var(--amber-bg);border:2px solid var(--amber-border);}
+  .fd-g{background:var(--green-bg);border:2px solid var(--green-border);}
+  .fd-b{background:var(--blue-bg);border:2px solid var(--blue-border);}
+  .fsi-content{flex:1;padding-bottom:22px;padding-top:4px;}
+  .fsi-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;}
+  .fl-f{color:var(--fire);}
+  .fl-v{color:var(--violet);}
+  .fl-a{color:var(--amber);}
+  .fl-g{color:var(--green);}
+  .fl-b{color:var(--blue);}
+  .fsi-title{font-size:15px;font-weight:700;color:var(--white);margin-bottom:4px;}
+  .fsi-desc{font-size:13px;color:var(--text-dim);}
+  .fsi-code{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 12px;margin-top:6px;display:inline-block;color:var(--text-dim);}
+
+  /* REF TABLE */
+  .ref-table{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+  .rt-head{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:15px;font-weight:700;color:var(--white);}
+  table.rt{width:100%;border-collapse:collapse;}
+  table.rt th{padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);text-align:left;border-bottom:1px solid var(--border);font-weight:400;background:var(--surface3);}
+  table.rt td{padding:12px 18px;font-size:13px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;}
+  table.rt tr:last-child td{border-bottom:none;}
+  table.rt tr:hover td{background:rgba(255,255,255,0.02);}
+  table.rt td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--fire);white-space:nowrap;}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 9px;border-radius:100px;white-space:nowrap;}
+  .p-r{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);}
+  .p-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .p-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .p-b{background:var(--blue-bg);border:1px solid var(--blue-border);color:var(--blue);}
+  .p-f{background:var(--fire-bg);border:1px solid var(--fire-border);color:var(--fire);}
+
+  /* CODE */
+  .cbox{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:8px 0;}
+  .cbox-bar{padding:7px 14px;background:var(--surface3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+  .d{width:8px;height:8px;border-radius:50%;}.dr{background:#ff5f56;}.dy{background:#ffbd2e;}.dg{background:#27c93f;}
+  .ct{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);margin-left:4px;letter-spacing:1px;}
+  .cbox-code{padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2.0;overflow-x:auto;}
+  .kw{color:#ff7b72;}.fn{color:#79c0ff;}.str{color:#a5d6ff;}.var{color:#ffa657;}.cm{color:#2e4050;}.op{color:#c9d1d9;}
+  .hi-f{color:var(--fire);font-weight:700;}
+  .hi-r{color:var(--red);}
+  .hi-g{color:var(--green);}
+  .hi-a{color:var(--amber);}
+
+  /* NOTE */
+  .note{border-radius:10px;padding:10px 16px;font-size:13px;margin-bottom:10px;}
+  .n-f{background:var(--fire-bg);border:1px solid var(--fire-border);color:var(--fire);}
+  .n-r{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);}
+  .n-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .n-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .n-b{background:var(--blue-bg);border:1px solid var(--blue-border);color:var(--blue);}
+  .note strong{color:var(--white);}
+
+  /* LAB */
+  .lab{border:2px solid var(--fire-border);border-radius:16px;overflow:hidden;margin-bottom:14px;}
+  .lab-head{padding:16px 26px;background:var(--fire-bg);border-bottom:1px solid var(--fire-border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .lab-head h3{font-size:15px;font-weight:700;color:var(--white);}
+  .lab-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 12px;border-radius:100px;background:rgba(249,115,22,0.1);border:1px solid var(--fire-border);color:var(--fire);}
+  .lab-body{padding:26px;display:flex;flex-direction:column;gap:0;background:var(--surface);}
+  .lab-step{display:flex;gap:18px;position:relative;}
+  .lab-step:not(:last-child) .ls-left::after{content:'';position:absolute;left:19px;top:44px;bottom:0;width:2px;background:var(--border);z-index:0;}
+  .ls-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+  .ls-num{width:40px;height:40px;border-radius:50%;background:var(--fire-bg);border:2px solid var(--fire-border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--fire);z-index:1;position:relative;}
+  .ls-content{flex:1;padding-bottom:22px;padding-top:4px;}
+  .ls-title{font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px;}
+  .ls-desc{font-size:13px;color:var(--text-dim);margin-bottom:8px;}
+  .ls-out{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--fire-bg);border:1px solid var(--fire-border);color:var(--fire);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+  .ls-out-g{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+
+  /* SCENARIOS */
+  .scen-list{display:flex;flex-direction:column;gap:12px;margin-bottom:14px;}
+  .scen-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;}
+  .si-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--fire);background:var(--fire-bg);border:1px solid var(--fire-border);border-radius:6px;padding:4px 8px;flex-shrink:0;margin-top:2px;}
+  .scen-item p{font-size:14px;color:var(--text-dim);}
+  .scen-item p strong{color:var(--white);}
+
+  .outcome{background:linear-gradient(135deg,var(--fire-bg) 0%,var(--surface) 100%);border:1px solid var(--fire-border);border-radius:16px;padding:32px;margin-top:48px;}
+  .outcome h3{font-size:20px;font-weight:700;color:var(--fire);margin-bottom:18px;}
+  .outcome ul{display:flex;flex-direction:column;gap:9px;list-style:none;}
+  .outcome ul li{font-size:14px;color:var(--text-dim);padding-left:22px;position:relative;}
+  .outcome ul li::before{content:'✓';position:absolute;left:0;color:var(--fire);font-family:'JetBrains Mono',monospace;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 6.5</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-wk">Week 6.5</span>
+      <span class="tb-badge tb-d">Day 5</span>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="day-label">Week 6.5 · Day 5</div>
+    <h1>Alerts &<br><span>Alertmanager</span></h1>
+    <p class="hero-desc">Monitoring tells you the numbers. Alerting is what happens when those numbers cross a limit — the right person gets notified at the right time with the right information. Today you learn how to configure that entire chain.</p>
+    <div class="tags">
+      <span class="tag tag-f">Alert Rules</span>
+      <span class="tag tag-f">Severity Levels</span>
+      <span class="tag tag-f">Notifications</span>
+      <span class="tag">Routing</span>
+      <span class="tag">Proactive Response</span>
+    </div>
+  </div>
+
+  <!-- ANALOGY -->
+  <div class="sec"><span class="sn">01</span> The Simple Idea First</div>
+
+  <div class="analogy">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Think of Alertmanager like a <strong>fire alarm system in a building</strong>. The smoke detectors measure temperature and smoke (monitoring). When a sensor crosses its threshold — the alarm fires (alert rule triggered). But different alarms have different responses — a kitchen smoke detector triggers a different response than a server room fire alarm.<br><br>
+      <strong>Alertmanager is the intelligent routing system between the alarm and the response.</strong> It decides: which alarm goes to which person, how urgent it is, whether to silence repeated alerts, and whether to group similar alerts into one notification instead of 50 separate ones.
+    </p>
+  </div>
+
+  <!-- WHAT IS ALERTMANAGER -->
+  <div class="card">
+    <h3>What is Alertmanager?</h3>
+    <p><strong>Alertmanager</strong> is a component that sits between your monitoring system (Prometheus, Grafana) and your notification channels (Slack, email, PagerDuty, WhatsApp). It receives alerts when rules fire, processes them, and routes them to the right destination.</p>
+    <p>Without Alertmanager, you would get raw alert pings with no context. With it, you get structured notifications that tell you: what fired, how severe it is, which team should respond, and what the alert means — grouped and deduplicated so you are not flooded with 200 identical messages.</p>
+    <p><strong>Key features:</strong> Routing (send different alerts to different people), Grouping (bundle related alerts into one), Silencing (mute during maintenance), and Inhibition (suppress low-priority alerts when a high-priority one is firing).</p>
+  </div>
+
+  <!-- ALERT RULE ANATOMY -->
+  <div class="sec"><span class="sn">02</span> Alert Rules — How They Work</div>
+
+  <div class="card">
+    <h3>What is an Alert Rule?</h3>
+    <p>An alert rule is a condition that — when true for a defined period of time — fires an alert. It has three parts: the <strong>condition</strong> (what to check), the <strong>duration</strong> (how long it must be true before firing), and the <strong>labels</strong> (metadata like severity and team).</p>
+    <p>The duration matters because a metric might spike for 2 seconds and recover. You don't want an alert for that. You set the duration to <strong>5 minutes</strong> — meaning the condition must be true continuously for 5 minutes before it fires. This prevents noise from short-lived spikes.</p>
+  </div>
+
+  <div class="cbox">
+    <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">Alert rule structure — Prometheus format (simplified)</span></div>
+    <div class="cbox-code">
+<span class="cm"># Rule 1 — High CPU Alert</span><br>
+<span class="var">alert</span>: <span class="hi-f">HighCPU</span><br>
+<span class="var">condition</span>: <span class="str">cpu_usage_percent > 90</span><br>
+<span class="var">for</span>: <span class="str">5m</span>          <span class="cm"># must be true for 5 mins before firing</span><br>
+<span class="var">severity</span>: <span class="hi-r">critical</span><br>
+<span class="var">message</span>: <span class="str">"CPU above 90% for 5 minutes on {{ server }}"</span><br>
+<br>
+<span class="cm"># Rule 2 — Disk Warning Alert</span><br>
+<span class="var">alert</span>: <span class="hi-a">DiskSpaceWarning</span><br>
+<span class="var">condition</span>: <span class="str">disk_usage_percent > 80</span><br>
+<span class="var">for</span>: <span class="str">10m</span>         <span class="cm"># 10 mins — disk fills slowly</span><br>
+<span class="var">severity</span>: <span class="hi-a">warning</span><br>
+<span class="var">message</span>: <span class="str">"Disk at {{ value }}% on {{ server }}"</span><br>
+<br>
+<span class="cm"># Rule 3 — Payment Failure Rate</span><br>
+<span class="var">alert</span>: <span class="hi-r">PaymentFailureRateHigh</span><br>
+<span class="var">condition</span>: <span class="str">error_rate_percent > 5</span><br>
+<span class="var">for</span>: <span class="str">2m</span>          <span class="cm"># fire fast — 5% error rate is critical</span><br>
+<span class="var">severity</span>: <span class="hi-r">critical</span><br>
+<span class="var">message</span>: <span class="str">"Payment error rate at {{ value }}% — P1 candidate"</span>
+    </div>
+  </div>
+
+  <!-- SEVERITY LEVELS -->
+  <div class="sec"><span class="sn">03</span> Alert Severity Levels — What Each One Means</div>
+
+  <div class="card">
+    <h3>Why severity levels matter</h3>
+    <p>Not every alert needs to wake someone up at 2 AM. Severity levels let Alertmanager route different alerts to different people in different ways. A warning at 3 AM waits until 9 AM. A critical at 3 AM wakes the on-call engineer immediately. Getting severity right is what makes alerting useful instead of annoying.</p>
+  </div>
+
+  <div class="severity-list">
+    <div class="sev-item">
+      <div class="sev-dot sd-crit"></div>
+      <div>
+        <div class="sev-label sl-crit">CRITICAL — Page the on-call engineer now</div>
+        <p>Active outage or imminent data loss. <strong>Needs immediate human response regardless of time of day.</strong> Example: Payment success rate below 80%, DB unreachable, disk at 100%, CPU pinned at 98% for 10 minutes. Route to: PagerDuty phone call + Slack #incidents + WhatsApp.</p>
+      </div>
+    </div>
+    <div class="sev-item">
+      <div class="sev-dot sd-warn"></div>
+      <div>
+        <div class="sev-label sl-warn">WARNING — Needs attention soon, not instantly</div>
+        <p>System is degraded but not fully broken. <strong>Can wait until working hours or the next check-in.</strong> Example: Disk at 84%, CPU at 85%, error rate at 3%, response time creeping up. Route to: Slack #monitoring channel only, no phone call.</p>
+      </div>
+    </div>
+    <div class="sev-item">
+      <div class="sev-dot sd-info"></div>
+      <div>
+        <div class="sev-label sl-info">INFO — Informational, no action required</div>
+        <p>Something worth noting but not a problem. <strong>For awareness only.</strong> Example: Deployment completed, backup finished, a service restarted successfully, traffic is higher than usual but still within safe limits. Route to: Slack #ops-log only.</p>
+      </div>
+    </div>
+    <div class="sev-item">
+      <div class="sev-dot sd-ok"></div>
+      <div>
+        <div class="sev-label sl-ok">RESOLVED — The problem cleared itself</div>
+        <p>A previous alert is no longer firing. <strong>Alertmanager sends a resolution notification automatically.</strong> Example: CPU came back down, disk was cleaned, error rate returned to normal. Route to: Same channel as the original alert, marked as resolved.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW ALERTMANAGER ROUTES -->
+  <div class="sec"><span class="sn">04</span> How Alertmanager Routes Alerts</div>
+
+  <div class="flow-block">
+    <h3>🔔 Alert Lifecycle — From Rule to Notification</h3>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-f">📊</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-f">Step 1 — Monitoring</div>
+        <div class="fsi-title">Metric crosses the threshold</div>
+        <div class="fsi-desc">Prometheus or your monitoring tool sees that a metric (CPU, error rate, disk) has crossed the value defined in the alert rule and has stayed above it for the defined duration.</div>
+        <span class="fsi-code">cpu_usage > 90% for 5 minutes → Alert fires</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-f">📨</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-f">Step 2 — Alertmanager receives</div>
+        <div class="fsi-title">Alert delivered to Alertmanager</div>
+        <div class="fsi-desc">The monitoring system sends the alert to Alertmanager with its labels — severity, name, affected server, and timestamp. Alertmanager now processes it.</div>
+        <span class="fsi-code">Alert: HighCPU | severity=critical | server=pay-server-01</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-v">🔀</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-v">Step 3 — Routing</div>
+        <div class="fsi-title">Alertmanager decides who to notify</div>
+        <div class="fsi-desc">Based on routing rules, Alertmanager decides which receiver gets this alert. Critical alerts go to the on-call team via PagerDuty. Warnings go to Slack. Grouping combines multiple related alerts into one message.</div>
+        <span class="fsi-code">severity=critical → PagerDuty + Slack #incidents</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-a">🔕</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-a">Step 4 — Silencing check</div>
+        <div class="fsi-title">Is there a silence active?</div>
+        <div class="fsi-desc">Alertmanager checks if anyone has silenced this alert (e.g. during planned maintenance). If silenced — the notification is suppressed. If not silenced — it proceeds to delivery.</div>
+        <span class="fsi-code">Silence active? No → proceed | Yes → suppress</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-g">📱</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-g">Step 5 — Notification sent</div>
+        <div class="fsi-title">Engineer is notified</div>
+        <div class="fsi-desc">The notification is delivered to the configured receiver — Slack message, PagerDuty call, email, or WhatsApp. The engineer receives it, acknowledges, and begins investigation.</div>
+        <span class="fsi-code">Slack: 🚨 CRITICAL — HighCPU on pay-server-01 for 5 min</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-g">✅</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-g">Step 6 — Resolution</div>
+        <div class="fsi-title">Auto-resolved notification when metric recovers</div>
+        <div class="fsi-desc">When CPU drops below 90%, the alert condition is no longer true. Alertmanager automatically sends a RESOLVED notification to the same channels so the team knows the issue cleared.</div>
+        <span class="fsi-code">Slack: ✅ RESOLVED — HighCPU on pay-server-01 — cleared</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEY CONCEPTS -->
+  <div class="sec"><span class="sn">05</span> 4 Key Alertmanager Concepts</div>
+
+  <div class="ref-table">
+    <div class="rt-head">📋 Alertmanager Features — What Each One Does</div>
+    <table class="rt">
+      <thead><tr><th>Feature</th><th>What it does</th><th>When you use it</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Routing</td>
+          <td>Sends different alerts to different people based on labels like severity or team</td>
+          <td>Always — every alert needs a route. Critical → on-call, warning → team Slack</td>
+        </tr>
+        <tr>
+          <td>Grouping</td>
+          <td>Bundles multiple related alerts into one notification instead of sending 50 separate messages</td>
+          <td>When a full outage fires 20 alerts simultaneously — you get 1 grouped message</td>
+        </tr>
+        <tr>
+          <td>Silencing</td>
+          <td>Mutes alerts temporarily so planned maintenance doesn't trigger false alarms</td>
+          <td>Before any maintenance window — silence alerts for the affected server</td>
+        </tr>
+        <tr>
+          <td>Inhibition</td>
+          <td>Suppresses low-priority alerts when a higher-priority alert for the same system is already firing</td>
+          <td>When a DB is down — suppresses all downstream alerts caused by the DB being down</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note n-f">💡 <strong>Grouping is the most important for day-to-day L2 work.</strong> When a DB goes down, 15 different services will each fire their own alert. Without grouping you get 15 Slack messages. With grouping you get 1 message: "15 services affected — root cause likely DB."</div>
+
+  <!-- LAB -->
+  <div class="sec"><span class="sn">06</span> Hands-on Lab — Configure an Alert</div>
+
+  <div class="card">
+    <h3>Lab scenario</h3>
+    <p>You are the L2 engineer setting up alerts for the payment server. You need to configure three alerts — high CPU, disk warning, and payment failure rate — and simulate one of them firing so you see the full notification chain in action.</p>
+  </div>
+
+  <div class="lab">
+    <div class="lab-head">
+      <h3>🔬 Lab: Build and Test an Alert System on Kali</h3>
+      <span class="lab-badge">Bash · Kali Linux</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Create the alert rules config file</div>
+          <div class="ls-desc">This file defines all your alert rules — condition, duration, severity, and message. In a real setup this would go into Prometheus. Here we simulate the structure.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — create alert rules file</span></div><div class="cbox-code">
+<span class="fn">cat</span> &gt; ~/alert-rules.conf &lt;&lt; <span class="str">'EOF'</span><br>
+# ============================================<br>
+# Payment Server Alert Rules<br>
+# Engineer: Urwah Shafiq | Week 6.5 Day 5<br>
+# ============================================<br>
+<br>
+[alert:HighCPU]<br>
+condition   = cpu_percent > 90<br>
+for         = 5m<br>
+severity    = critical<br>
+team        = l2-oncall<br>
+notify      = slack,pagerduty,whatsapp<br>
+message     = CPU above 90% for 5 minutes. Investigate immediately.<br>
+<br>
+[alert:DiskWarning]<br>
+condition   = disk_percent > 80<br>
+for         = 10m<br>
+severity    = warning<br>
+team        = l2-team<br>
+notify      = slack<br>
+message     = Disk usage at {value}%. Schedule cleanup within 24 hours.<br>
+<br>
+[alert:DiskCritical]<br>
+condition   = disk_percent > 90<br>
+for         = 2m<br>
+severity    = critical<br>
+team        = l2-oncall<br>
+notify      = slack,pagerduty<br>
+message     = DISK CRITICAL at {value}%. DB writes will fail. Act now.<br>
+<br>
+[alert:PaymentFailureRate]<br>
+condition   = error_rate_percent > 5<br>
+for         = 2m<br>
+severity    = critical<br>
+team        = l2-oncall<br>
+notify      = slack,pagerduty,whatsapp<br>
+message     = Payment error rate at {value}%. P1 candidate. Open bridge.<br>
+<br>
+[alert:QueueDepthGrowing]<br>
+condition   = queue_depth > 50<br>
+for         = 5m<br>
+severity    = warning<br>
+team        = l2-team<br>
+notify      = slack<br>
+message     = MQ queue depth at {value}. Consumer may be slow or down.<br>
+EOF<br>
+<span class="fn">echo</span> <span class="str">"Alert rules file created."</span>
+          </div></div>
+          <span class="ls-out">→ alert-rules.conf created with 5 configured alert rules across 3 severity levels.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Build the alert evaluation script</div>
+          <div class="ls-desc">This script reads real metrics from your server and evaluates each rule — just like Alertmanager does every 15 seconds.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">alert-evaluator.sh — create this script</span></div><div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Alert Evaluator — checks real metrics against rules</span><br>
+<span class="cm"># chmod +x alert-evaluator.sh && ./alert-evaluator.sh</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"========================================"</span><br>
+<span class="fn">echo</span> <span class="str">" Alert Evaluator — $(date)"</span><br>
+<span class="fn">echo</span> <span class="str">"========================================"</span><br>
+<br>
+<span class="var">ALERTS_FIRED</span>=<span class="op">0</span><br>
+<br>
+<span class="cm"># --- RULE 1: CPU ---</span><br>
+<span class="var">CPU_IDLE</span>=<span class="op">$(</span><span class="fn">top</span> -bn1 | <span class="fn">grep</span> <span class="str">"Cpu(s)"</span> | <span class="fn">awk</span> <span class="str">'{print $8}'</span> | <span class="fn">tr</span> -d <span class="str">'%id,'</span><span class="op">)</span><br>
+<span class="var">CPU_USED</span>=<span class="op">$(</span><span class="fn">echo</span> <span class="str">"100 - $CPU_IDLE"</span> | <span class="fn">bc</span> 2&gt;/dev/null || <span class="fn">echo</span> <span class="str">"0"</span><span class="op">)</span><br>
+<span class="kw">if</span> [ <span class="op">$(</span><span class="fn">echo</span> <span class="str">"$CPU_USED > 90"</span> | <span class="fn">bc</span> 2&gt;/dev/null<span class="op">)</span> -eq <span class="op">1</span> ] 2&gt;/dev/null; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"[CRITICAL] HighCPU — CPU at ${CPU_USED}% → Notify: Slack + PagerDuty + WhatsApp"</span><br>
+&nbsp;&nbsp;<span class="var">ALERTS_FIRED</span>=<span class="op">$((ALERTS_FIRED+1))</span><br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"[   OK  ] CPU at ${CPU_USED}% — below 90% threshold"</span><br>
+<span class="kw">fi</span><br>
+<br>
+<span class="cm"># --- RULE 2 & 3: DISK ---</span><br>
+<span class="var">DISK</span>=<span class="op">$(</span><span class="fn">df</span> / | <span class="fn">awk</span> <span class="str">'NR==2{print $5}'</span> | <span class="fn">tr</span> -d <span class="str">'%'</span><span class="op">)</span><br>
+<span class="kw">if</span> [ <span class="str">"$DISK"</span> -ge <span class="op">90</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"[CRITICAL] DiskCritical — Disk at ${DISK}% → Notify: Slack + PagerDuty"</span><br>
+&nbsp;&nbsp;<span class="var">ALERTS_FIRED</span>=<span class="op">$((ALERTS_FIRED+1))</span><br>
+<span class="kw">elif</span> [ <span class="str">"$DISK"</span> -ge <span class="op">80</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"[ WARN  ] DiskWarning — Disk at ${DISK}% → Notify: Slack"</span><br>
+&nbsp;&nbsp;<span class="var">ALERTS_FIRED</span>=<span class="op">$((ALERTS_FIRED+1))</span><br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"[   OK  ] Disk at ${DISK}% — below 80% threshold"</span><br>
+<span class="kw">fi</span><br>
+<br>
+<span class="cm"># --- RULE 4: MEMORY/SWAP ---</span><br>
+<span class="var">SWAP</span>=<span class="op">$(</span><span class="fn">free</span> -m | <span class="fn">awk</span> <span class="str">'NR==3{print $3}'</span><span class="op">)</span><br>
+<span class="kw">if</span> [ <span class="str">"$SWAP"</span> -gt <span class="op">500</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"[ WARN  ] HighSwap — Swap at ${SWAP}MB → Notify: Slack"</span><br>
+&nbsp;&nbsp;<span class="var">ALERTS_FIRED</span>=<span class="op">$((ALERTS_FIRED+1))</span><br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"[   OK  ] Swap at ${SWAP}MB — within normal range"</span><br>
+<span class="kw">fi</span><br>
+<br>
+<span class="cm"># --- RULE 5: LOG ERROR RATE ---</span><br>
+<span class="var">ERR</span>=<span class="op">$(</span><span class="fn">grep</span> -c <span class="str">"ERROR"</span> ~/payment-service.log 2&gt;/dev/null || <span class="fn">echo</span> <span class="str">"0"</span><span class="op">)</span><br>
+<span class="kw">if</span> [ <span class="str">"$ERR"</span> -gt <span class="op">5</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"[CRITICAL] PaymentErrors — $ERR errors in log → Notify: All channels"</span><br>
+&nbsp;&nbsp;<span class="var">ALERTS_FIRED</span>=<span class="op">$((ALERTS_FIRED+1))</span><br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"[   OK  ] Error count: $ERR — below threshold"</span><br>
+<span class="kw">fi</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"----------------------------------------"</span><br>
+<span class="fn">echo</span> <span class="str">" Total alerts fired: $ALERTS_FIRED"</span><br>
+[ <span class="str">"$ALERTS_FIRED"</span> -gt <span class="op">0</span> ] \<br>
+&nbsp;&nbsp;&amp;&amp; <span class="fn">echo</span> <span class="str">" Action required!"</span> \<br>
+&nbsp;&nbsp;|| <span class="fn">echo</span> <span class="str">" All systems OK."</span><br>
+<span class="fn">echo</span> <span class="str">"========================================"</span>
+          </div></div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — save and run</span></div><div class="cbox-code">
+<span class="fn">chmod</span> +x ~/alert-evaluator.sh<br>
+<span class="fn">./</span>alert-evaluator.sh
+          </div></div>
+          <span class="ls-out">→ Script reads real CPU, disk, memory, and log error count. Evaluates each rule. Prints CRITICAL, WARN, or OK for every one with the notification channel it would fire to.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Trigger a real alert — simulate disk threshold crossing</div>
+          <div class="ls-desc">Lower the disk threshold to a number you will definitely cross — so you can see the CRITICAL alert fire with your real disk value.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — force a CRITICAL alert to fire</span></div><div class="cbox-code">
+<span class="cm"># Check your current disk % first</span><br>
+<span class="fn">df</span> -h / | <span class="fn">awk</span> <span class="str">'NR==2{print "Current disk: "$5}'</span><br>
+<br>
+<span class="cm"># Run the evaluator with a lower threshold to simulate a critical alert</span><br>
+<span class="var">DISK</span>=<span class="op">$(</span><span class="fn">df</span> / | <span class="fn">awk</span> <span class="str">'NR==2{print $5}'</span> | <span class="fn">tr</span> -d <span class="str">'%'</span><span class="op">)</span><br>
+<span class="var">FAKE_THRESHOLD</span>=<span class="op">1</span>   <span class="cm"># set threshold to 1% — your disk will always be above this</span><br>
+<br>
+<span class="kw">if</span> [ <span class="str">"$DISK"</span> -ge <span class="str">"$FAKE_THRESHOLD"</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"[CRITICAL] DiskCritical — Disk at ${DISK}%"</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"  → Routing to: Slack #incidents + PagerDuty"</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"  → Message: DISK CRITICAL. DB writes will fail. Act now."</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"  → Severity: CRITICAL | Team: l2-oncall"</span><br>
+<span class="kw">fi</span>
+          </div></div>
+          <span class="ls-out">→ CRITICAL alert fires with your real disk value. You see exactly what notification text and routing would be sent — disk critical, P1 level, notify l2-oncall team.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Set up silence — simulate a maintenance window</div>
+          <div class="ls-desc">Before planned maintenance, you silence alerts so normal maintenance activity does not page everyone.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">silence-manager.sh — create this</span></div><div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Simulates creating and checking a silence</span><br>
+<br>
+<span class="var">SILENCE_FILE</span>=<span class="str">"~/active-silence.txt"</span><br>
+<span class="var">NOW</span>=<span class="op">$(</span><span class="fn">date</span> +%s<span class="op">)</span><br>
+<span class="var">END_TIME</span>=<span class="op">$(</span><span class="fn">date</span> -d <span class="str">"+2 hours"</span> +%s 2&gt;/dev/null || <span class="fn">date</span> -v +2H +%s<span class="op">)</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"Creating silence for maintenance window..."</span><br>
+<span class="fn">echo</span> <span class="str">"SILENCE_ACTIVE=true"</span> &gt; ~/active-silence.txt<br>
+<span class="fn">echo</span> <span class="str">"SILENCE_REASON=Planned maintenance - disk cleanup"</span> &gt;&gt; ~/active-silence.txt<br>
+<span class="fn">echo</span> <span class="str">"SILENCE_BY=Urwah Shafiq"</span> &gt;&gt; ~/active-silence.txt<br>
+<span class="fn">echo</span> <span class="str">"SILENCE_DURATION=2 hours"</span> &gt;&gt; ~/active-silence.txt<br>
+<br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"Silence created:"</span><br>
+<span class="fn">cat</span> ~/active-silence.txt<br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"All alerts will now be suppressed for 2 hours."</span><br>
+<span class="fn">echo</span> <span class="str">"Run: rm ~/active-silence.txt — to clear the silence."</span>
+          </div></div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="fn">chmod</span> +x ~/silence-manager.sh<br>
+<span class="fn">./</span>silence-manager.sh
+          </div></div>
+          <span class="ls-out">→ Silence created. Shows reason, creator, duration. This is what you do before every maintenance window — silence first, do the work, clear the silence when done.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">05</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Schedule the alert evaluator with crontab</div>
+          <div class="ls-desc">Run the evaluator every 5 minutes automatically — this is your personal Alertmanager running on Kali.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="cm"># Schedule alert evaluation every 5 minutes</span><br>
+(<span class="fn">crontab</span> -l 2&gt;/dev/null; <span class="fn">echo</span> <span class="str">"# Alert evaluator — every 5 minutes"</span>) | <span class="fn">crontab</span> -<br>
+(<span class="fn">crontab</span> -l 2&gt;/dev/null; <span class="fn">echo</span> <span class="str">"*/5 * * * * $HOME/alert-evaluator.sh >> $HOME/alert-log.txt 2>&1"</span>) | <span class="fn">crontab</span> -<br>
+<br>
+<span class="fn">echo</span> <span class="str">"Scheduled. Active cron jobs:"</span><br>
+<span class="fn">crontab</span> -l
+          </div></div>
+          <span class="ls-out-g">→ Alert evaluator runs every 5 minutes. Output saved to ~/alert-log.txt. Your proactive monitoring is now live. ✅</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn">07</span> Real L2 Scenarios</div>
+  <div class="scen-list">
+    <div class="scen-item"><div class="si-id">01</div>
+      <p>It is 3 AM. CPU spikes to 94% and stays there. <strong>Alertmanager fires the HighCPU CRITICAL rule after 5 minutes.</strong> PagerDuty calls the on-call engineer. Slack #incidents gets a message. WhatsApp pings the L2 lead. The engineer wakes up, investigates, kills the runaway process. Total response time: 8 minutes. Nobody had to be watching a screen.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">02</div>
+      <p>Disk fills to 83% at 11 PM. <strong>DiskWarning fires — severity WARNING — goes to Slack only, no phone call.</strong> The L2 engineer sees it at 9 AM, schedules cleanup that morning. If it had reached 91% instead, DiskCritical would have fired and paged someone. The two-level alert prevented a 3 AM wake-up for a non-emergency.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">03</div>
+      <p>Planned maintenance at 2 AM — disk cleanup on the payment server. Before starting, you create a silence for 2 hours. During cleanup, disk temporarily hits 95% as old logs are moved. <strong>No alerts fire because of the silence.</strong> You complete the maintenance, remove the silence at 4 AM, and normal alerting resumes. Zero false alarms.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">04</div>
+      <p>DB goes down. Alertmanager receives 18 alerts simultaneously — from the payment service, the MQ consumer, the API gateway, and the batch job, all screaming that DB is unreachable. <strong>Grouping bundles them into 1 message:</strong> "18 alerts firing — DBUnreachable is the common label. Likely root cause: DB outage." One message, clear context, engineer knows exactly what to investigate.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 6.5 · Day 5 Outcomes</h3>
+    <ul>
+      <li>Explain what Alertmanager is and why it sits between monitoring and notifications</li>
+      <li>Describe the structure of an alert rule — condition, duration, severity, message, and receiver</li>
+      <li>Know the 4 severity levels — CRITICAL, WARNING, INFO, RESOLVED — and what action each requires</li>
+      <li>Explain the 4 key Alertmanager features — Routing, Grouping, Silencing, and Inhibition</li>
+      <li>Trace the full alert lifecycle — metric fires → Alertmanager receives → routes → silence check → notification sent → resolved</li>
+      <li>Complete the lab — create 5 alert rules in a config file, build alert-evaluator.sh that checks real metrics and maps them to rules, trigger a CRITICAL alert, create a silence for a maintenance window, and schedule automatic evaluation with crontab</li>
+      <li>Understand why the duration field matters — prevents noise from short-lived spikes</li>
+      <li>Understand why grouping matters — prevents alert storms from flooding your team during an outage</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

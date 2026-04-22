@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 1 · Day 2 — Product Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #f7f4ef;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --border: #e0dbd2;
+    --ink: #1a1714;
+    --ink-dim: #6b6560;
+    --ink-faint: #a09b95;
+    --gold: #c8942a;
+    --gold-light: #fdf3e0;
+    --gold-border: #f0d89a;
+    --blue: #1d4ed8;
+    --blue-light: #eff6ff;
+    --blue-border: #bfdbfe;
+    --green: #15803d;
+    --green-light: #f0fdf4;
+    --green-border: #bbf7d0;
+    --red: #b91c1c;
+    --red-light: #fef2f2;
+    --red-border: #fecaca;
+    --purple: #7c3aed;
+    --purple-light: #f5f3ff;
+    --purple-border: #ddd6fe;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    padding: 48px 24px 100px;
+  }
+
+  .page { max-width: 880px; margin: 0 auto; }
+
+  /* TOP BAR */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 56px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar-left {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .topbar-badge {
+    background: var(--gold-light);
+    border: 1px solid var(--gold-border);
+    color: var(--gold);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 100px;
+  }
+
+  /* HERO */
+  .hero { margin-bottom: 56px; }
+  .day-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .hero h1 {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: clamp(36px, 7vw, 64px);
+    font-weight: 800;
+    line-height: 1.0;
+    color: var(--ink);
+    margin-bottom: 18px;
+  }
+  .hero h1 em { color: var(--gold); font-style: normal; }
+  .hero-desc {
+    color: var(--ink-dim);
+    font-size: 16px;
+    max-width: 540px;
+    line-height: 1.65;
+  }
+  .tags {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px;
+  }
+  .tag {
+    padding: 5px 14px;
+    border-radius: 100px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--ink-dim);
+  }
+
+  /* SECTION HEADER */
+  .sec {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 20px;
+    margin-top: 48px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .sec::before { content: '//'; color: var(--gold); }
+
+  /* ANALOGY */
+  .analogy {
+    background: var(--gold-light);
+    border: 1px solid var(--gold-border);
+    border-left: 4px solid var(--gold);
+    border-radius: 12px;
+    padding: 26px 30px;
+    margin-bottom: 16px;
+  }
+  .analogy .alabel {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+  .analogy p { color: var(--ink); font-size: 15px; }
+  .analogy strong { color: var(--ink); }
+
+  /* PLAIN CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 26px 30px;
+    margin-bottom: 14px;
+  }
+  .card h3 {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+  .card p { color: var(--ink-dim); margin-bottom: 10px; }
+  .card p:last-child { margin-bottom: 0; }
+
+  /* PRODUCT CARDS GRID */
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .product-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 24px;
+    transition: box-shadow 0.2s;
+  }
+  .product-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+  .product-card .p-icon { font-size: 28px; margin-bottom: 10px; }
+  .product-card .p-name {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .product-card .p-type {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    display: inline-block;
+  }
+  .product-card p { font-size: 13px; color: var(--ink-dim); line-height: 1.55; }
+  .type-core { background: var(--blue-light); color: var(--blue); }
+  .type-payment { background: var(--green-light); color: var(--green); }
+  .type-risk { background: var(--red-light); color: var(--red); }
+  .type-reporting { background: var(--purple-light); color: var(--purple); }
+  .type-channel { background: var(--gold-light); color: var(--gold); }
+
+  /* MODULE BREAKDOWN */
+  .module-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .module-header {
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .module-header .m-icon { font-size: 22px; }
+  .module-header .m-title {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .module-header .m-badge {
+    margin-left: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 100px;
+  }
+  .module-body { padding: 20px 24px; }
+  .module-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+  .module-item:last-child { margin-bottom: 0; }
+  .module-item .mi-name {
+    font-weight: 500;
+    color: var(--ink);
+    min-width: 160px;
+  }
+  .module-item .mi-desc { color: var(--ink-dim); }
+
+  /* MAPPING SHEET */
+  .mapping-sheet {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .sheet-header {
+    padding: 18px 24px;
+    background: var(--ink);
+    color: #fff;
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sheet-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    margin-left: auto;
+    font-weight: 400;
+  }
+  .sheet-table { width: 100%; border-collapse: collapse; }
+  .sheet-table thead tr { background: var(--surface2); }
+  .sheet-table th {
+    padding: 11px 18px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-weight: 400;
+  }
+  .sheet-table td {
+    padding: 14px 18px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .sheet-table tr:last-child td { border-bottom: none; }
+  .sheet-table tr:hover td { background: var(--surface2); }
+  .client-name {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .client-type {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+    margin-top: 2px;
+  }
+  .pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    margin: 2px 3px 2px 0;
+    white-space: nowrap;
+  }
+  .pill-blue { background: var(--blue-light); color: var(--blue); border: 1px solid var(--blue-border); }
+  .pill-green { background: var(--green-light); color: var(--green); border: 1px solid var(--green-border); }
+  .pill-red { background: var(--red-light); color: var(--red); border: 1px solid var(--red-border); }
+  .pill-purple { background: var(--purple-light); color: var(--purple); border: 1px solid var(--purple-border); }
+  .pill-gold { background: var(--gold-light); color: var(--gold); border: 1px solid var(--gold-border); }
+  .env-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .env-prod { background: #fef2f2; color: #b91c1c; }
+  .env-uat { background: #fefce8; color: #a16207; }
+  .env-dev { background: #f0fdf4; color: #15803d; }
+
+  /* HOW TO READ */
+  .how-to {
+    background: var(--blue-light);
+    border: 1px solid var(--blue-border);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-bottom: 14px;
+  }
+  .how-to .h-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 10px;
+  }
+  .how-to p { color: var(--ink); font-size: 14px; margin-bottom: 8px; }
+  .how-to p:last-child { margin-bottom: 0; }
+
+  /* SCENARIO */
+  .scenario-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
+  .scenario-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .scenario-item .s-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-faint);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .scenario-item p { font-size: 14px; color: var(--ink-dim); }
+  .scenario-item p strong { color: var(--ink); }
+
+  /* OUTCOME */
+  .outcome {
+    background: var(--ink);
+    border-radius: 16px;
+    padding: 36px;
+    margin-top: 48px;
+    color: #fff;
+  }
+  .outcome h3 {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--gold);
+    margin-bottom: 20px;
+  }
+  .outcome ul { display: flex; flex-direction: column; gap: 10px; list-style: none; }
+  .outcome ul li {
+    font-size: 14px;
+    color: rgba(255,255,255,0.75);
+    padding-left: 24px;
+    position: relative;
+  }
+  .outcome ul li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 1</div>
+    <div class="topbar-badge">Day 2</div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="day-label">Today's Topic</div>
+    <h1>Product <em>Portfolio</em></h1>
+    <p class="hero-desc">As an L2 support engineer, you need to know WHAT your company sells and WHO is using WHICH product. That's the whole point of today.</p>
+    <div class="tags">
+      <span class="tag">Client-Product Mapping</span>
+      <span class="tag">Modules</span>
+      <span class="tag">Product Types</span>
+    </div>
+  </div>
+
+  <!-- SIMPLE IDEA -->
+  <div class="sec">The Simple Idea First</div>
+
+  <div class="analogy">
+    <div class="alabel">Real-life Analogy</div>
+    <p>
+      Think of a <strong>restaurant menu</strong>. The restaurant offers many dishes — burgers, pizzas, pasta. Each customer orders something different. One table ordered just a burger. Another ordered pizza + pasta + drinks.<br><br>
+      Now if a customer complains, the waiter needs to know <strong>exactly what that table ordered</strong> before helping them.<br><br>
+      In fintech support, <strong>your company = the restaurant</strong>, <strong>products = the dishes</strong>, and <strong>clients = the customers</strong>. Your job as L2 is to always know: <strong>which client uses which product.</strong>
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>So what is a Product Portfolio?</h3>
+    <p>A <strong>Product Portfolio</strong> is just the full list of software products your fintech company offers. Each product does a specific job — like processing payments, detecting fraud, managing accounts, generating reports, etc.</p>
+    <p>Some clients use just one product. Some big banks use five or six together. Your job in support is to know this mapping so when a ticket comes in, you know exactly what system to look at.</p>
+  </div>
+
+  <!-- TYPICAL FINTECH PRODUCTS -->
+  <div class="sec">Typical Fintech Products (What Companies Usually Sell)</div>
+
+  <div class="products-grid">
+    <div class="product-card">
+      <div class="p-icon">🏦</div>
+      <div class="p-name">Core Banking System</div>
+      <div class="p-type type-core">Core</div>
+      <p>The main engine of a bank. Handles accounts, balances, transactions. Everything connects to this.</p>
+    </div>
+    <div class="product-card">
+      <div class="p-icon">💳</div>
+      <div class="p-name">Payment Gateway</div>
+      <div class="p-type type-payment">Payments</div>
+      <p>Processes online payments. When you pay on a website, this product is doing the work behind the scenes.</p>
+    </div>
+    <div class="product-card">
+      <div class="p-icon">🔍</div>
+      <div class="p-name">Fraud Detection</div>
+      <div class="p-type type-risk">Risk</div>
+      <p>Watches every transaction and raises an alert if something looks suspicious. Like a security guard for money.</p>
+    </div>
+    <div class="product-card">
+      <div class="p-icon">📊</div>
+      <div class="p-name">Reporting & Analytics</div>
+      <div class="p-type type-reporting">Reporting</div>
+      <p>Generates financial reports — daily transactions, monthly summaries, charts. Clients use this to see what's happening.</p>
+    </div>
+    <div class="product-card">
+      <div class="p-icon">📱</div>
+      <div class="p-name">Mobile Banking App</div>
+      <div class="p-type type-channel">Channel</div>
+      <p>The app customers use on their phone. It connects to the Core Banking System in the background.</p>
+    </div>
+    <div class="product-card">
+      <div class="p-icon">🔄</div>
+      <div class="p-name">Reconciliation Tool</div>
+      <div class="p-type type-payment">Payments</div>
+      <p>Checks that all transactions match up on both ends. Like making sure both sides of a receipt agree.</p>
+    </div>
+  </div>
+
+  <!-- WHAT ARE MODULES -->
+  <div class="sec">What Are Modules?</div>
+
+  <div class="card">
+    <h3>A product is made up of smaller parts called Modules</h3>
+    <p>Think of a car. The car is the product. But it has separate parts — the engine, the brakes, the AC, the GPS. Each part does its own job. You can have issues with just the AC without the whole car breaking down.</p>
+    <p>Same with software. A product like a <strong>Payment Gateway</strong> might have modules like: Authentication, Transaction Processing, Notifications, Refunds, Reporting. A client might use all modules — or just some of them.</p>
+  </div>
+
+  <div class="module-block">
+    <div class="module-header">
+      <div class="m-icon">💳</div>
+      <div class="m-title">Payment Gateway — Modules Breakdown</div>
+      <div class="m-badge pill-green">Example</div>
+    </div>
+    <div class="module-body">
+      <div class="module-item"><span class="mi-name">🔐 Authentication</span><span class="mi-desc">Verifies the user is who they say they are before any payment goes through</span></div>
+      <div class="module-item"><span class="mi-name">⚡ Transaction Engine</span><span class="mi-desc">The core part — actually moves the money from A to B</span></div>
+      <div class="module-item"><span class="mi-name">🔔 Notifications</span><span class="mi-desc">Sends SMS or email to confirm a payment was made</span></div>
+      <div class="module-item"><span class="mi-name">↩️ Refunds Module</span><span class="mi-desc">Handles money being sent back to the customer</span></div>
+      <div class="module-item"><span class="mi-name">📊 Reporting Module</span><span class="mi-desc">Shows transaction history, summaries, and downloadable reports</span></div>
+    </div>
+  </div>
+
+  <div class="module-block">
+    <div class="module-header">
+      <div class="m-icon">🏦</div>
+      <div class="m-title">Core Banking — Modules Breakdown</div>
+      <div class="m-badge pill-blue">Example</div>
+    </div>
+    <div class="module-body">
+      <div class="module-item"><span class="mi-name">👤 Account Management</span><span class="mi-desc">Opening, closing, and managing customer accounts</span></div>
+      <div class="module-item"><span class="mi-name">💰 Loans Module</span><span class="mi-desc">Handles loan applications, approvals, repayments</span></div>
+      <div class="module-item"><span class="mi-name">🏧 ATM / Card Module</span><span class="mi-desc">Links debit/credit cards to accounts, handles ATM requests</span></div>
+      <div class="module-item"><span class="mi-name">📋 Audit & Compliance</span><span class="mi-desc">Keeps records for regulators — who did what and when</span></div>
+    </div>
+  </div>
+
+  <!-- CLIENT MAPPING -->
+  <div class="sec">Client–Product Mapping (The Hands-on Lab)</div>
+
+  <div class="how-to">
+    <div class="h-label">What is Client Mapping?</div>
+    <p>A <strong>Client Mapping Sheet</strong> is a simple document that tells you: <em>which client uses which products and which modules — and in which environment.</em></p>
+    <p>When a support ticket comes in from "ABC Bank", you open this sheet and instantly know: they use the Payment Gateway + Fraud Detection, they're on PROD environment, and their key module is the Transaction Engine. Now you know where to look.</p>
+    <p>This sheet is your <strong>cheat sheet as an L2 engineer</strong>. Always keep it updated.</p>
+  </div>
+
+  <!-- MAPPING TABLE -->
+  <div class="mapping-sheet">
+    <div class="sheet-header">
+      📋 Client–Product Mapping Sheet
+      <span class="sheet-sub">Sample · Fintech Company</span>
+    </div>
+    <table class="sheet-table">
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th>Products Used</th>
+          <th>Key Modules</th>
+          <th>Environment</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="client-name">Alpha Bank</div>
+            <div class="client-type">Retail Bank</div>
+          </td>
+          <td>
+            <span class="pill pill-blue">Core Banking</span>
+            <span class="pill pill-green">Payment Gateway</span>
+            <span class="pill pill-gold">Mobile App</span>
+          </td>
+          <td>
+            <span class="pill pill-blue">Accounts</span>
+            <span class="pill pill-green">Txn Engine</span>
+            <span class="pill pill-gold">Notifications</span>
+          </td>
+          <td>
+            <span class="env-tag env-prod">PROD</span>
+            <span class="env-tag env-uat">UAT</span>
+          </td>
+          <td style="color:var(--ink-faint); font-size:12px;">High volume client. SLA: 2hr response.</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="client-name">Beta Wallet</div>
+            <div class="client-type">Digital Wallet</div>
+          </td>
+          <td>
+            <span class="pill pill-green">Payment Gateway</span>
+            <span class="pill pill-red">Fraud Detection</span>
+          </td>
+          <td>
+            <span class="pill pill-green">Refunds</span>
+            <span class="pill pill-red">Alert Engine</span>
+          </td>
+          <td>
+            <span class="env-tag env-prod">PROD</span>
+          </td>
+          <td style="color:var(--ink-faint); font-size:12px;">SaaS model. Vendor manages infra.</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="client-name">Gamma Finance</div>
+            <div class="client-type">Microfinance</div>
+          </td>
+          <td>
+            <span class="pill pill-blue">Core Banking</span>
+            <span class="pill pill-purple">Reporting</span>
+          </td>
+          <td>
+            <span class="pill pill-blue">Loans</span>
+            <span class="pill pill-purple">Dashboard</span>
+          </td>
+          <td>
+            <span class="env-tag env-uat">UAT</span>
+            <span class="env-tag env-dev">DEV</span>
+          </td>
+          <td style="color:var(--ink-faint); font-size:12px;">New client. Still in testing phase.</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="client-name">Delta Pay</div>
+            <div class="client-type">Payment Processor</div>
+          </td>
+          <td>
+            <span class="pill pill-green">Payment Gateway</span>
+            <span class="pill pill-green">Reconciliation</span>
+            <span class="pill pill-red">Fraud Detection</span>
+          </td>
+          <td>
+            <span class="pill pill-green">Txn Engine</span>
+            <span class="pill pill-red">Rules Engine</span>
+          </td>
+          <td>
+            <span class="env-tag env-prod">PROD</span>
+            <span class="env-tag env-uat">UAT</span>
+            <span class="env-tag env-dev">DEV</span>
+          </td>
+          <td style="color:var(--ink-faint); font-size:12px;">On-Prem. They manage their own servers.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- REAL SCENARIOS -->
+  <div class="sec">Real L2 Support Scenarios</div>
+
+  <div class="scenario-list">
+    <div class="scenario-item">
+      <div class="s-num">01</div>
+      <p>A ticket comes in: <strong>"Alpha Bank users can't receive payment notifications."</strong> — You open the mapping sheet, see they use the <strong>Notifications module</strong> of the Payment Gateway. You know exactly which system to check. No guessing.</p>
+    </div>
+    <div class="scenario-item">
+      <div class="s-num">02</div>
+      <p>Someone asks: <strong>"Does Beta Wallet have access to the Core Banking system?"</strong> — You check the sheet. Nope — they only have Payment Gateway + Fraud Detection. You answer in 10 seconds.</p>
+    </div>
+    <div class="scenario-item">
+      <div class="s-num">03</div>
+      <p>A new issue is reported on <strong>Gamma Finance's loan module</strong> — you check the sheet and see they're on UAT, not PROD. So this is a testing issue, not a live emergency. Your response priority is different now.</p>
+    </div>
+    <div class="scenario-item">
+      <div class="s-num">04</div>
+      <p>Someone from Delta Pay calls about a server issue — you check and see they're <strong>On-Prem</strong>. You know their IT team manages the servers, so you ask them to check their own infrastructure first before you dig into the application layer.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Day 2 Outcomes — Can You Do This?</h3>
+    <ul>
+      <li>Explain what a Product Portfolio is — the full list of products your company offers</li>
+      <li>Name at least 4 typical fintech products and what each one does</li>
+      <li>Explain what a Module is — a smaller working part inside a bigger product</li>
+      <li>Create a basic Client–Product Mapping Sheet with client name, products, modules, and environment</li>
+      <li>Look at a support ticket and use the mapping sheet to identify which product and module to investigate</li>
+      <li>Tell the difference between a client on PROD vs UAT and explain why it matters for support priority</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 6 · Day 5 — Callback Issue RCA</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#07080d;
+    --surface:#0d0f18;
+    --surface2:#121620;
+    --surface3:#171c28;
+    --border:#1e2535;
+    --text:#a8b8cc;
+    --text-dim:#3e5268;
+    --text-faint:#162035;
+    --white:#eaf0fc;
+
+    --violet:#8b5cf6;
+    --violet-bg:#0c0818;
+    --violet-border:#241840;
+
+    --teal:#14b8a6;
+    --teal-bg:#001814;
+    --teal-border:#003830;
+
+    --rose:#f43f5e;
+    --rose-bg:#180008;
+    --rose-border:#3c0018;
+
+    --amber:#f59e0b;
+    --amber-bg:#180c00;
+    --amber-border:#3c2800;
+
+    --green:#22d46a;
+    --green-bg:#001810;
+    --green-border:#003820;
+
+    --blue:#3b82f6;
+    --blue-bg:#020e20;
+    --blue-border:#082240;
+
+    --sky:#38bdf8;
+    --sky-bg:#001820;
+    --sky-border:#003848;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;font-size:15px;line-height:1.7;padding:48px 24px 100px;}
+  .page{max-width:940px;margin:0 auto;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:52px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .topbar-left{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;}
+  .tb-right{display:flex;gap:8px;}
+  .tb-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 14px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;}
+  .tb-wk{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tb-d5{background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);}
+
+  .hero{margin-bottom:52px;}
+  .day-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--violet);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,58px);font-weight:800;line-height:1.05;color:var(--white);margin-bottom:18px;}
+  .hero h1 span{color:var(--violet);}
+  .hero-desc{color:var(--text-dim);font-size:15px;max-width:540px;}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;}
+  .tag{padding:5px 14px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tag-v{background:var(--violet-bg);border-color:var(--violet-border);color:var(--violet);}
+
+  .sec{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faint);margin-bottom:18px;margin-top:44px;display:flex;align-items:center;gap:12px;}
+  .sec .sn{color:var(--violet);font-size:12px;}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .analogy{background:var(--violet-bg);border:1px solid var(--violet-border);border-left:4px solid var(--violet);border-radius:12px;padding:22px 28px;margin-bottom:16px;}
+  .analogy .al{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--violet);margin-bottom:8px;}
+  .analogy p{color:var(--text);font-size:14px;}
+  .analogy strong{color:var(--white);}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 28px;margin-bottom:14px;}
+  .card h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:8px;}
+  .card p{color:var(--text-dim);margin-bottom:8px;font-size:14px;}
+  .card p:last-child{margin-bottom:0;}
+  .card strong{color:var(--text);}
+
+  /* CALLBACK FLOW */
+  .flow-block{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:14px;}
+  .flow-block h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:24px;text-align:center;}
+  .fs-item{display:flex;gap:18px;position:relative;}
+  .fs-item:not(:last-child) .fsi-left::after{content:'';position:absolute;left:19px;top:44px;bottom:0;width:2px;background:var(--border);z-index:0;}
+  .fsi-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+  .fsi-dot{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;z-index:1;position:relative;}
+  .fd-v{background:var(--violet-bg);border:2px solid var(--violet-border);}
+  .fd-t{background:var(--teal-bg);border:2px solid var(--teal-border);}
+  .fd-g{background:var(--green-bg);border:2px solid var(--green-border);}
+  .fd-r{background:var(--rose-bg);border:2px solid var(--rose-border);}
+  .fd-a{background:var(--amber-bg);border:2px solid var(--amber-border);}
+  .fsi-content{flex:1;padding-bottom:22px;padding-top:4px;}
+  .fsi-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;}
+  .fl-v{color:var(--violet);} .fl-t{color:var(--teal);} .fl-g{color:var(--green);}
+  .fl-r{color:var(--rose);} .fl-a{color:var(--amber);}
+  .fsi-title{font-size:15px;font-weight:700;color:var(--white);margin-bottom:4px;}
+  .fsi-desc{font-size:13px;color:var(--text-dim);}
+  .fsi-code{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 12px;margin-top:6px;display:inline-block;color:var(--text-dim);}
+
+  /* MISMATCH GRID */
+  .mismatch-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+  .mm-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;}
+  .mm-card .mc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+  .mm-card h4{font-size:14px;font-weight:700;color:var(--white);margin-bottom:8px;}
+  .mm-card ul{list-style:none;display:flex;flex-direction:column;gap:6px;}
+  .mm-card ul li{font-size:13px;color:var(--text-dim);padding-left:16px;position:relative;}
+  .mm-card ul li::before{content:'→';position:absolute;left:0;font-family:'JetBrains Mono',monospace;font-size:10px;}
+  .mc-v .mc-label,.mc-v ul li::before{color:var(--violet);}
+  .mc-r .mc-label,.mc-r ul li::before{color:var(--rose);}
+  .mc-v{border-top:3px solid var(--violet);}
+  .mc-r{border-top:3px solid var(--rose);}
+
+  /* REF TABLE */
+  .ref-table{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+  .rt-head{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:15px;font-weight:700;color:var(--white);}
+  table.rt{width:100%;border-collapse:collapse;}
+  table.rt th{padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);text-align:left;border-bottom:1px solid var(--border);font-weight:400;background:var(--surface3);}
+  table.rt td{padding:12px 18px;font-size:13px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;}
+  table.rt tr:last-child td{border-bottom:none;}
+  table.rt tr:hover td{background:rgba(255,255,255,0.02);}
+  table.rt td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--violet);white-space:nowrap;}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 9px;border-radius:100px;white-space:nowrap;}
+  .p-v{background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);}
+  .p-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .p-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .p-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .p-t{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+
+  /* CODE */
+  .cbox{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:8px 0;}
+  .cbox-bar{padding:7px 14px;background:var(--surface3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+  .d{width:8px;height:8px;border-radius:50%;}.dr{background:#ff5f56;}.dy{background:#ffbd2e;}.dg{background:#27c93f;}
+  .ct{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);margin-left:4px;letter-spacing:1px;}
+  .cbox-code{padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2.0;overflow-x:auto;}
+  .kw{color:#ff7b72;}.fn{color:#79c0ff;}.str{color:#a5d6ff;}.var{color:#ffa657;}.cm{color:#2e4050;}.op{color:#c9d1d9;}
+
+  /* NOTE */
+  .note{border-radius:10px;padding:10px 16px;font-size:13px;margin-bottom:10px;}
+  .n-v{background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);}
+  .n-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .n-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .n-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .n-t{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+  .note strong{color:var(--white);}
+
+  /* LAB */
+  .lab{border:2px solid var(--violet-border);border-radius:16px;overflow:hidden;margin-bottom:14px;}
+  .lab-head{padding:16px 26px;background:var(--violet-bg);border-bottom:1px solid var(--violet-border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .lab-head h3{font-size:15px;font-weight:700;color:var(--white);}
+  .lab-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 12px;border-radius:100px;background:rgba(139,92,246,0.1);border:1px solid var(--violet-border);color:var(--violet);}
+  .lab-body{padding:26px;display:flex;flex-direction:column;gap:0;background:var(--surface);}
+  .lab-step{display:flex;gap:18px;position:relative;}
+  .lab-step:not(:last-child) .ls-left::after{content:'';position:absolute;left:19px;top:44px;bottom:0;width:2px;background:var(--border);z-index:0;}
+  .ls-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+  .ls-num{width:40px;height:40px;border-radius:50%;background:var(--violet-bg);border:2px solid var(--violet-border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--violet);z-index:1;position:relative;}
+  .ls-content{flex:1;padding-bottom:22px;padding-top:4px;}
+  .ls-title{font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px;}
+  .ls-desc{font-size:13px;color:var(--text-dim);margin-bottom:8px;}
+  .ls-out-v{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+  .ls-out-g{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+  .ls-out-r{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+
+  /* SCEN */
+  .scen-list{display:flex;flex-direction:column;gap:12px;margin-bottom:14px;}
+  .scen-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;}
+  .si-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--violet);background:var(--violet-bg);border:1px solid var(--violet-border);border-radius:6px;padding:4px 8px;flex-shrink:0;margin-top:2px;}
+  .scen-item p{font-size:14px;color:var(--text-dim);}
+  .scen-item p strong{color:var(--white);}
+
+  .outcome{background:linear-gradient(135deg,var(--violet-bg) 0%,var(--surface) 100%);border:1px solid var(--violet-border);border-radius:16px;padding:32px;margin-top:48px;}
+  .outcome h3{font-size:20px;font-weight:700;color:var(--violet);margin-bottom:18px;}
+  .outcome ul{display:flex;flex-direction:column;gap:9px;list-style:none;}
+  .outcome ul li{font-size:14px;color:var(--text-dim);padding-left:22px;position:relative;}
+  .outcome ul li::before{content:'✓';position:absolute;left:0;color:var(--violet);font-family:'JetBrains Mono',monospace;}
+
+  @media(max-width:640px){.mismatch-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 6</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-wk">Week 6</span>
+      <span class="tb-badge tb-d5">Day 5</span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="day-label">Week 6 · Day 5</div>
+    <h1>Callback Issue <span>RCA</span></h1>
+    <p class="hero-desc">A callback is a reply that travels back to the sender after a transaction is processed. When it fails, goes to the wrong place, or arrives with mismatched data — the transaction appears stuck even though it completed. Today you learn to find and fix exactly that.</p>
+    <div class="tags">
+      <span class="tag tag-v">Retry Logic</span>
+      <span class="tag tag-v">Status Mismatch</span>
+      <span class="tag">Callback Failure</span>
+      <span class="tag">Dead Letter</span>
+      <span class="tag">Reprocess</span>
+    </div>
+  </div>
+
+  <!-- ANALOGY -->
+  <div class="sec"><span class="sn">01</span> The Simple Idea First</div>
+
+  <div class="analogy">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Think of a callback like a <strong>courier delivering a package and getting a signed receipt back</strong>. The courier delivers the parcel (transaction processed). The receiver signs the receipt (callback sent). The signature travels back to the sender (callback delivered).<br><br>
+      Now imagine the signature gets lost on the way back. The sender has no receipt. They do not know if the package arrived. They mark it as undelivered — even though the customer has their parcel.<br><br>
+      <strong>A callback failure is exactly that.</strong> The transaction completed at SBP or the destination bank. But the confirmation never made it back to your system. Your system marks it PENDING. The client says "payment failed." The money already moved.
+    </p>
+  </div>
+
+  <!-- WHAT IS A CALLBACK -->
+  <div class="card">
+    <h3>What is a Callback?</h3>
+    <p>After your system sends a transaction to SBP or a downstream service, that service sends back a <strong>callback</strong> — a notification saying "here is the result of what you sent me." It travels back to a specific endpoint (URL) on your system.</p>
+    <p>If the callback is received correctly — the transaction status is updated and the client is notified. If it fails to reach your system — the transaction stays PENDING forever, even though the money has already moved.</p>
+    <p><strong>This is why callback failures are dangerous.</strong> The status in your system says FAILED or PENDING. The client's bank statement shows the money gone. Those two things do not match — and that is the mismatch you need to resolve.</p>
+  </div>
+
+  <!-- CALLBACK FLOW -->
+  <div class="sec"><span class="sn">02</span> How a Callback Should Work — Happy Path</div>
+
+  <div class="flow-block">
+    <h3>📨 Normal Callback Flow — Everything Working Correctly</h3>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-v">🏦</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-v">Step 1 — Your System</div>
+        <div class="fsi-title">Transaction sent to SBP or downstream bank</div>
+        <div class="fsi-desc">Your system sends the payment request and immediately records the transaction as PENDING in the database. It now waits for the callback reply.</div>
+        <span class="fsi-code">DB: TXN-501 → STATUS = PENDING</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-t">🏛️</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-t">Step 2 — SBP / Destination</div>
+        <div class="fsi-title">SBP processes the transaction and fires a callback</div>
+        <div class="fsi-desc">SBP settles the payment. It then sends a callback to your system's registered endpoint — a POST request containing the transaction result (ACSP or RJCT) and the reference ID.</div>
+        <span class="fsi-code">POST https://yourapp.com/callback → {txn_ref: TXN-501, status: ACSP}</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-v">🔌</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-v">Step 3 — Your System Receives</div>
+        <div class="fsi-title">Callback received — status updated in DB</div>
+        <div class="fsi-desc">Your callback handler receives the POST, validates the reference ID, and updates the transaction status from PENDING to SUCCESS or FAILED. Client is notified.</div>
+        <span class="fsi-code">DB: TXN-501 → STATUS = SUCCESS | Client notified ✅</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-g">📬</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-g">Step 4 — Notification Delivered</div>
+        <div class="fsi-title">Client receives confirmation</div>
+        <div class="fsi-desc">The notification service sends the final status to the client's system or user's phone. Everything matches. Transaction is closed.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHERE IT BREAKS -->
+  <div class="sec"><span class="sn">03</span> Where Callbacks Break — The 4 Failure Types</div>
+
+  <div class="mismatch-grid">
+    <div class="mm-card mc-v">
+      <div class="mc-label">Delivery Failures</div>
+      <h4>Callback never arrives</h4>
+      <ul>
+        <li>Your endpoint URL is wrong or outdated</li>
+        <li>Your server is down when SBP sends it</li>
+        <li>Firewall blocking SBP's IP address</li>
+        <li>SSL/TLS certificate error on your endpoint</li>
+        <li>Network issue between SBP and your server</li>
+      </ul>
+    </div>
+    <div class="mm-card mc-r">
+      <div class="mc-label">Data Mismatches</div>
+      <h4>Callback arrives but data is wrong</h4>
+      <ul>
+        <li>TXN reference ID in callback does not match DB</li>
+        <li>Amount in callback differs from original request</li>
+        <li>Status code format not what system expected</li>
+        <li>Duplicate callback sent — already processed</li>
+        <li>Callback for wrong client or wrong environment</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- RETRY LOGIC -->
+  <div class="sec"><span class="sn">04</span> Retry Logic — How the System Handles Failed Callbacks</div>
+
+  <div class="card">
+    <h3>What is Retry Logic?</h3>
+    <p>When a callback delivery fails (your endpoint was unavailable), most systems <strong>automatically retry</strong> sending it after a delay. The retry schedule typically looks like: first retry after 1 minute, second retry after 5 minutes, third retry after 30 minutes, fourth retry after 2 hours.</p>
+    <p>If all retries are exhausted and the callback still cannot be delivered — the callback is moved to a <strong>dead letter queue</strong>. This is where it sits, waiting for manual investigation and reprocessing.</p>
+  </div>
+
+  <div class="ref-table">
+    <div class="rt-head">🔄 Retry States — What Each One Means</div>
+    <table class="rt">
+      <thead><tr><th>State</th><th>What it means</th><th>L2 Action</th></tr></thead>
+      <tbody>
+        <tr><td>PENDING</td><td>Callback not yet received. Still within timeout window.</td><td><span class="pill p-v">Monitor</span> — give it time. Check again after retry interval.</td></tr>
+        <tr><td>RETRYING</td><td>First delivery failed. System is automatically retrying.</td><td><span class="pill p-a">Watch</span> — check if endpoint is back up. Retries will continue.</td></tr>
+        <tr><td>MAX_RETRY_EXCEEDED</td><td>All retry attempts failed. No more automatic retries.</td><td><span class="pill p-r">Act now</span> — fix the endpoint issue then manually trigger reprocess.</td></tr>
+        <tr><td>DEAD_LETTER</td><td>Callback moved to dead letter queue after all retries failed.</td><td><span class="pill p-r">Investigate</span> — find root cause of delivery failure then reprocess.</td></tr>
+        <tr><td>DUPLICATE</td><td>Callback arrived but this TXN was already processed.</td><td><span class="pill p-v">Ignore safely</span> — system should reject duplicates. Verify it did.</td></tr>
+        <tr><td>MISMATCH</td><td>Callback arrived but data does not match original transaction.</td><td><span class="pill p-r">Escalate</span> — reconciliation team must manually verify and resolve.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- STATUS MISMATCH -->
+  <div class="sec"><span class="sn">05</span> Status Mismatch — The Most Critical Scenario</div>
+
+  <div class="card">
+    <h3>What is a Status Mismatch?</h3>
+    <p>A status mismatch is when the <strong>status in your system does not match the actual outcome at SBP</strong>. This is the most dangerous callback issue because it involves real money.</p>
+    <p><strong>Example 1 — Money moved, system shows FAILED:</strong> SBP processed and settled the payment. Your system never received the callback. Your system shows TXN FAILED. The customer's account was debited. This is a reconciliation emergency — money is gone from the customer but your system says it didn't happen.</p>
+    <p><strong>Example 2 — Money not moved, system shows SUCCESS:</strong> Your system received a callback but the reference ID was wrong — it accidentally updated a different transaction. Your system shows SUCCESS for a transaction that SBP actually rejected.</p>
+  </div>
+
+  <div class="note n-r">🚨 <strong>Rule:</strong> Any mismatch where money has moved but the system does not reflect it — or vice versa — is an immediate P1. Escalate to L3, reconciliation team, and your manager simultaneously. Do not wait.</div>
+
+  <!-- DB TABLES FOR CALLBACK -->
+  <div class="sec"><span class="sn">06</span> DB Tables to Check During Callback Investigation</div>
+
+  <div class="ref-table">
+    <div class="rt-head">🗄️ Which Table Tells You What</div>
+    <table class="rt">
+      <thead><tr><th>Table</th><th>What to check</th><th>What it reveals</th></tr></thead>
+      <tbody>
+        <tr><td>TRANSACTIONS_LOG</td><td>TXN_REF, STATUS, UPDATED_AT</td><td>Current status of the transaction in your system</td></tr>
+        <tr><td>MX_MESSAGE</td><td>DIRECTION=INBOUND, MESSAGE_TYPE=PACS002</td><td>Whether SBP's callback was actually received</td></tr>
+        <tr><td>TRANSACTIONS_LOG_REQ_RESP</td><td>RESPONSE_BODY for the TXN</td><td>What the callback message actually said</td></tr>
+        <tr><td>CALLBACK_RETRY_LOG</td><td>RETRY_COUNT, STATUS, LAST_RETRY_AT</td><td>How many retries were attempted and when</td></tr>
+        <tr><td>DEAD_LETTER_QUEUE</td><td>TXN_REF, FAILURE_REASON</td><td>Callbacks that exhausted all retries</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- LAB -->
+  <div class="sec"><span class="sn">07</span> Hands-on Lab — Investigate a Callback Issue</div>
+
+  <div class="card">
+    <h3>Scenario for this lab</h3>
+    <p>Client reports: <strong>"We sent a payment 2 hours ago. Our customer's account is debited but our system shows the transaction as PENDING."</strong> This is a classic callback failure — SBP processed it, the money moved, but your system never received the confirmation back.</p>
+  </div>
+
+  <div class="lab">
+    <div class="lab-head">
+      <h3>🔬 Lab: Trace and Resolve a Callback Failure</h3>
+      <span class="lab-badge">Log + SQL Investigation</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Create the simulated callback failure log</div>
+          <div class="ls-desc">This log shows a transaction that was sent to SBP but the callback never arrived back.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="fn">cat</span> &gt; ~/callback-issue.log &lt;&lt; <span class="str">'EOF'</span><br>
+[10:00:00] [INFO ] TXN-501 received from client. Amount: 15000<br>
+[10:00:01] [INFO ] TXN-501 validated. Sending to SBP via PACS.008<br>
+[10:00:02] [INFO ] TXN-501 sent to SBP. Status set to PENDING.<br>
+[10:00:05] [INFO ] TXN-502 received from client. Amount: 8000<br>
+[10:00:06] [INFO ] TXN-502 sent to SBP. Status set to PENDING.<br>
+[10:05:00] [WARN ] No callback received for TXN-501. Elapsed: 5 minutes.<br>
+[10:10:00] [WARN ] No callback received for TXN-501. Retry attempt 1.<br>
+[10:10:00] [INFO ] Callback received for TXN-502. Status: ACSP. Updated.<br>
+[10:15:00] [WARN ] No callback received for TXN-501. Retry attempt 2.<br>
+[10:30:00] [ERROR] Callback delivery failed for TXN-501. Retry attempt 3.<br>
+[10:30:00] [ERROR] CALLBACK_ENDPOINT_UNREACHABLE: Connection refused.<br>
+[11:00:00] [ERROR] TXN-501 moved to DEAD_LETTER after 4 failed retries.<br>
+[12:00:00] [INFO ] TXN-501 still PENDING in DB. No update received.<br>
+EOF
+          </div></div>
+          <span class="ls-out-v">→ Log created. TXN-501 stuck in PENDING. TXN-502 processed fine. Callback endpoint was unreachable.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 1 — Confirm the transaction is stuck and when it started</div>
+          <div class="ls-desc">Read the log to understand the full timeline.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="cm"># Full history of TXN-501</span><br>
+<span class="fn">grep</span> <span class="str">"TXN-501"</span> ~/callback-issue.log<br>
+<br>
+<span class="cm"># How many retries happened?</span><br>
+<span class="fn">grep</span> <span class="str">"Retry"</span> ~/callback-issue.log<br>
+<br>
+<span class="cm"># What was the error on the last attempt?</span><br>
+<span class="fn">grep</span> <span class="str">"CALLBACK\|DEAD_LETTER"</span> ~/callback-issue.log
+          </div></div>
+          <span class="ls-out-v">→ TXN-501 sent at 10:00:02. 4 retries between 10:10 and 11:00. Moved to DEAD_LETTER at 11:00. Error: CALLBACK_ENDPOINT_UNREACHABLE.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 2 — Check the current status in DB (SQLite simulation)</div>
+          <div class="ls-desc">What does your system currently say about TXN-501?</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — SQLite</span></div><div class="cbox-code">
+<span class="fn">sqlite3</span> ~/fintech_lab.db &lt;&lt; <span class="str">'EOF'</span><br>
+<span class="cm">-- Check current status of all PENDING transactions</span><br>
+SELECT txn_id, status, amount<br>
+FROM transactions<br>
+WHERE status = 'PENDING';<br>
+<br>
+<span class="cm">-- Check which transactions completed (SUCCESS)</span><br>
+SELECT txn_id, status, amount<br>
+FROM transactions<br>
+WHERE status = 'SUCCESS';<br>
+EOF
+          </div></div>
+          <span class="ls-out-v">→ Confirms PENDING transactions exist in DB. In a real system TXN-501 would be here — status PENDING, money already debited by SBP.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 3 — Identify the root cause of the callback failure</div>
+          <div class="ls-desc">Why did the callback fail? The log tells you: CALLBACK_ENDPOINT_UNREACHABLE.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — confirm root cause</span></div><div class="cbox-code">
+<span class="cm"># Find the exact error</span><br>
+<span class="fn">grep</span> <span class="str">"ERROR"</span> ~/callback-issue.log<br>
+<br>
+<span class="cm"># Compare TXN-501 (failed) with TXN-502 (success)</span><br>
+<span class="fn">grep</span> <span class="str">"TXN-502"</span> ~/callback-issue.log<br>
+<br>
+<span class="cm"># When did TXN-502 succeed vs TXN-501 fail?</span><br>
+<span class="fn">grep</span> <span class="str">"TXN-501\|TXN-502"</span> ~/callback-issue.log | <span class="fn">grep</span> <span class="str">"callback\|Callback"</span>
+          </div></div>
+          <span class="ls-out-v">→ TXN-502 callback received at 10:10. TXN-501 never received. Endpoint was unreachable specifically during TXN-501's callback window — intermittent outage.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">05</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 4 — Verify at SBP level if TXN-501 actually succeeded</div>
+          <div class="ls-desc">Before updating anything, you must confirm what SBP actually did. Check MX_MESSAGE for the SBP response — or raise a PACS.028 status enquiry to SBP directly.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">SQL — check what SBP replied (real system)</span></div><div class="cbox-code">
+<span class="cm">-- Check if SBP sent a PACS.002 for TXN-501</span><br>
+<span class="kw">SELECT</span> <span class="var">MESSAGE_TYPE</span>, <span class="var">DIRECTION</span>, <span class="var">MESSAGE_BODY</span>, <span class="var">CREATED_AT</span><br>
+<span class="kw">FROM</span>   <span class="fn">MX_MESSAGE</span><br>
+<span class="kw">WHERE</span>  <span class="var">TXN_REF</span>   <span class="op">=</span> <span class="str">'TXN-501'</span><br>
+<span class="kw">AND</span>    <span class="var">DIRECTION</span> <span class="op">=</span> <span class="str">'INBOUND'</span>;<br>
+<br>
+<span class="cm">-- If no INBOUND record: SBP reply never arrived</span><br>
+<span class="cm">-- If INBOUND exists: reply arrived but was not processed</span><br>
+<br>
+<span class="cm">-- Check callback retry log for TXN-501</span><br>
+<span class="kw">SELECT</span> <span class="var">TXN_REF</span>, <span class="var">RETRY_COUNT</span>, <span class="var">FAILURE_REASON</span>, <span class="var">LAST_RETRY_AT</span><br>
+<span class="kw">FROM</span>   <span class="fn">CALLBACK_RETRY_LOG</span><br>
+<span class="kw">WHERE</span>  <span class="var">TXN_REF</span> <span class="op">=</span> <span class="str">'TXN-501'</span>;
+          </div></div>
+          <div class="note n-a" style="margin-top:8px;">⚠️ <strong>Two outcomes possible:</strong> If MX_MESSAGE has an INBOUND PACS.002 → SBP did reply, your system failed to process it. If no INBOUND record → SBP reply never reached your system. These are two completely different fixes.</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">06</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 5 — Resolve the mismatch</div>
+          <div class="ls-desc">Once you have confirmed SBP's actual result, follow the correct resolution path.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">Resolution decision tree</span></div><div class="cbox-code">
+<span class="cm">IF SBP result = SUCCESS and your DB = PENDING:</span><br>
+<span class="cm">  → Manually update status to SUCCESS (with L3 approval)</span><br>
+<span class="cm">  → Trigger notification to client</span><br>
+<span class="cm">  → Log the manual override in Jira</span><br>
+<br>
+<span class="cm">IF SBP result = FAILED and your DB = PENDING:</span><br>
+<span class="cm">  → Update status to FAILED</span><br>
+<span class="cm">  → Trigger refund process if money was taken</span><br>
+<span class="cm">  → Notify client of failure and reason</span><br>
+<br>
+<span class="cm">IF SBP has no record of TXN-501:</span><br>
+<span class="cm">  → Transaction never reached SBP</span><br>
+<span class="cm">  → Escalate to L3 — possible to resubmit</span><br>
+<span class="cm">  → Check PACS.008 outbound log</span><br>
+<br>
+<span class="cm">IF callback is in DEAD_LETTER:</span><br>
+<span class="cm">  → Fix the endpoint issue first</span><br>
+<span class="cm">  → Then manually trigger reprocess of dead letter</span>
+          </div></div>
+          <span class="ls-out-g">→ Resolution path identified. Always fix root cause before reprocessing. Never manually update status without verifying SBP's actual result first. ✅</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">07</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Write the Jira RCA</div>
+          <div class="ls-desc">Document everything clearly — what happened, what the mismatch was, what was done to resolve it.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">Jira RCA — Callback Failure</span></div><div class="cbox-code">
+<span class="cm">Incident   : Callback Failure — TXN-501 stuck in PENDING</span><br>
+<span class="cm">Reported   : Client — payment debited but system shows PENDING</span><br>
+<span class="cm">Time       : 10:00:02 (sent) — 11:00 (dead letter)</span><br>
+<span class="cm">Root Cause : Callback endpoint was unreachable during retry window.</span><br>
+<span class="cm">             Error: CALLBACK_ENDPOINT_UNREACHABLE (4 retries failed)</span><br>
+<span class="cm">Mismatch   : SBP confirmed SUCCESS. DB shows PENDING.</span><br>
+<span class="cm">             Money debited from customer. Confirmation not received.</span><br>
+<span class="cm">Resolution : Endpoint restored. Dead letter entry reprocessed.</span><br>
+<span class="cm">             TXN-501 status manually updated to SUCCESS (L3 approval).</span><br>
+<span class="cm">             Client notification sent. Reconciliation confirmed.</span><br>
+<span class="cm">Next Steps : Investigate why endpoint was unreachable between</span><br>
+<span class="cm">             10:00 and 11:00. Add endpoint health monitoring.</span>
+          </div></div>
+          <span class="ls-out-g">→ Professional, complete RCA. Paste directly into Jira. ✅</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn">08</span> Real L2 Scenarios</div>
+  <div class="scen-list">
+    <div class="scen-item"><div class="si-id">01</div>
+      <p>Client says: <strong>"Customer paid but transaction shows failed in our app."</strong> You check MX_MESSAGE — SBP PACS.002 with ACSP is there (INBOUND). Your DB shows PENDING. <strong>Callback arrived but was not processed.</strong> Your callback handler had a bug. L3 to fix handler + manually update the status to SUCCESS.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">02</div>
+      <p>You find 50 transactions in the dead letter queue — all from the same 30-minute window. <strong>Your callback endpoint was down during maintenance.</strong> Once the endpoint is restored — you reprocess all 50 from the dead letter queue. They all update correctly within minutes.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">03</div>
+      <p>Callback arrived for TXN-601 but the TXN_REF in the callback body says TXN-600. <strong>Mismatch on the reference ID.</strong> Your system ignored it because TXN-600 was already SUCCESS. TXN-601 stays PENDING. This is a data mismatch — needs reconciliation team to manually match and update.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">04</div>
+      <p>Duplicate callback arrives for TXN-501 which was already processed. <strong>Your system must reject duplicates safely.</strong> If it processed both — it might double-credit the account. You check the callback handler logic — it should check if STATUS is already SUCCESS before processing. If it does not — this is a code bug for L3.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 6 · Day 5 Outcomes</h3>
+    <ul>
+      <li>Explain what a callback is and why it is critical for transaction status accuracy</li>
+      <li>Describe the happy path — transaction sent, SBP processes, callback received, status updated</li>
+      <li>Identify the 4 types of callback failures — delivery failure, data mismatch, duplicate, dead letter</li>
+      <li>Understand retry logic — what RETRYING, MAX_RETRY_EXCEEDED, and DEAD_LETTER mean and what to do for each</li>
+      <li>Explain status mismatch — when SBP shows SUCCESS but your system shows PENDING and why it is a P1</li>
+      <li>Know which DB tables to check — TRANSACTIONS_LOG, MX_MESSAGE, CALLBACK_RETRY_LOG, DEAD_LETTER_QUEUE</li>
+      <li>Complete the lab — trace TXN-501 through the failure log, identify CALLBACK_ENDPOINT_UNREACHABLE as root cause, apply the correct resolution path, and write a complete Jira RCA</li>
+      <li>Know the golden rule — always verify SBP's actual result before updating any status manually</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

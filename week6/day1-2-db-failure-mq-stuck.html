@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 6 · Day 1 & 2 — DB Failure & MQ Stuck</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#07080d;
+    --surface:#0d0f18;
+    --surface2:#12141f;
+    --surface3:#171a28;
+    --border:#1e2235;
+    --text:#a8b8cc;
+    --text-dim:#3e5065;
+    --text-faint:#162030;
+    --white:#eaf0fc;
+
+    --red:#ff3c3c;
+    --red-bg:#180400;
+    --red-border:#3c0c00;
+
+    --orange:#ff8c20;
+    --orange-bg:#180800;
+    --orange-border:#3c2000;
+
+    --teal:#00d8b4;
+    --teal-bg:#001814;
+    --teal-border:#003830;
+
+    --blue:#3898ff;
+    --blue-bg:#020e20;
+    --blue-border:#082240;
+
+    --green:#22d46a;
+    --green-bg:#001810;
+    --green-border:#003820;
+
+    --amber:#ffaa18;
+    --amber-bg:#180c00;
+    --amber-border:#3c2800;
+
+    --purple:#a855f7;
+    --purple-bg:#0e0818;
+    --purple-border:#281840;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:15px;line-height:1.7;padding:48px 24px 100px;}
+  .page{max-width:940px;margin:0 auto;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:52px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .topbar-left{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;}
+  .tb-right{display:flex;gap:8px;}
+  .tb-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 14px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;}
+  .tb-wk{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tb-d1{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);}
+  .tb-d2{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+
+  .hero{margin-bottom:52px;}
+  .day-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--red);margin-bottom:14px;}
+  .hero h1{font-size:clamp(28px,5.5vw,54px);font-weight:700;line-height:1.05;color:var(--white);margin-bottom:18px;}
+  .hero h1 .r{color:var(--red);} .hero h1 .t{color:var(--teal);}
+  .hero-desc{color:var(--text-dim);font-size:15px;max-width:540px;}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;}
+  .tag{padding:5px 14px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tag-r{background:var(--red-bg);border-color:var(--red-border);color:var(--red);}
+  .tag-t{background:var(--teal-bg);border-color:var(--teal-border);color:var(--teal);}
+
+  .day-div{display:flex;align-items:center;gap:16px;margin:56px 0 28px;}
+  .dd-pill{font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 20px;border-radius:100px;letter-spacing:2px;text-transform:uppercase;font-weight:600;flex-shrink:0;}
+  .dd-r{background:var(--red-bg);border:2px solid var(--red-border);color:var(--red);}
+  .dd-t{background:var(--teal-bg);border:2px solid var(--teal-border);color:var(--teal);}
+  .dd-lr{flex:1;height:1px;background:var(--red-border);}
+  .dd-lt{flex:1;height:1px;background:var(--teal-border);}
+  .dd-title{font-size:17px;font-weight:700;}
+  .dd-tr{color:var(--red);} .dd-tt{color:var(--teal);}
+
+  .sec{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faint);margin-bottom:18px;margin-top:44px;display:flex;align-items:center;gap:12px;}
+  .sec .sn{font-size:12px;}
+  .sn-r{color:var(--red);} .sn-t{color:var(--teal);}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .analogy{border-left:4px solid;border-radius:12px;padding:22px 28px;margin-bottom:16px;}
+  .an-r{background:var(--red-bg);border-color:var(--red);}
+  .an-t{background:var(--teal-bg);border-color:var(--teal);}
+  .analogy .al{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+  .an-r .al{color:var(--red);} .an-t .al{color:var(--teal);}
+  .analogy p{color:var(--text);font-size:14px;}
+  .analogy strong{color:var(--white);}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 28px;margin-bottom:14px;}
+  .card h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:8px;}
+  .card p{color:var(--text-dim);margin-bottom:8px;font-size:14px;}
+  .card p:last-child{margin-bottom:0;}
+  .card strong{color:var(--text);}
+
+  /* CHECKLIST */
+  .checklist{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:14px;}
+  .cl-header{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+  .cl-header h3{font-size:15px;font-weight:700;color:var(--white);}
+  .cl-items{padding:20px 22px;display:flex;flex-direction:column;gap:10px;}
+  .cl-item{display:flex;gap:14px;align-items:flex-start;padding:12px 14px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);}
+  .cl-num{font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 9px;border-radius:6px;flex-shrink:0;margin-top:2px;}
+  .cl-r .cl-num{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);}
+  .cl-t .cl-num{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+  .cl-item .ci-title{font-size:14px;font-weight:600;color:var(--white);margin-bottom:3px;}
+  .cl-item .ci-desc{font-size:13px;color:var(--text-dim);}
+
+  /* CODE */
+  .cbox{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:8px 0;}
+  .cbox-bar{padding:7px 14px;background:var(--surface3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+  .d{width:8px;height:8px;border-radius:50%;}.dr{background:#ff5f56;}.dy{background:#ffbd2e;}.dg{background:#27c93f;}
+  .ct{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);margin-left:4px;letter-spacing:1px;}
+  .cbox-code{padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2.0;overflow-x:auto;}
+  .kw{color:#ff7b72;}.fn{color:#79c0ff;}.str{color:#a5d6ff;}.var{color:#ffa657;}.cm{color:#2e4050;}.op{color:#c9d1d9;}
+  .err{color:var(--red);} .ok{color:var(--green);} .warn{color:var(--amber);}
+
+  /* NOTE */
+  .note{border-radius:10px;padding:10px 16px;font-size:13px;margin-bottom:10px;}
+  .n-r{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);}
+  .n-t{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+  .n-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .n-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .n-b{background:var(--blue-bg);border:1px solid var(--blue-border);color:var(--blue);}
+  .note strong{color:var(--white);}
+
+  /* REF TABLE */
+  .ref-table{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+  .rt-head{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:15px;font-weight:700;color:var(--white);}
+  table.rt{width:100%;border-collapse:collapse;}
+  table.rt th{padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);text-align:left;border-bottom:1px solid var(--border);font-weight:400;background:var(--surface3);}
+  table.rt td{padding:12px 18px;font-size:13px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;}
+  table.rt tr:last-child td{border-bottom:none;}
+  table.rt tr:hover td{background:rgba(255,255,255,0.02);}
+  table.rt td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--red);white-space:nowrap;}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 9px;border-radius:100px;white-space:nowrap;}
+  .p-r{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);}
+  .p-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .p-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .p-t{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+
+  /* LAB */
+  .lab{border-radius:16px;overflow:hidden;margin-bottom:14px;}
+  .lab-r{border:2px solid var(--red-border);}
+  .lab-t{border:2px solid var(--teal-border);}
+  .lab-head{padding:16px 26px;border-bottom:1px solid;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .lab-r .lab-head{background:var(--red-bg);border-color:var(--red-border);}
+  .lab-t .lab-head{background:var(--teal-bg);border-color:var(--teal-border);}
+  .lab-head h3{font-size:15px;font-weight:700;color:var(--white);}
+  .lbadge-r{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 12px;border-radius:100px;background:rgba(255,60,60,0.1);border:1px solid var(--red-border);color:var(--red);}
+  .lbadge-t{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 12px;border-radius:100px;background:rgba(0,216,180,0.1);border:1px solid var(--teal-border);color:var(--teal);}
+  .lab-body{padding:26px;display:flex;flex-direction:column;gap:0;background:var(--surface);}
+  .lab-step{display:flex;gap:18px;position:relative;}
+  .lab-step:not(:last-child) .ls-left::after{content:'';position:absolute;left:19px;top:44px;bottom:0;width:2px;background:var(--border);z-index:0;}
+  .ls-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+  .ls-num{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;z-index:1;position:relative;}
+  .lab-r .ls-num{background:var(--red-bg);border:2px solid var(--red-border);color:var(--red);}
+  .lab-t .ls-num{background:var(--teal-bg);border:2px solid var(--teal-border);color:var(--teal);}
+  .ls-content{flex:1;padding-bottom:22px;padding-top:4px;}
+  .ls-title{font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px;}
+  .ls-desc{font-size:13px;color:var(--text-dim);margin-bottom:8px;}
+  .ls-out-r{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+  .ls-out-t{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+  .ls-out-g{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+
+  /* SCENARIOS */
+  .scen-list{display:flex;flex-direction:column;gap:12px;margin-bottom:14px;}
+  .scen-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;}
+  .si-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--red);background:var(--red-bg);border:1px solid var(--red-border);border-radius:6px;padding:4px 8px;flex-shrink:0;margin-top:2px;}
+  .scen-item p{font-size:14px;color:var(--text-dim);}
+  .scen-item p strong{color:var(--white);}
+
+  .outcome{background:linear-gradient(135deg,var(--red-bg) 0%,var(--surface) 50%,var(--teal-bg) 100%);border:1px solid var(--border);border-radius:16px;padding:32px;margin-top:48px;}
+  .outcome h3{font-size:20px;font-weight:700;color:var(--red);margin-bottom:18px;}
+  .outcome ul{display:flex;flex-direction:column;gap:9px;list-style:none;}
+  .outcome ul li{font-size:14px;color:var(--text-dim);padding-left:22px;position:relative;}
+  .outcome ul li::before{content:'✓';position:absolute;left:0;color:var(--red);font-family:'JetBrains Mono',monospace;}
+  .outcome ul li.dt::before{color:var(--teal);}
+
+  @media(max-width:640px){.lab-head{flex-direction:column;align-items:flex-start;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 6</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-wk">Week 6</span>
+      <span class="tb-badge tb-d1">Day 1</span>
+      <span class="tb-badge tb-d2">Day 2</span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="day-label">Week 6 · Day 1 & Day 2</div>
+    <h1><span class="r">DB Failure</span> Drill &<br><span class="t">MQ Stuck</span> Scenario</h1>
+    <p class="hero-desc">Two of the most common and most critical incidents you will face as L2. Today you learn exactly what to do when the database goes down and when the message queue gets stuck.</p>
+    <div class="tags">
+      <span class="tag tag-r">Day 1 — DB Outage</span>
+      <span class="tag tag-t">Day 2 — MQ Stuck</span>
+      <span class="tag">Outage Drill</span>
+      <span class="tag">Queue Monitoring</span>
+      <span class="tag">Safe Restart</span>
+    </div>
+  </div>
+
+  <!-- ===== DAY 1 — DB FAILURE ===== -->
+  <div class="day-div">
+    <span class="dd-pill dd-r">Day 1</span>
+    <span class="dd-lr"></span>
+    <span class="dd-title dd-tr">DB Failure Drill — Database Outage Troubleshooting</span>
+  </div>
+
+  <div class="sec"><span class="sn sn-r">01</span> The Simple Idea</div>
+
+  <div class="analogy an-r">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Think of the database like the <strong>cash register at a supermarket</strong>. Every transaction goes through it. If the cash register stops working — the whole store stops. Nobody can pay. Nobody can check stock. Everything freezes.<br><br>
+      <strong>A DB outage is exactly that.</strong> Every service that depends on the database — payment processing, transaction logging, balance updates — all stop the moment the DB goes down. Your job as L2 is to confirm it is the DB, not guess, and follow a clear protocol to get it back.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>What causes a DB outage?</h3>
+    <p><strong>Connection pool exhausted</strong> — too many open connections, no new ones available. The most common cause in fintech.</p>
+    <p><strong>DB server crash</strong> — the database process stopped. Could be hardware, memory, or a software bug.</p>
+    <p><strong>Disk full</strong> — the database ran out of disk space to write new data. Writes fail, reads may still work.</p>
+    <p><strong>Lock contention</strong> — a long-running query is holding locks, blocking all other queries from completing.</p>
+    <p><strong>Network issue</strong> — the app server can't reach the DB server. DB is fine but the connection is broken.</p>
+  </div>
+
+  <!-- SIGNS OF DB OUTAGE -->
+  <div class="sec"><span class="sn sn-r">02</span> How to Identify a DB Outage</div>
+
+  <div class="ref-table">
+    <div class="rt-head">🔴 Signs That Point to a DB Issue</div>
+    <table class="rt">
+      <thead><tr><th>What you see</th><th>What it means</th><th>Severity</th></tr></thead>
+      <tbody>
+        <tr><td>DB_CONNECTION_TIMEOUT in logs</td><td>App tried to connect to DB but waited too long — pool may be full or DB is down</td><td><span class="pill p-r">High</span></td></tr>
+        <tr><td>Cannot acquire connection from pool</td><td>All connections in pool are taken — no new transactions can proceed</td><td><span class="pill p-r">High</span></td></tr>
+        <tr><td>All transactions FAILED simultaneously</td><td>System-wide failure — not isolated. DB is the common dependency.</td><td><span class="pill p-r">P1</span></td></tr>
+        <tr><td>Logs stopped writing</td><td>App cannot write to DB — disk may be full or DB is completely down</td><td><span class="pill p-r">P1</span></td></tr>
+        <tr><td>Response time spiking on all services</td><td>Queries are waiting — DB is slow or locked, not necessarily down</td><td><span class="pill p-a">Medium</span></td></tr>
+        <tr><td>Only reads work, writes fail</td><td>Disk is full — DB can read existing data but cannot write new data</td><td><span class="pill p-r">High</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- DB OUTAGE PROTOCOL -->
+  <div class="sec"><span class="sn sn-r">03</span> DB Outage Protocol — What to Do in Order</div>
+
+  <div class="checklist cl-r">
+    <div class="cl-header">
+      <h3>🚨 Step-by-Step DB Outage Response</h3>
+    </div>
+    <div class="cl-items">
+      <div class="cl-item">
+        <span class="cl-num">01</span>
+        <div>
+          <div class="ci-title">Confirm it is the DB — not the app or network</div>
+          <div class="ci-desc">Check the logs first. Look for DB_CONNECTION_TIMEOUT or pool exhausted. Then try to ping the DB server directly. If ping works but DB connection fails — DB process is down. If ping fails — network issue.</div>
+        </div>
+      </div>
+      <div class="cl-item">
+        <span class="cl-num">02</span>
+        <div>
+          <div class="ci-title">Declare P1 and open the bridge immediately</div>
+          <div class="ci-desc">Do not investigate alone silently. A DB outage is always a P1. Open the bridge call, notify your lead, send the initial client alert — before you have answers.</div>
+        </div>
+      </div>
+      <div class="cl-item">
+        <span class="cl-num">03</span>
+        <div>
+          <div class="ci-title">Check disk space — it is the most common hidden cause</div>
+          <div class="ci-desc">Run df -h on the DB server. If disk is at 100% — this is the root cause. Clean old logs or archive data before anything else. DB cannot write to a full disk.</div>
+        </div>
+      </div>
+      <div class="cl-item">
+        <span class="cl-num">04</span>
+        <div>
+          <div class="ci-title">Check if the DB process is actually running</div>
+          <div class="ci-desc">Check if the database service (mysql, postgresql, oracle) is active. If it crashed — it needs to be restarted by the DBA. Do not restart production DB yourself without DBA approval on the bridge.</div>
+        </div>
+      </div>
+      <div class="cl-item">
+        <span class="cl-num">05</span>
+        <div>
+          <div class="ci-title">Check the connection pool if DB is running but connections failing</div>
+          <div class="ci-desc">If the DB process is up but connections are being refused — the pool is exhausted. The DBA can clear stuck connections or increase the pool limit as a short-term fix.</div>
+        </div>
+      </div>
+      <div class="cl-item">
+        <span class="cl-num">06</span>
+        <div>
+          <div class="ci-title">Update every 15 minutes on the bridge — even with no news</div>
+          <div class="ci-desc">Keep the bridge informed. "Still investigating with DBA team, no fix yet" is better than silence. Record every finding and action in the Jira ticket in real time.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY 1 LAB -->
+  <div class="sec"><span class="sn sn-r">04</span> Day 1 Lab — Simulated DB Down on Kali Linux</div>
+
+  <div class="card">
+    <h3>What this lab simulates</h3>
+    <p>You cannot take down a real production database. But you can <strong>simulate the investigation steps</strong> — the log reading, the process checks, the disk checks — exactly as you would do them on a real server. This builds the muscle memory so when it happens for real, your hands know what to do.</p>
+  </div>
+
+  <div class="lab lab-r">
+    <div class="lab-head">
+      <h3>🔬 Lab: Simulate and Investigate a DB Outage</h3>
+      <span class="lbadge-r">Kali Linux · Simulated</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Create a simulated DB outage log</div>
+          <div class="ls-desc">This creates a log that looks exactly like what you would see during a real DB outage.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="fn">cat</span> &gt; ~/db-outage.log &lt;&lt; <span class="str">'EOF'</span><br>
+[09:14:50] [INFO ] TXN-001 received. Processing...<br>
+[09:14:52] [INFO ] TXN-001 SUCCESS<br>
+[09:15:00] [WARN ] DB connection pool at 82%<br>
+[09:15:01] [WARN ] DB connection pool at 91%<br>
+[09:15:02] [WARN ] DB connection pool at 97%<br>
+[09:15:03] [ERROR] DB_CONNECTION_TIMEOUT - pool exhausted<br>
+[09:15:03] [ERROR] TXN-002 FAILED - cannot write to database<br>
+[09:15:04] [ERROR] DB_CONNECTION_TIMEOUT - pool exhausted<br>
+[09:15:04] [ERROR] TXN-003 FAILED - cannot write to database<br>
+[09:15:05] [ERROR] DB_CONNECTION_TIMEOUT - pool exhausted<br>
+[09:15:05] [ERROR] TXN-004 FAILED - cannot write to database<br>
+[09:15:10] [ERROR] DB_CONNECTION_REFUSED - connection refused on port 5432<br>
+[09:15:10] [ERROR] Database service appears to be down<br>
+EOF
+          </div></div>
+          <span class="ls-out-r">→ db-outage.log created with 13 lines including escalating warnings and errors</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 1 — Confirm it is the DB (read the log)</div>
+          <div class="ls-desc">Search the log for DB-specific errors to confirm the root cause.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="cm"># Count how many DB errors exist</span><br>
+<span class="fn">grep</span> -c <span class="str">"DB_CONNECTION"</span> ~/db-outage.log<br>
+<br>
+<span class="cm"># Show the exact DB error lines</span><br>
+<span class="fn">grep</span> <span class="str">"DB_CONNECTION\|database"</span> ~/db-outage.log<br>
+<br>
+<span class="cm"># Show what happened BEFORE the first error (context)</span><br>
+<span class="fn">grep</span> -B 3 <span class="str">"DB_CONNECTION_TIMEOUT"</span> ~/db-outage.log | <span class="fn">head</span> -6
+          </div></div>
+          <span class="ls-out-r">→ 4 DB_CONNECTION errors. WARNs at 82%→91%→97% appeared before the first ERROR. Root cause is pool exhaustion.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 2 — Check disk space (most common hidden cause)</div>
+          <div class="ls-desc">Always check disk before anything else. A full disk causes DB write failures.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="cm"># Check all disks</span><br>
+<span class="fn">df</span> -h<br>
+<br>
+<span class="cm"># Check specifically the data folder</span><br>
+<span class="fn">df</span> -h /var /home /tmp
+          </div></div>
+          <span class="ls-out-r">→ If any partition shows 100% — that is your root cause. Report it on the bridge immediately.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 3 — Check if the DB process is running (SQLite simulation)</div>
+          <div class="ls-desc">On a real server you would check mysql or postgresql. Here we simulate the process check.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — process check commands</span></div><div class="cbox-code">
+<span class="cm"># Check if mysql is running (real server)</span><br>
+<span class="fn">systemctl</span> status mysql 2&gt;/dev/null || <span class="fn">echo</span> <span class="str">"mysql not installed (expected on Kali)"</span><br>
+<br>
+<span class="cm"># Check if postgresql is running</span><br>
+<span class="fn">systemctl</span> status postgresql 2&gt;/dev/null || <span class="fn">echo</span> <span class="str">"postgresql not installed"</span><br>
+<br>
+<span class="cm"># Check all running processes to see what DB is there</span><br>
+<span class="fn">ps</span> aux | <span class="fn">grep</span> -E <span class="str">"mysql|postgres|oracle"</span><br>
+<br>
+<span class="cm"># Simulate — is our SQLite DB accessible?</span><br>
+<span class="fn">sqlite3</span> ~/fintech_lab.db <span class="str">"SELECT COUNT(*) FROM transactions;"</span> 2&gt;/dev/null \<br>
+&amp;&amp; <span class="fn">echo</span> <span class="str">"DB is UP"</span> || <span class="fn">echo</span> <span class="str">"DB is DOWN"</span>
+          </div></div>
+          <span class="ls-out-r">→ If you ran the Week 2 SQL lab — DB is UP. This simulates what a healthy DB check looks like. On a real server, a DOWN result means call the DBA.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">05</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 4 — Count affected transactions and write the Jira RCA</div>
+          <div class="ls-desc">How many transactions failed during this outage? This goes in the incident ticket.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="cm"># Count failed transactions</span><br>
+<span class="fn">grep</span> -c <span class="str">"FAILED"</span> ~/db-outage.log<br>
+<br>
+<span class="cm"># List which transactions failed</span><br>
+<span class="fn">grep</span> <span class="str">"FAILED"</span> ~/db-outage.log | <span class="fn">awk</span> <span class="str">'{print $4}'</span><br>
+<br>
+<span class="cm"># When did the outage start?</span><br>
+<span class="fn">grep</span> -m 1 <span class="str">"ERROR"</span> ~/db-outage.log | <span class="fn">awk</span> <span class="str">'{print $1, $2}'</span>
+          </div></div>
+          <span class="ls-out-g">→ 3 transactions failed (TXN-002, TXN-003, TXN-004). Outage started at 09:15:03. RCA: DB connection pool exhausted. ✅</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== DAY 2 — MQ STUCK ===== -->
+  <div class="day-div" style="margin-top:60px;">
+    <span class="dd-pill dd-t">Day 2</span>
+    <span class="dd-lt"></span>
+    <span class="dd-title dd-tt">MQ Stuck Scenario — Queue Monitoring & Safe Restart</span>
+  </div>
+
+  <div class="sec"><span class="sn sn-t">05</span> The Simple Idea</div>
+
+  <div class="analogy an-t">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Think of a Message Queue like a <strong>conveyor belt in a factory</strong>. Products (messages/transactions) are placed on the belt and workers (processors) pick them up one by one. If the belt stops — products pile up and nobody is working. But the products are still there, safe on the belt, not lost.<br><br>
+      <strong>When the MQ gets stuck, transactions are not lost — they are just waiting.</strong> Your job is to find out why the belt stopped, fix it, and get it moving again. The right restart sequence matters — a wrong restart can lose the messages sitting in the queue.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>What is a Message Queue and why does it get stuck?</h3>
+    <p>A Message Queue (MQ) holds transactions in an ordered line until a worker (processor) picks them up. Common MQ tools: RabbitMQ, Apache Kafka, IBM MQ, ActiveMQ.</p>
+    <p><strong>It gets stuck because:</strong> The consumer/processor crashed and stopped reading from the queue. The queue is full and cannot accept new messages. A single poisoned message (bad format) is blocking all others behind it. The MQ service itself stopped running. Network connectivity between the app and the MQ broke.</p>
+  </div>
+
+  <!-- MQ SIGNS TABLE -->
+  <div class="ref-table">
+    <div class="rt-head" style="color:var(--white);">🟡 Signs That the MQ is Stuck</div>
+    <table class="rt">
+      <thead><tr><th style="color:var(--text-faint);">What you see</th><th style="color:var(--text-faint);">What it means</th><th style="color:var(--text-faint);">Action</th></tr></thead>
+      <tbody>
+        <tr>
+          <td style="color:var(--teal);">Queue depth growing, none processed</td>
+          <td>Consumer is down — messages piling up, nothing consuming them</td>
+          <td><span class="pill p-r">Check consumer</span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--teal);">Transactions stuck in PENDING forever</td>
+          <td>Message was queued but processor never picked it up</td>
+          <td><span class="pill p-a">Check queue depth</span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--teal);">Dead letter queue filling up</td>
+          <td>Messages failed processing multiple times and were moved here</td>
+          <td><span class="pill p-a">Investigate each</span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--teal);">All new transactions hanging</td>
+          <td>Queue itself may be full or the service is down</td>
+          <td><span class="pill p-r">P1 — check MQ service</span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--teal);">One transaction stuck, others OK</td>
+          <td>Poisoned message — bad format blocking the queue at that position</td>
+          <td><span class="pill p-a">Identify and remove it</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SAFE RESTART PROTOCOL -->
+  <div class="sec"><span class="sn sn-t">06</span> How to Restart MQ Safely — The Right Order</div>
+
+  <div class="card">
+    <h3>Why the restart order matters</h3>
+    <p>Restarting an MQ incorrectly can <strong>lose all messages sitting in the queue</strong>. A safe restart means: confirm what is in the queue, stop the consumer first, restart the MQ service, then restart the consumer. Never restart the MQ service while the consumer is actively writing to it.</p>
+  </div>
+
+  <div class="checklist cl-t">
+    <div class="cl-header">
+      <h3>✅ Safe MQ Restart — Step by Step</h3>
+    </div>
+    <div class="cl-items">
+      <div class="cl-item">
+        <span class="cl-num" style="background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);">01</span>
+        <div>
+          <div class="ci-title">First — check the queue depth before touching anything</div>
+          <div class="ci-desc">Know how many messages are sitting in the queue. This number should go down after restart. If you don't check now you won't know if messages were lost.</div>
+        </div>
+      </div>
+      <div class="cl-item">
+        <span class="cl-num" style="background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);">02</span>
+        <div>
+          <div class="ci-title">Stop the consumer/processor first — before touching MQ</div>
+          <div class="ci-desc">The consumer is the worker reading from the queue. Stop it first so it is not in the middle of reading a message when you restart the MQ. An interrupted read can corrupt or lose that message.</div>
+        </div>
+      </div>
+      <div class="cl-item">
+        <span class="cl-num" style="background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);">03</span>
+        <div>
+          <div class="ci-title">Get bridge approval before restarting on PROD</div>
+          <div class="ci-desc">Announce on the bridge: "I am about to restart the MQ service. Queue depth is [N] messages. Requesting approval." Wait for a verbal OK from the bridge lead before proceeding.</div>
+        </div>
+      </div>
+      <div class="cl-item">
+        <span class="cl-num" style="background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);">04</span>
+        <div>
+          <div class="ci-title">Restart the MQ service</div>
+          <div class="ci-desc">Restart the MQ broker service. After restart, verify it is running and accepting connections. Check the queue depth — all messages should still be there.</div>
+        </div>
+      </div>
+      <div class="cl-item">
+        <span class="cl-num" style="background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);">05</span>
+        <div>
+          <div class="ci-title">Start the consumer and watch it process</div>
+          <div class="ci-desc">Restart the consumer service. Watch the queue depth — it should start decreasing as messages are picked up. Monitor the logs for errors. Confirm transactions are completing successfully.</div>
+        </div>
+      </div>
+      <div class="cl-item">
+        <span class="cl-num" style="background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);">06</span>
+        <div>
+          <div class="ci-title">Confirm and close the incident</div>
+          <div class="ci-desc">Queue depth back to zero or processing normally. All pending transactions completing. No new errors in the log. Update Jira, notify clients, close the bridge.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY 2 LAB -->
+  <div class="sec"><span class="sn sn-t">07</span> Day 2 Lab — Simulate MQ Stuck & Safe Restart</div>
+
+  <div class="lab lab-t">
+    <div class="lab-head">
+      <h3>🔬 Lab: Simulate a Stuck Queue and Restart it Safely</h3>
+      <span class="lbadge-t">Kali Linux · Simulated</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Create a simulated MQ stuck log</div>
+          <div class="ls-desc">This shows what a stuck queue looks like in the application logs.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="fn">cat</span> &gt; ~/mq-stuck.log &lt;&lt; <span class="str">'EOF'</span><br>
+[10:00:00] [INFO ] MQ consumer started. Connected to queue: payment-queue<br>
+[10:00:10] [INFO ] TXN-010 queued. Queue depth: 1<br>
+[10:00:11] [INFO ] TXN-010 picked up by consumer. Processing...<br>
+[10:00:12] [INFO ] TXN-010 processed successfully<br>
+[10:01:00] [INFO ] TXN-011 queued. Queue depth: 1<br>
+[10:01:01] [INFO ] TXN-012 queued. Queue depth: 2<br>
+[10:01:02] [INFO ] TXN-013 queued. Queue depth: 3<br>
+[10:01:03] [WARN ] Consumer not responding. Queue depth: 3<br>
+[10:01:30] [WARN ] Consumer not responding. Queue depth: 5<br>
+[10:02:00] [ERROR] Consumer crashed. Queue depth: 7. Messages are piling up.<br>
+[10:02:01] [ERROR] TXN-011 stuck in PENDING. Not being consumed.<br>
+[10:02:01] [ERROR] TXN-012 stuck in PENDING. Not being consumed.<br>
+[10:02:01] [ERROR] TXN-013 stuck in PENDING. Not being consumed.<br>
+EOF
+          </div></div>
+          <span class="ls-out-t">→ mq-stuck.log created — shows consumer crash at 10:02 with 7 messages piling up</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Investigate — what happened and when did it start?</div>
+          <div class="ls-desc">Read the log to understand the full picture before taking any action.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="cm"># Find when warnings started</span><br>
+<span class="fn">grep</span> <span class="str">"WARN\|ERROR"</span> ~/mq-stuck.log<br>
+<br>
+<span class="cm"># Count stuck transactions</span><br>
+<span class="fn">grep</span> -c <span class="str">"PENDING"</span> ~/mq-stuck.log<br>
+<br>
+<span class="cm"># Find when consumer crashed</span><br>
+<span class="fn">grep</span> <span class="str">"Consumer crashed"</span> ~/mq-stuck.log
+          </div></div>
+          <span class="ls-out-t">→ Consumer crashed at 10:02:00. 3 transactions stuck in PENDING. Queue depth was 7 at time of crash.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Simulate — check current queue depth in SQLite</div>
+          <div class="ls-desc">Use your SQLite lab DB to simulate checking how many transactions are stuck PENDING.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="fn">sqlite3</span> ~/fintech_lab.db &lt;&lt; <span class="str">'EOF'</span><br>
+<span class="cm">-- Simulate queue depth check</span><br>
+SELECT STATUS, COUNT(*) AS QUEUE_DEPTH<br>
+FROM transactions<br>
+GROUP BY STATUS;<br>
+<br>
+<span class="cm">-- Find stuck transactions</span><br>
+SELECT txn_id, status FROM transactions WHERE status = 'PENDING';<br>
+EOF
+          </div></div>
+          <span class="ls-out-t">→ Shows pending transactions = your simulated queue depth. This is what you check before restarting.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Simulate the safe restart sequence</div>
+          <div class="ls-desc">Walk through the restart steps in the terminal — this is the exact order on a real server.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — safe restart simulation</span></div><div class="cbox-code">
+<span class="fn">echo</span> <span class="str">"=== SAFE MQ RESTART DRILL ==="</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"Step 1: Note queue depth before restart"</span><br>
+<span class="fn">echo</span> <span class="str">"  Queue depth = 7 messages (from log)"</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"Step 2: Stop the consumer first"</span><br>
+<span class="fn">echo</span> <span class="str">"  [On real server: systemctl stop payment-consumer]"</span><br>
+<span class="fn">sleep</span> 1<br>
+<br>
+<span class="fn">echo</span> <span class="str">"Step 3: Get bridge approval..."</span><br>
+<span class="fn">echo</span> <span class="str">"  Bridge Lead: GO AHEAD"</span><br>
+<span class="fn">sleep</span> 1<br>
+<br>
+<span class="fn">echo</span> <span class="str">"Step 4: Restart MQ service"</span><br>
+<span class="fn">echo</span> <span class="str">"  [On real server: systemctl restart rabbitmq-server]"</span><br>
+<span class="fn">sleep</span> 1<br>
+<br>
+<span class="fn">echo</span> <span class="str">"Step 5: Start consumer"</span><br>
+<span class="fn">echo</span> <span class="str">"  [On real server: systemctl start payment-consumer]"</span><br>
+<span class="fn">sleep</span> 1<br>
+<br>
+<span class="fn">echo</span> <span class="str">"Step 6: Monitor queue depth - should decrease"</span><br>
+<span class="fn">echo</span> <span class="str">"  Queue depth: 7 → 5 → 3 → 1 → 0. Processing resumed."</span><br>
+<span class="fn">echo</span> <span class="str">"=== RESTART COMPLETE ==="</span>
+          </div></div>
+          <span class="ls-out-g">→ Full restart drill complete. Sequence: stop consumer → get approval → restart MQ → start consumer → monitor ✅</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">05</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Write the recovery log entry for Jira</div>
+          <div class="ls-desc">Document everything that happened — this is your post-incident record.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">What to write in Jira</span></div><div class="cbox-code">
+<span class="cm">Incident   : MQ Consumer Crashed — Queue Stuck</span><br>
+<span class="cm">Start Time : 10:02:00</span><br>
+<span class="cm">Detected   : 10:02:01 via log monitoring</span><br>
+<span class="cm">Impact     : 7 transactions stuck in queue (TXN-011 to TXN-017)</span><br>
+<span class="cm">Root Cause : Consumer process crashed — no longer reading from queue</span><br>
+<span class="cm">Action     : Consumer stopped → MQ restarted with bridge approval</span><br>
+<span class="cm">             → Consumer restarted → Queue drained in 4 minutes</span><br>
+<span class="cm">Resolution : 10:08:00 — all 7 transactions processed successfully</span><br>
+<span class="cm">Next Steps : Investigate why consumer crashed. Add consumer health check.</span>
+          </div></div>
+          <span class="ls-out-g">→ Clean incident record. Paste this directly into Jira ticket. ✅</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn sn-r">08</span> Real L2 Scenarios</div>
+  <div class="scen-list">
+    <div class="scen-item"><div class="si-id">01</div>
+      <p>Monitoring alert fires: all transactions failing. You check the log — <strong>DB_CONNECTION_TIMEOUT on every line</strong>. You run df -h — disk is at 100%. Root cause found in 60 seconds. You announce on the bridge and the DBA starts archiving old data while you track the transactions that failed.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">02</div>
+      <p>Client reports <strong>"transactions stuck since 1 hour."</strong> You check PENDING transactions in DB — 23 rows. You check the MQ log — consumer crashed at the same time. You do not restart immediately. You announce queue depth, get bridge approval, do the safe restart. All 23 process within 5 minutes.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">03</div>
+      <p>The queue is growing but only 1 specific transaction keeps failing while others work. <strong>This is a poisoned message.</strong> You identify it, move it to a holding table, and the queue clears instantly. You investigate the poisoned message separately — it had a malformed IBAN that the processor could not handle.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">04</div>
+      <p>Someone restarted the MQ without stopping the consumer first. <strong>3 messages were lost.</strong> This is why the safe restart order matters. You now need to find which 3 transactions were lost, identify if they were debited, and decide whether to reprocess or refund — a much harder problem than if the restart had been done correctly.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 6 · Day 1 & 2 Outcomes</h3>
+    <ul>
+      <li>Identify the 5 most common causes of a DB outage in a fintech system</li>
+      <li>Read log errors and confirm it is a DB issue — not an app or network issue</li>
+      <li>Follow the 6-step DB outage protocol — confirm, declare P1, check disk, check process, check pool, update bridge</li>
+      <li>Complete the DB outage lab — create a simulated outage log and investigate it step by step</li>
+      <li>Check disk space, identify FAILED transactions, and produce a Jira-ready RCA from log data</li>
+      <li class="dt">Explain what a stuck MQ means and why messages are not lost when it stops</li>
+      <li class="dt">Identify the 5 signs that a message queue is stuck</li>
+      <li class="dt">Follow the safe MQ restart order — stop consumer → get approval → restart MQ → start consumer → monitor</li>
+      <li class="dt">Explain what a poisoned message is and how it can block an entire queue</li>
+      <li class="dt">Complete the MQ lab — simulate a stuck queue, investigate it, run the safe restart drill, and write the Jira record</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

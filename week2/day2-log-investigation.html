@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 2 · Day 2 — Log Investigation</title>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0b0d0f;
+    --surface: #101318;
+    --surface2: #151920;
+    --surface3: #1a1f28;
+    --border: #202836;
+    --text: #b0bcd4;
+    --text-dim: #506070;
+    --text-faint: #252f3a;
+    --white: #e8eef8;
+
+    --cyan: #22d3ee;
+    --cyan-bg: #030f14;
+    --cyan-border: #083848;
+
+    --amber: #fbbf24;
+    --amber-bg: #140c00;
+    --amber-border: #382800;
+
+    --red: #f87171;
+    --red-bg: #140404;
+    --red-border: #381010;
+
+    --green: #4ade80;
+    --green-bg: #041408;
+    --green-border: #0c3818;
+
+    --purple: #a78bfa;
+    --purple-bg: #0c0814;
+    --purple-border: #281840;
+
+    --slate: #94a3b8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Raleway', sans-serif; font-size: 15px; line-height: 1.7; padding: 48px 24px 100px; }
+  .page { max-width: 920px; margin: 0 auto; }
+
+  /* TOPBAR */
+  .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:52px; padding-bottom:18px; border-bottom:1px solid var(--border); }
+  .topbar-left { font-family:'Roboto Mono',monospace; font-size:11px; color:var(--text-faint); letter-spacing:1px; text-transform:uppercase; }
+  .tb-right { display:flex; gap:8px; }
+  .tb-badge { font-family:'Roboto Mono',monospace; font-size:10px; padding:4px 14px; border-radius:100px; letter-spacing:1px; text-transform:uppercase; }
+  .tb-week { background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); }
+  .tb-day  { background:var(--cyan-bg); border:1px solid var(--cyan-border); color:var(--cyan); }
+
+  /* HERO */
+  .hero { margin-bottom:52px; }
+  .day-label { font-family:'Roboto Mono',monospace; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--cyan); margin-bottom:14px; }
+  .hero h1 { font-size:clamp(34px,6vw,62px); font-weight:800; line-height:1.05; color:var(--white); margin-bottom:18px; }
+  .hero h1 span { color:var(--cyan); }
+  .hero-desc { color:var(--text-dim); font-size:16px; max-width:530px; }
+  .tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:22px; }
+  .tag { padding:5px 14px; border-radius:100px; font-family:'Roboto Mono',monospace; font-size:11px; background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); }
+
+  /* SECTION */
+  .sec { font-family:'Roboto Mono',monospace; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--text-faint); margin-bottom:20px; margin-top:52px; display:flex; align-items:center; gap:12px; }
+  .sec .sn { color:var(--cyan); font-size:12px; }
+  .sec::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* ANALOGY */
+  .analogy { background:var(--cyan-bg); border:1px solid var(--cyan-border); border-left:4px solid var(--cyan); border-radius:12px; padding:26px 30px; margin-bottom:16px; }
+  .analogy .al { font-family:'Roboto Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--cyan); margin-bottom:10px; }
+  .analogy p { color:var(--text); font-size:15px; }
+  .analogy strong { color:var(--white); }
+
+  /* CARD */
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:26px 30px; margin-bottom:14px; }
+  .card h3 { font-size:17px; font-weight:700; color:var(--white); margin-bottom:10px; }
+  .card p { color:var(--text-dim); margin-bottom:10px; }
+  .card p:last-child { margin-bottom:0; }
+  .card strong { color:var(--text); }
+
+  /* ERROR PATTERN CARDS */
+  .pattern-block { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:16px; }
+  .pb-header { padding:18px 26px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:14px; background:var(--surface2); }
+  .pb-icon { font-size:26px; }
+  .pb-info .pb-label { font-family:'Roboto Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; margin-bottom:3px; }
+  .pb-info .pb-title { font-size:17px; font-weight:700; color:var(--white); }
+  .pb-info .pb-sub { font-size:13px; font-style:italic; }
+  .pb-body { padding:24px 26px; display:flex; flex-direction:column; gap:16px; }
+
+  .pat-red    { border-top:3px solid var(--red); }
+  .pat-amber  { border-top:3px solid var(--amber); }
+  .pat-purple { border-top:3px solid var(--purple); }
+  .pat-green  { border-top:3px solid var(--green); }
+
+  .pat-red    .pb-label { color:var(--red); }
+  .pat-amber  .pb-label { color:var(--amber); }
+  .pat-purple .pb-label { color:var(--purple); }
+  .pat-green  .pb-label { color:var(--green); }
+
+  .pat-red    .pb-sub { color:var(--red); }
+  .pat-amber  .pb-sub { color:var(--amber); }
+  .pat-purple .pb-sub { color:var(--purple); }
+  .pat-green  .pb-sub { color:var(--green); }
+
+  /* LOG SNIPPET */
+  .log-box { background:var(--bg); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  .log-bar { padding:8px 16px; background:var(--surface3); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+  .log-bar .dot { width:8px; height:8px; border-radius:50%; }
+  .dot-r { background:#ff5f56; } .dot-y { background:#ffbd2e; } .dot-g { background:#27c93f; }
+  .log-bar span { font-family:'Roboto Mono',monospace; font-size:10px; color:var(--text-faint); margin-left:4px; letter-spacing:1px; }
+  .log-code { padding:16px 20px; font-family:'Roboto Mono',monospace; font-size:12px; line-height:1.9; }
+  .lc-time  { color:var(--text-dim); }
+  .lc-info  { color:var(--cyan); }
+  .lc-warn  { color:var(--amber); }
+  .lc-err   { color:var(--red); }
+  .lc-key   { color:var(--purple); }
+  .lc-val   { color:var(--green); }
+  .lc-norm  { color:var(--text-dim); }
+  .lc-highlight { background:rgba(248,113,113,0.08); border-left:3px solid var(--red); padding-left:8px; display:block; margin-left:-8px; }
+
+  /* WHAT TO LOOK FOR */
+  .look-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+  .look-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px 22px; }
+  .look-card .lk-icon { font-size:24px; margin-bottom:8px; }
+  .look-card .lk-label { font-family:'Roboto Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; margin-bottom:6px; }
+  .look-card h4 { font-size:15px; font-weight:700; color:var(--white); margin-bottom:8px; }
+  .look-card ul { list-style:none; display:flex; flex-direction:column; gap:6px; }
+  .look-card ul li { font-size:13px; color:var(--text-dim); padding-left:16px; position:relative; }
+  .look-card ul li::before { content:'›'; position:absolute; left:0; font-family:'Roboto Mono',monospace; }
+  .lk-r .lk-label, .lk-r ul li::before { color:var(--red); }
+  .lk-a .lk-label, .lk-a ul li::before { color:var(--amber); }
+  .lk-p .lk-label, .lk-p ul li::before { color:var(--purple); }
+  .lk-g .lk-label, .lk-g ul li::before { color:var(--green); }
+
+  /* LAB STEPS */
+  .lab-wrap { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:14px; }
+  .lab-header { padding:18px 26px; background:var(--surface2); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  .lab-header h3 { font-size:16px; font-weight:700; color:var(--white); }
+  .lab-note { font-family:'Roboto Mono',monospace; font-size:10px; color:var(--cyan); background:var(--cyan-bg); border:1px solid var(--cyan-border); padding:4px 12px; border-radius:100px; }
+  .lab-body { padding:28px; display:flex; flex-direction:column; gap:0; }
+
+  .lab-step { display:flex; gap:20px; position:relative; }
+  .lab-step:not(:last-child) .ls-left::after { content:''; position:absolute; left:19px; top:48px; bottom:0; width:2px; background:var(--border); }
+  .ls-left { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+  .ls-num { width:40px; height:40px; border-radius:50%; background:var(--cyan-bg); border:2px solid var(--cyan-border); display:flex; align-items:center; justify-content:center; font-family:'Roboto Mono',monospace; font-size:13px; font-weight:500; color:var(--cyan); z-index:1; }
+  .ls-content { flex:1; padding-bottom:28px; padding-top:6px; }
+  .ls-title { font-size:15px; font-weight:700; color:var(--white); margin-bottom:6px; }
+  .ls-desc  { font-size:13px; color:var(--text-dim); margin-bottom:10px; }
+  .ls-cmd   { font-family:'Roboto Mono',monospace; font-size:12px; color:var(--green); background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px 16px; display:block; margin-bottom:8px; line-height:1.6; }
+  .ls-result { font-family:'Roboto Mono',monospace; font-size:12px; color:var(--amber); background:var(--bg); border:1px solid var(--amber-border); border-left:3px solid var(--amber); border-radius:8px; padding:10px 16px; display:block; line-height:1.6; }
+  .ls-finding { background:var(--green-bg); border:1px solid var(--green-border); border-radius:8px; padding:10px 16px; font-size:13px; color:var(--green); margin-top:4px; }
+  .ls-finding strong { color:var(--white); }
+
+  /* NOTE BOX */
+  .note-box { border-radius:10px; padding:14px 18px; font-size:13px; margin-top:4px; }
+  .nb-amber  { background:var(--amber-bg); border:1px solid var(--amber-border); color:var(--amber); }
+  .nb-red    { background:var(--red-bg);   border:1px solid var(--red-border);   color:var(--red); }
+  .nb-cyan   { background:var(--cyan-bg);  border:1px solid var(--cyan-border);  color:var(--cyan); }
+  .note-box strong { color:var(--white); }
+
+  /* ROOT CAUSE TABLE */
+  .rca-wrap { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:14px; }
+  .rca-header { padding:16px 24px; background:var(--surface2); border-bottom:1px solid var(--border); font-size:15px; font-weight:700; color:var(--white); }
+  table { width:100%; border-collapse:collapse; }
+  th { padding:10px 18px; font-family:'Roboto Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint); text-align:left; border-bottom:1px solid var(--border); font-weight:400; background:var(--surface2); }
+  td { padding:13px 18px; font-size:13px; color:var(--text-dim); border-bottom:1px solid rgba(255,255,255,0.03); vertical-align:middle; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(255,255,255,0.02); }
+  td:first-child { font-family:'Roboto Mono',monospace; font-size:12px; color:var(--text); }
+  .indicator { font-family:'Roboto Mono',monospace; font-size:11px; padding:3px 10px; border-radius:100px; white-space:nowrap; }
+  .ind-r { background:var(--red-bg);    border:1px solid var(--red-border);    color:var(--red); }
+  .ind-a { background:var(--amber-bg);  border:1px solid var(--amber-border);  color:var(--amber); }
+  .ind-p { background:var(--purple-bg); border:1px solid var(--purple-border); color:var(--purple); }
+  .ind-g { background:var(--green-bg);  border:1px solid var(--green-border);  color:var(--green); }
+
+  /* SCENARIOS */
+  .scen-list { display:flex; flex-direction:column; gap:12px; margin-bottom:14px; }
+  .scen-item { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 22px; display:flex; gap:16px; align-items:flex-start; }
+  .si-id { font-family:'Roboto Mono',monospace; font-size:11px; color:var(--cyan); background:var(--cyan-bg); border:1px solid var(--cyan-border); border-radius:6px; padding:4px 8px; flex-shrink:0; margin-top:2px; }
+  .scen-item p { font-size:14px; color:var(--text-dim); }
+  .scen-item p strong { color:var(--white); }
+
+  /* OUTCOME */
+  .outcome { background:linear-gradient(135deg, var(--cyan-bg) 0%, var(--surface) 100%); border:1px solid var(--cyan-border); border-radius:16px; padding:36px; margin-top:48px; }
+  .outcome h3 { font-size:22px; font-weight:700; color:var(--cyan); margin-bottom:20px; }
+  .outcome ul { display:flex; flex-direction:column; gap:10px; list-style:none; }
+  .outcome ul li { font-size:14px; color:var(--text-dim); padding-left:24px; position:relative; }
+  .outcome ul li::before { content:'✓'; position:absolute; left:0; color:var(--cyan); font-family:'Roboto Mono',monospace; }
+
+  @media(max-width:640px){
+    .look-grid { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 2</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-week">Week 2</span>
+      <span class="tb-badge tb-day">Day 2</span>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="day-label">Today's Topic</div>
+    <h1>Log <span>Investigation</span></h1>
+    <p class="hero-desc">Logs are the black box of your system. When something breaks, the log file already knows what happened, when it happened, and why. Your job is to read it correctly.</p>
+    <div class="tags">
+      <span class="tag">Error Pattern Analysis</span>
+      <span class="tag">Root Cause Indicators</span>
+      <span class="tag">Failed Transaction Trace</span>
+    </div>
+  </div>
+
+  <!-- ANALOGY -->
+  <div class="sec"><span class="sn">01</span> The Simple Idea First</div>
+
+  <div class="analogy">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Think of a log file like a <strong>CCTV recording of your system</strong>. Every single thing the system does gets recorded with a timestamp — every request received, every decision made, every error that happened.<br><br>
+      When something goes wrong, you don't guess — you <strong>rewind the CCTV</strong>. You go to the exact time the problem started, watch what happened, and find exactly where things went wrong. That's log investigation.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>What is a Log File?</h3>
+    <p>A log file is a plain text file that your application writes to continuously. Every action gets a line — with a <strong>timestamp</strong>, a <strong>level</strong> (INFO, WARN, ERROR), and a <strong>message</strong> describing what happened. As an L2 engineer, you read these lines to understand what the system was doing at the moment something failed.</p>
+    <p>The key skill is not just finding errors — it's <strong>reading what happened BEFORE the error</strong> to understand why it happened. That context is everything.</p>
+  </div>
+
+  <!-- LOG ANATOMY -->
+  <div class="sec"><span class="sn">02</span> Anatomy of a Log Line</div>
+
+  <div class="log-box" style="margin-bottom:14px;">
+    <div class="log-bar">
+      <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+      <span>payment-service.log</span>
+    </div>
+    <div class="log-code">
+<span class="lc-time">[2024-03-15 14:02:01]</span> <span class="lc-info">[INFO ]</span>  <span class="lc-norm">Transaction TXN-9823 received. Amount: 5000. Account: 0012XXXX</span><br>
+<span class="lc-time">[2024-03-15 14:02:02]</span> <span class="lc-info">[INFO ]</span>  <span class="lc-norm">Validating transaction TXN-9823 — passed all checks</span><br>
+<span class="lc-time">[2024-03-15 14:02:02]</span> <span class="lc-info">[INFO ]</span>  <span class="lc-norm">TXN-9823 queued successfully for processing</span><br>
+<span class="lc-time">[2024-03-15 14:02:03]</span> <span class="lc-warn">[WARN ]</span>  <span class="lc-norm">DB connection pool at 85% capacity — approaching limit</span><br>
+<span class="lc-time">[2024-03-15 14:02:04]</span> <span class="lc-warn">[WARN ]</span>  <span class="lc-norm">DB connection pool at 94% capacity</span><br>
+<span class="lc-highlight"><span class="lc-time">[2024-03-15 14:02:05]</span> <span class="lc-err">[ERROR]</span>  <span class="lc-norm">DB_CONNECTION_TIMEOUT — failed to acquire connection after 30s</span></span>
+<span class="lc-highlight"><span class="lc-time">[2024-03-15 14:02:05]</span> <span class="lc-err">[ERROR]</span>  <span class="lc-norm">Transaction TXN-9823 FAILED — unable to write to database</span></span>
+<span class="lc-time">[2024-03-15 14:02:05]</span> <span class="lc-info">[INFO ]</span>  <span class="lc-norm">Rollback initiated for TXN-9823</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>How to read this log — 3 things to always look for</h3>
+    <p><strong>1. Timestamp</strong> — tells you exactly when each event happened. Always note the time the first ERROR appeared. Everything before that is the lead-up.</p>
+    <p><strong>2. Log Level</strong> — INFO means normal, WARN means something is trending wrong, ERROR means it broke. Notice how the WARNs appeared BEFORE the ERROR — that's the pattern.</p>
+    <p><strong>3. The message</strong> — the actual description of what happened. <code style="font-family:'Roboto Mono',monospace;font-size:12px;background:var(--surface2);padding:2px 8px;border-radius:4px;">DB_CONNECTION_TIMEOUT</code> tells you exactly what failed. You now know to investigate the database connection pool — not the payment logic.</p>
+  </div>
+
+  <!-- ERROR PATTERNS -->
+  <div class="sec"><span class="sn">03</span> Common Error Patterns You Will See</div>
+
+  <!-- DB Timeout -->
+  <div class="pattern-block pat-red">
+    <div class="pb-header">
+      <div class="pb-icon">🗄️</div>
+      <div class="pb-info">
+        <div class="pb-label">Pattern 1</div>
+        <div class="pb-title">Database Timeout / Connection Failure</div>
+        <div class="pb-sub">"App can't talk to the database"</div>
+      </div>
+    </div>
+    <div class="pb-body">
+      <div class="log-box">
+        <div class="log-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>Typical log lines</span></div>
+        <div class="log-code">
+<span class="lc-warn">[WARN ]</span> <span class="lc-norm">DB connection pool at 90% capacity</span><br>
+<span class="lc-err">[ERROR]</span> <span class="lc-norm">DB_CONNECTION_TIMEOUT after 30000ms</span><br>
+<span class="lc-err">[ERROR]</span> <span class="lc-norm">Cannot acquire connection from pool — pool exhausted</span>
+        </div>
+      </div>
+      <div class="note-box nb-red"><strong>Root Cause Indicator:</strong> Database connection pool is full. Too many open connections, no new ones available. Check if a previous process leaked connections without closing them. Escalate to DBA or L3.</div>
+    </div>
+  </div>
+
+  <!-- Null Pointer -->
+  <div class="pattern-block pat-amber">
+    <div class="pb-header">
+      <div class="pb-icon">💥</div>
+      <div class="pb-info">
+        <div class="pb-label">Pattern 2</div>
+        <div class="pb-title">NullPointerException / Unexpected Null</div>
+        <div class="pb-sub">"System received empty data where it expected something"</div>
+      </div>
+    </div>
+    <div class="pb-body">
+      <div class="log-box">
+        <div class="log-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>Typical log lines</span></div>
+        <div class="log-code">
+<span class="lc-err">[ERROR]</span> <span class="lc-norm">NullPointerException at PaymentProcessor.java:142</span><br>
+<span class="lc-err">[ERROR]</span> <span class="lc-norm">Field 'accountNumber' is null — cannot process transaction</span><br>
+<span class="lc-warn">[WARN ]</span> <span class="lc-norm">Incoming request missing required field: beneficiaryIBAN</span>
+        </div>
+      </div>
+      <div class="note-box nb-amber"><strong>Root Cause Indicator:</strong> The request came in with missing or empty data. Usually a problem with how the client sent the request — a field was blank or not included. Check what data arrived in the request and compare to what was expected.</div>
+    </div>
+  </div>
+
+  <!-- Timeout -->
+  <div class="pattern-block pat-purple">
+    <div class="pb-header">
+      <div class="pb-icon">⏱️</div>
+      <div class="pb-info">
+        <div class="pb-label">Pattern 3</div>
+        <div class="pb-title">External Service / API Timeout</div>
+        <div class="pb-sub">"System called an external service and got no reply"</div>
+      </div>
+    </div>
+    <div class="pb-body">
+      <div class="log-box">
+        <div class="log-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>Typical log lines</span></div>
+        <div class="log-code">
+<span class="lc-info">[INFO ]</span> <span class="lc-norm">Calling SBP gateway — POST /raast/payment</span><br>
+<span class="lc-warn">[WARN ]</span> <span class="lc-norm">SBP gateway response time: 8500ms — exceeding threshold</span><br>
+<span class="lc-err">[ERROR]</span> <span class="lc-norm">SocketTimeoutException — no response from SBP after 10000ms</span><br>
+<span class="lc-err">[ERROR]</span> <span class="lc-norm">TXN-9823 failed — external gateway unreachable</span>
+        </div>
+      </div>
+      <div class="note-box nb-amber"><strong>Root Cause Indicator:</strong> Your system is fine — the external service (SBP, bank gateway) did not respond in time. Check if the external service has a status page or known outage. This is NOT your system's fault but you still need to document it and inform the client.</div>
+    </div>
+  </div>
+
+  <!-- Repeated Retries -->
+  <div class="pattern-block pat-green">
+    <div class="pb-header">
+      <div class="pb-icon">🔁</div>
+      <div class="pb-info">
+        <div class="pb-label">Pattern 4</div>
+        <div class="pb-title">Repeated Retries / Infinite Loop</div>
+        <div class="pb-sub">"System keeps trying the same thing and failing repeatedly"</div>
+      </div>
+    </div>
+    <div class="pb-body">
+      <div class="log-box">
+        <div class="log-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>Typical log lines</span></div>
+        <div class="log-code">
+<span class="lc-warn">[WARN ]</span> <span class="lc-norm">Retry attempt 1/3 for TXN-9823</span><br>
+<span class="lc-warn">[WARN ]</span> <span class="lc-norm">Retry attempt 2/3 for TXN-9823</span><br>
+<span class="lc-warn">[WARN ]</span> <span class="lc-norm">Retry attempt 3/3 for TXN-9823</span><br>
+<span class="lc-err">[ERROR]</span> <span class="lc-norm">Max retries exceeded — TXN-9823 moved to dead-letter queue</span>
+        </div>
+      </div>
+      <div class="note-box nb-cyan"><strong>Root Cause Indicator:</strong> The system tried multiple times and all failed. The transaction is now in the dead-letter queue — a holding area for transactions that couldn't be processed. You need to check why all retries failed (usually the same root cause as above) and decide whether to reprocess or refund.</div>
+    </div>
+  </div>
+
+  <!-- WHAT TO LOOK FOR -->
+  <div class="sec"><span class="sn">04</span> What to Look For — Quick Reference</div>
+
+  <div class="look-grid">
+    <div class="look-card lk-r">
+      <div class="lk-icon">🔴</div>
+      <div class="lk-label">Immediate Red Flags</div>
+      <h4>Stop and act now</h4>
+      <ul>
+        <li>Words: ERROR, FATAL, CRITICAL, EXCEPTION</li>
+        <li>DB_CONNECTION_TIMEOUT or pool exhausted</li>
+        <li>OutOfMemoryError</li>
+        <li>StackOverflowError</li>
+        <li>Service unreachable or connection refused</li>
+      </ul>
+    </div>
+    <div class="look-card lk-a">
+      <div class="lk-icon">🟡</div>
+      <div class="lk-label">Warning Signs</div>
+      <h4>Investigate before it breaks</h4>
+      <ul>
+        <li>Words: WARN, WARNING, SLOW, RETRY</li>
+        <li>Response time exceeding threshold</li>
+        <li>Connection pool nearing limit</li>
+        <li>Retry attempts happening</li>
+        <li>Queue depth growing</li>
+      </ul>
+    </div>
+    <div class="look-card lk-p">
+      <div class="lk-icon">🔍</div>
+      <div class="lk-label">Context Clues</div>
+      <h4>Always check before the error</h4>
+      <ul>
+        <li>What was the last INFO before the ERROR?</li>
+        <li>Was there a deployment recently?</li>
+        <li>Did WARNs appear before the ERROR?</li>
+        <li>Is the same error repeating?</li>
+        <li>What Transaction ID is involved?</li>
+      </ul>
+    </div>
+    <div class="look-card lk-g">
+      <div class="lk-icon">✅</div>
+      <div class="lk-label">Healthy Signs</div>
+      <h4>System is working normally</h4>
+      <ul>
+        <li>Consistent INFO lines flowing steadily</li>
+        <li>Transaction IDs completing with SUCCESS</li>
+        <li>Response times within normal range</li>
+        <li>No repeated same error lines</li>
+        <li>No WARNs escalating over time</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- HANDS-ON LAB -->
+  <div class="sec"><span class="sn">05</span> Hands-on Lab — Investigate a Failed Transaction</div>
+
+  <div class="card">
+    <h3>Can you perform this on your own machine?</h3>
+    <p><strong>Yes — partially.</strong> Since you have Kali Linux set up on VirtualBox, you can simulate this entire investigation using a dummy log file we create ourselves. You don't need a real production server. Here is exactly how to do it step by step.</p>
+    <p>This gives you the same experience as a real investigation — reading real log content, running real Linux commands, and finding a real root cause.</p>
+  </div>
+
+  <div class="lab-wrap">
+    <div class="lab-header">
+      <h3>🔬 Lab: Simulate &amp; Investigate a Failed Transaction Log</h3>
+      <span class="lab-note">Performable on Kali Linux · VirtualBox</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Open your Kali Linux terminal</div>
+          <div class="ls-desc">Boot up your VirtualBox Kali machine and open the terminal. Navigate to your home directory.</div>
+          <code class="ls-cmd">cd ~</code>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Create a dummy log file with real-looking entries</div>
+          <div class="ls-desc">Copy and paste this entire block into your terminal. It creates a realistic payment log file with a failure built into it.</div>
+          <code class="ls-cmd">cat &gt; payment-service.log &lt;&lt; 'EOF'
+[2024-03-15 14:01:55] [INFO ] Transaction TXN-9820 received. Amount: 2000
+[2024-03-15 14:01:56] [INFO ] TXN-9820 validated and queued successfully
+[2024-03-15 14:01:57] [INFO ] TXN-9820 processed successfully — Status: SUCCESS
+[2024-03-15 14:02:00] [INFO ] Transaction TXN-9821 received. Amount: 8500
+[2024-03-15 14:02:01] [INFO ] TXN-9821 validated and queued successfully
+[2024-03-15 14:02:02] [WARN ] DB connection pool at 82% capacity
+[2024-03-15 14:02:03] [INFO ] Transaction TXN-9822 received. Amount: 3000
+[2024-03-15 14:02:03] [WARN ] DB connection pool at 91% capacity — approaching limit
+[2024-03-15 14:02:04] [INFO ] Transaction TXN-9823 received. Amount: 5000
+[2024-03-15 14:02:04] [WARN ] DB connection pool at 97% capacity — CRITICAL
+[2024-03-15 14:02:05] [ERROR] DB_CONNECTION_TIMEOUT — failed to acquire connection after 30s
+[2024-03-15 14:02:05] [ERROR] Transaction TXN-9823 FAILED — unable to write to database
+[2024-03-15 14:02:05] [INFO ] Rollback initiated for TXN-9823
+[2024-03-15 14:02:06] [ERROR] DB_CONNECTION_TIMEOUT — failed to acquire connection after 30s
+[2024-03-15 14:02:06] [ERROR] Transaction TXN-9822 FAILED — unable to write to database
+[2024-03-15 14:02:07] [WARN ] Retry attempt 1/3 for TXN-9822
+[2024-03-15 14:02:09] [WARN ] Retry attempt 2/3 for TXN-9822
+[2024-03-15 14:02:11] [WARN ] Retry attempt 3/3 for TXN-9822
+[2024-03-15 14:02:12] [ERROR] Max retries exceeded — TXN-9822 moved to dead-letter queue
+[2024-03-15 14:02:15] [INFO ] Transaction TXN-9824 received. Amount: 1200
+[2024-03-15 14:02:16] [INFO ] TXN-9824 processed successfully — Status: SUCCESS
+EOF</code>
+          <div class="ls-finding">✅ This creates a file called <strong>payment-service.log</strong> in your home directory with 20 log lines.</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">First — find all ERROR lines</div>
+          <div class="ls-desc">Use grep to pull out only the error lines from the file.</div>
+          <code class="ls-cmd">grep "ERROR" payment-service.log</code>
+          <code class="ls-result">→ You should see 5 ERROR lines all related to DB_CONNECTION_TIMEOUT and failed transactions</code>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Count how many errors occurred</div>
+          <div class="ls-desc">Use -c to count the total number of error lines — quick way to know the scale of the problem.</div>
+          <code class="ls-cmd">grep -c "ERROR" payment-service.log</code>
+          <code class="ls-result">→ Output: 5  (there are 5 error lines in this file)</code>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">05</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Find the specific failed transaction — TXN-9823</div>
+          <div class="ls-desc">Use grep to trace everything related to that single transaction ID.</div>
+          <code class="ls-cmd">grep "TXN-9823" payment-service.log</code>
+          <code class="ls-result">→ Shows all 3 lines about TXN-9823: received → FAILED → rollback</code>
+          <div class="ls-finding">🔍 You can now see the full story of TXN-9823 — it arrived fine but failed at the DB write stage.</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">06</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Get context — what happened just BEFORE the errors?</div>
+          <div class="ls-desc">Use -n to see line numbers, then look at the lines before the first ERROR.</div>
+          <code class="ls-cmd">grep -n "ERROR\|WARN" payment-service.log</code>
+          <code class="ls-result">→ You see WARN lines at 82%, 91%, 97% BEFORE the ERROR lines appear</code>
+          <div class="ls-finding">💡 <strong>Key finding:</strong> The WARNs about DB connection pool climbing (82% → 91% → 97%) appeared before the ERROR. This is the pattern — the pool was filling up and nobody acted on the warnings.</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">07</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Check which transactions succeeded vs failed</div>
+          <div class="ls-desc">Compare successful vs failed transactions in the log.</div>
+          <code class="ls-cmd">grep "SUCCESS\|FAILED" payment-service.log</code>
+          <code class="ls-result">→ TXN-9820: SUCCESS | TXN-9823: FAILED | TXN-9822: FAILED | TXN-9824: SUCCESS</code>
+          <div class="ls-finding">✅ <strong>Conclusion:</strong> TXN-9820 and TXN-9824 succeeded. TXN-9822 and TXN-9823 failed. The failures happened exactly when the DB pool was exhausted. TXN-9822 also went to dead-letter queue after 3 retries.</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">08</div></div>
+        <div class="ls-content">
+          <div class="ls-title">View the full log in order to see the complete picture</div>
+          <div class="ls-desc">Use tail to see all lines and understand the full timeline from start to finish.</div>
+          <code class="ls-cmd">tail -n 20 payment-service.log</code>
+          <code class="ls-result">→ Full log displayed — you can now read the entire incident from start to finish</code>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📋 Your Root Cause Report — What to Write in the Jira Ticket</h3>
+    <p><strong>Issue:</strong> Transactions TXN-9822 and TXN-9823 failed at 14:02:05.</p>
+    <p><strong>Root Cause:</strong> Database connection pool became exhausted (reached 97% capacity). New transactions could not acquire a database connection, causing them to fail with DB_CONNECTION_TIMEOUT.</p>
+    <p><strong>Evidence:</strong> Log shows WARN messages at 14:02:02 (82%), 14:02:03 (91%), and 14:02:04 (97%) before the first ERROR at 14:02:05. TXN-9822 was also moved to dead-letter queue after 3 failed retries.</p>
+    <p><strong>Next Step:</strong> Escalate to DBA team to investigate connection leak. Check if any long-running query is holding connections open without releasing them.</p>
+  </div>
+
+  <!-- ROOT CAUSE TABLE -->
+  <div class="sec"><span class="sn">06</span> Root Cause Indicators — Quick Reference</div>
+
+  <div class="rca-wrap">
+    <div class="rca-header">🎯 Error Message → What it Likely Means</div>
+    <table>
+      <thead>
+        <tr><th>Error in Log</th><th>Root Cause Indicator</th><th>Severity</th><th>Who to Escalate To</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>DB_CONNECTION_TIMEOUT</td>
+          <td>Database connection pool exhausted or DB server down</td>
+          <td><span class="indicator ind-r">Critical</span></td>
+          <td>DBA / L3</td>
+        </tr>
+        <tr>
+          <td>SocketTimeoutException</td>
+          <td>External service (SBP, gateway) not responding</td>
+          <td><span class="indicator ind-r">Critical</span></td>
+          <td>External vendor / L3</td>
+        </tr>
+        <tr>
+          <td>NullPointerException</td>
+          <td>Missing or empty field in the request data</td>
+          <td><span class="indicator ind-a">High</span></td>
+          <td>Check request data first, then L3 if code bug</td>
+        </tr>
+        <tr>
+          <td>OutOfMemoryError</td>
+          <td>Server RAM is completely full</td>
+          <td><span class="indicator ind-r">Critical</span></td>
+          <td>Infra team / L3 immediately</td>
+        </tr>
+        <tr>
+          <td>Connection refused</td>
+          <td>Target server or service is not running</td>
+          <td><span class="indicator ind-r">Critical</span></td>
+          <td>Infra team to check target server</td>
+        </tr>
+        <tr>
+          <td>Max retries exceeded</td>
+          <td>Underlying failure persisted through all retry attempts</td>
+          <td><span class="indicator ind-a">High</span></td>
+          <td>Check dead-letter queue, find original error</td>
+        </tr>
+        <tr>
+          <td>401 Unauthorized</td>
+          <td>API token expired or wrong credentials</td>
+          <td><span class="indicator ind-p">Medium</span></td>
+          <td>Check API key/token config — usually a config fix</td>
+        </tr>
+        <tr>
+          <td>Response time &gt; 10000ms</td>
+          <td>Slow query or overloaded external service</td>
+          <td><span class="indicator ind-a">High</span></td>
+          <td>DBA for slow query / vendor for external slowness</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn">07</span> Real L2 Scenarios</div>
+
+  <div class="scen-list">
+    <div class="scen-item">
+      <div class="si-id">01</div>
+      <p>Client says <strong>"payments started failing at 2 PM."</strong> You grep the log for ERROR around 14:00. You find <code style="font-family:'Roboto Mono',monospace;font-size:12px;background:var(--surface2);padding:2px 6px;border-radius:4px;">SocketTimeoutException</code> pointing to the SBP gateway. You check SBP's status page — they had a 15-minute outage. Not your system's fault. You document it and inform the client.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">02</div>
+      <p>You see 200 ERROR lines in the log but they're all the same: <strong>same error, same service, repeating every 2 seconds.</strong> This is called an error storm — one root cause is triggering hundreds of errors. Focus on the <strong>first occurrence</strong>, not the count. Fix the first one and the rest stop.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">03</div>
+      <p>A client reports <strong>"transaction TXN-4421 is showing pending but never completed."</strong> You grep the log for TXN-4421 — you find it entered the queue but there are no further lines about it. The queue processor likely stopped. You check the queue — it's backed up with 3,000 messages. The worker crashed silently.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">04</div>
+      <p>You open a log and see <strong>no ERROR lines at all</strong> but the client says it's broken. You look at the INFO lines — the last entry is from 2 hours ago. The application <strong>stopped logging entirely</strong>. Either the app crashed silently or the disk is full and it can't write logs. Run <code style="font-family:'Roboto Mono',monospace;font-size:12px;background:var(--surface2);padding:2px 6px;border-radius:4px;">df -h</code> immediately.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 2 · Day 2 Outcomes — Can You Do This?</h3>
+    <ul>
+      <li>Read a log file and identify the timestamp, log level, and message in each line</li>
+      <li>Use grep to extract ERROR and WARN lines from a log and identify the first occurrence</li>
+      <li>Trace a single transaction ID through the full log to see its complete journey</li>
+      <li>Recognise the 4 common error patterns: DB timeout, NullPointer, external timeout, retry exhaustion</li>
+      <li>Understand that WARNs before an ERROR are the build-up — they explain why it happened</li>
+      <li>Complete the hands-on lab on Kali Linux — create a dummy log, investigate it, and write a root cause report</li>
+      <li>Use the root cause indicator table to map an error message to its likely cause and escalation path</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 2 · Day 4 — Database Tables</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Fira+Code:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #09090d;
+    --surface: #0e0e14;
+    --surface2: #13131c;
+    --surface3: #181824;
+    --border: #1f1f30;
+    --text: #b4bcd4;
+    --text-dim: #525878;
+    --text-faint: #242438;
+    --white: #e8ecf8;
+
+    --indigo: #818cf8;
+    --indigo-bg: #08081a;
+    --indigo-border: #181840;
+
+    --emerald: #34d399;
+    --emerald-bg: #031410;
+    --emerald-border: #083828;
+
+    --amber: #fbbf24;
+    --amber-bg: #140c00;
+    --amber-border: #382400;
+
+    --rose: #fb7185;
+    --rose-bg: #140408;
+    --rose-border: #381020;
+
+    --sky: #38bdf8;
+    --sky-bg: #020c18;
+    --sky-border: #062840;
+
+    --purple: #c084fc;
+    --purple-bg: #0c0418;
+    --purple-border: #280c40;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Sora', sans-serif; font-size: 15px; line-height: 1.7; padding: 48px 24px 100px; }
+  .page { max-width: 940px; margin: 0 auto; }
+
+  /* TOPBAR */
+  .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:52px; padding-bottom:18px; border-bottom:1px solid var(--border); }
+  .topbar-left { font-family:'Fira Code',monospace; font-size:11px; color:var(--text-faint); letter-spacing:1px; text-transform:uppercase; }
+  .tb-right { display:flex; gap:8px; }
+  .tb-badge { font-family:'Fira Code',monospace; font-size:10px; padding:4px 14px; border-radius:100px; letter-spacing:1px; text-transform:uppercase; }
+  .tb-week { background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); }
+  .tb-day  { background:var(--indigo-bg); border:1px solid var(--indigo-border); color:var(--indigo); }
+
+  /* HERO */
+  .hero { margin-bottom:52px; }
+  .day-label { font-family:'Fira Code',monospace; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--indigo); margin-bottom:14px; }
+  .hero h1 { font-size:clamp(34px,6vw,62px); font-weight:800; line-height:1.05; color:var(--white); margin-bottom:18px; }
+  .hero h1 span { color:var(--indigo); }
+  .hero-desc { color:var(--text-dim); font-size:16px; max-width:540px; }
+  .tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:22px; }
+  .tag { padding:5px 14px; border-radius:100px; font-family:'Fira Code',monospace; font-size:11px; background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); }
+
+  /* SECTION */
+  .sec { font-family:'Fira Code',monospace; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--text-faint); margin-bottom:20px; margin-top:52px; display:flex; align-items:center; gap:12px; }
+  .sec .sn { color:var(--indigo); font-size:12px; }
+  .sec::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* ANALOGY */
+  .analogy { background:var(--indigo-bg); border:1px solid var(--indigo-border); border-left:4px solid var(--indigo); border-radius:12px; padding:26px 30px; margin-bottom:16px; }
+  .analogy .al { font-family:'Fira Code',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--indigo); margin-bottom:10px; }
+  .analogy p { color:var(--text); font-size:15px; }
+  .analogy strong { color:var(--white); }
+
+  /* CARD */
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:26px 30px; margin-bottom:14px; }
+  .card h3 { font-size:17px; font-weight:700; color:var(--white); margin-bottom:10px; }
+  .card p { color:var(--text-dim); margin-bottom:10px; }
+  .card p:last-child { margin-bottom:0; }
+  .card strong { color:var(--text); }
+
+  /* TABLE BLOCK */
+  .tbl-block { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:16px; }
+  .tbl-header { padding:20px 28px; background:var(--surface2); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .tbl-icon { font-size:28px; }
+  .tbl-info .tbl-name { font-family:'Fira Code',monospace; font-size:18px; font-weight:500; color:var(--white); margin-bottom:3px; }
+  .tbl-info .tbl-role { font-size:13px; font-style:italic; }
+  .tbl-tag { font-family:'Fira Code',monospace; font-size:10px; padding:4px 12px; border-radius:100px; letter-spacing:1px; text-transform:uppercase; margin-left:auto; }
+  .tt-indigo  { background:var(--indigo-bg);  border:1px solid var(--indigo-border);  color:var(--indigo); }
+  .tt-emerald { background:var(--emerald-bg); border:1px solid var(--emerald-border); color:var(--emerald); }
+  .tt-amber   { background:var(--amber-bg);   border:1px solid var(--amber-border);   color:var(--amber); }
+  .tt-rose    { background:var(--rose-bg);    border:1px solid var(--rose-border);    color:var(--rose); }
+  .tt-sky     { background:var(--sky-bg);     border:1px solid var(--sky-border);     color:var(--sky); }
+  .tt-purple  { background:var(--purple-bg);  border:1px solid var(--purple-border);  color:var(--purple); }
+
+  .tbl-indigo  .tbl-role { color:var(--indigo); }
+  .tbl-emerald .tbl-role { color:var(--emerald); }
+  .tbl-amber   .tbl-role { color:var(--amber); }
+  .tbl-rose    .tbl-role { color:var(--rose); }
+  .tbl-sky     .tbl-role { color:var(--sky); }
+  .tbl-purple  .tbl-role { color:var(--purple); }
+
+  .tbl-indigo  { border-top:3px solid var(--indigo); }
+  .tbl-emerald { border-top:3px solid var(--emerald); }
+  .tbl-amber   { border-top:3px solid var(--amber); }
+  .tbl-rose    { border-top:3px solid var(--rose); }
+  .tbl-sky     { border-top:3px solid var(--sky); }
+  .tbl-purple  { border-top:3px solid var(--purple); }
+
+  .tbl-body { padding:0; }
+  table.ct { width:100%; border-collapse:collapse; }
+  table.ct th { padding:10px 20px; font-family:'Fira Code',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint); text-align:left; border-bottom:1px solid var(--border); font-weight:400; background:var(--surface3); }
+  table.ct td { padding:13px 20px; font-size:13px; border-bottom:1px solid rgba(255,255,255,0.03); vertical-align:top; }
+  table.ct tr:last-child td { border-bottom:none; }
+  table.ct tr:hover td { background:rgba(255,255,255,0.02); }
+  table.ct td:first-child { font-family:'Fira Code',monospace; font-size:12px; color:var(--white); white-space:nowrap; }
+  table.ct td:nth-child(2) { color:var(--text-dim); font-size:13px; }
+  table.ct td:nth-child(3) { font-size:12px; }
+  .key-badge { font-family:'Fira Code',monospace; font-size:10px; padding:2px 8px; border-radius:4px; white-space:nowrap; }
+  .kb-pk  { background:#181040; color:var(--indigo); border:1px solid var(--indigo-border); }
+  .kb-fk  { background:#0c2010; color:var(--emerald); border:1px solid var(--emerald-border); }
+  .kb-imp { background:var(--amber-bg); color:var(--amber); border:1px solid var(--amber-border); }
+
+  /* SQL BOX */
+  .sql-box { background:var(--bg); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-top:4px; }
+  .sq-bar { padding:8px 16px; background:var(--surface3); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+  .sq-bar .dot { width:8px; height:8px; border-radius:50%; }
+  .dot-r{background:#ff5f56;} .dot-y{background:#ffbd2e;} .dot-g{background:#27c93f;}
+  .sq-bar span { font-family:'Fira Code',monospace; font-size:10px; color:var(--text-faint); margin-left:4px; letter-spacing:1px; }
+  .sq-code { padding:16px 20px; font-family:'Fira Code',monospace; font-size:12px; line-height:1.9; }
+  .kw { color:#93c5fd; } .fn { color:var(--purple); } .tb { color:var(--emerald); }
+  .cl { color:var(--amber); } .st { color:var(--rose); } .cm { color:var(--text-faint); }
+  .nm { color:#fb923c; } .op { color:var(--text); }
+
+  /* NOTE */
+  .note { border-radius:10px; padding:12px 18px; font-size:13px; margin-top:10px; }
+  .n-indigo  { background:var(--indigo-bg);  border:1px solid var(--indigo-border);  color:var(--indigo); }
+  .n-emerald { background:var(--emerald-bg); border:1px solid var(--emerald-border); color:var(--emerald); }
+  .n-amber   { background:var(--amber-bg);   border:1px solid var(--amber-border);   color:var(--amber); }
+  .n-rose    { background:var(--rose-bg);    border:1px solid var(--rose-border);    color:var(--rose); }
+  .note strong { color:var(--white); }
+
+  /* HOW THEY CONNECT */
+  .connect-wrap { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:32px; margin-bottom:14px; }
+  .connect-wrap h3 { font-size:17px; font-weight:700; color:var(--white); margin-bottom:24px; text-align:center; }
+  .connect-flow { display:flex; flex-direction:column; gap:0; }
+  .cf-row { display:flex; align-items:center; gap:0; justify-content:center; flex-wrap:wrap; }
+  .cf-box { text-align:center; padding:12px 16px; border-radius:10px; font-family:'Fira Code',monospace; font-size:11px; min-width:140px; border:1px solid; }
+  .cf-arrow { color:var(--text-faint); font-size:18px; padding:0 10px; font-family:'Fira Code',monospace; }
+  .cf-down { text-align:center; color:var(--text-faint); font-size:18px; padding:6px 0; width:100%; }
+  .cf-i { background:var(--indigo-bg);  border-color:var(--indigo-border);  color:var(--indigo); }
+  .cf-e { background:var(--emerald-bg); border-color:var(--emerald-border); color:var(--emerald); }
+  .cf-a { background:var(--amber-bg);   border-color:var(--amber-border);   color:var(--amber); }
+  .cf-r { background:var(--rose-bg);    border-color:var(--rose-border);    color:var(--rose); }
+  .cf-s { background:var(--sky-bg);     border-color:var(--sky-border);     color:var(--sky); }
+  .cf-p { background:var(--purple-bg);  border-color:var(--purple-border);  color:var(--purple); }
+
+  /* LAB */
+  .lab-wrap { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:14px; }
+  .lab-header { padding:18px 28px; background:var(--surface2); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  .lab-header h3 { font-size:16px; font-weight:700; color:var(--white); }
+  .lab-note { font-family:'Fira Code',monospace; font-size:10px; color:var(--indigo); background:var(--indigo-bg); border:1px solid var(--indigo-border); padding:4px 12px; border-radius:100px; }
+  .lab-body { padding:28px; display:flex; flex-direction:column; gap:0; }
+  .lab-step { display:flex; gap:20px; position:relative; }
+  .lab-step:not(:last-child) .ls-left::after { content:''; position:absolute; left:19px; top:46px; bottom:0; width:2px; background:var(--border); z-index:0; }
+  .ls-left { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+  .ls-num { width:40px; height:40px; border-radius:50%; background:var(--indigo-bg); border:2px solid var(--indigo-border); display:flex; align-items:center; justify-content:center; font-family:'Fira Code',monospace; font-size:13px; color:var(--indigo); z-index:1; position:relative; }
+  .ls-content { flex:1; padding-bottom:28px; padding-top:6px; }
+  .ls-title { font-size:15px; font-weight:600; color:var(--white); margin-bottom:6px; }
+  .ls-desc  { font-size:13px; color:var(--text-dim); margin-bottom:10px; }
+  .ls-finding { background:var(--emerald-bg); border:1px solid var(--emerald-border); border-radius:8px; padding:10px 14px; font-size:13px; color:var(--emerald); margin-top:8px; }
+  .ls-finding strong { color:var(--white); }
+  .ls-warn { background:var(--amber-bg); border:1px solid var(--amber-border); border-radius:8px; padding:10px 14px; font-size:13px; color:var(--amber); margin-top:8px; }
+  .ls-warn strong { color:var(--white); }
+  .ls-alert { background:var(--rose-bg); border:1px solid var(--rose-border); border-radius:8px; padding:10px 14px; font-size:13px; color:var(--rose); margin-top:8px; }
+  .ls-alert strong { color:var(--white); }
+
+  /* VALIDATION RESULT */
+  .validation-box { background:var(--surface2); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:14px; }
+  .vb-header { padding:16px 24px; background:var(--surface3); border-bottom:1px solid var(--border); font-size:15px; font-weight:700; color:var(--white); }
+  table.vt { width:100%; border-collapse:collapse; }
+  table.vt th { padding:10px 18px; font-family:'Fira Code',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint); text-align:left; border-bottom:1px solid var(--border); font-weight:400; background:var(--surface3); }
+  table.vt td { padding:13px 18px; font-size:13px; color:var(--text-dim); border-bottom:1px solid rgba(255,255,255,0.03); vertical-align:middle; }
+  table.vt tr:last-child td { border-bottom:none; }
+  table.vt tr:hover td { background:rgba(255,255,255,0.02); }
+  table.vt td:first-child { font-family:'Fira Code',monospace; font-size:12px; color:var(--white); }
+  .v-ok   { font-family:'Fira Code',monospace; font-size:11px; padding:3px 10px; border-radius:100px; background:var(--emerald-bg); border:1px solid var(--emerald-border); color:var(--emerald); }
+  .v-stuck{ font-family:'Fira Code',monospace; font-size:11px; padding:3px 10px; border-radius:100px; background:var(--amber-bg);   border:1px solid var(--amber-border);   color:var(--amber); }
+  .v-fail { font-family:'Fira Code',monospace; font-size:11px; padding:3px 10px; border-radius:100px; background:var(--rose-bg);    border:1px solid var(--rose-border);    color:var(--rose); }
+
+  /* SCENARIOS */
+  .scen-list { display:flex; flex-direction:column; gap:12px; margin-bottom:14px; }
+  .scen-item { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 22px; display:flex; gap:16px; align-items:flex-start; }
+  .si-id { font-family:'Fira Code',monospace; font-size:11px; color:var(--indigo); background:var(--indigo-bg); border:1px solid var(--indigo-border); border-radius:6px; padding:4px 8px; flex-shrink:0; margin-top:2px; }
+  .scen-item p { font-size:14px; color:var(--text-dim); }
+  .scen-item p strong { color:var(--white); }
+  code.ic { font-family:'Fira Code',monospace; font-size:12px; background:var(--surface2); border:1px solid var(--border); padding:2px 7px; border-radius:4px; color:var(--indigo); }
+
+  /* OUTCOME */
+  .outcome { background:linear-gradient(135deg, var(--indigo-bg) 0%, var(--surface) 100%); border:1px solid var(--indigo-border); border-radius:16px; padding:36px; margin-top:48px; }
+  .outcome h3 { font-size:22px; font-weight:700; color:var(--indigo); margin-bottom:20px; }
+  .outcome ul { display:flex; flex-direction:column; gap:10px; list-style:none; }
+  .outcome ul li { font-size:14px; color:var(--text-dim); padding-left:24px; position:relative; }
+  .outcome ul li::before { content:'✓'; position:absolute; left:0; color:var(--indigo); font-family:'Fira Code',monospace; }
+
+  @media(max-width:640px){
+    .cf-row { flex-direction:column; align-items:center; }
+    .cf-arrow { transform:rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 2</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-week">Week 2</span>
+      <span class="tb-badge tb-day">Day 4</span>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="day-label">Today's Topic</div>
+    <h1>Database <span>Tables</span></h1>
+    <p class="hero-desc">The database is where every transaction leaves a footprint. Today you learn the exact tables that record everything in the MPG system — and how to use them to find stuck or failed transactions.</p>
+    <div class="tags">
+      <span class="tag">Audit Logs</span>
+      <span class="tag">Transaction Tables</span>
+      <span class="tag">Stuck Transactions</span>
+      <span class="tag">DB Validation</span>
+    </div>
+  </div>
+
+  <!-- ANALOGY -->
+  <div class="sec"><span class="sn">01</span> The Simple Idea First</div>
+
+  <div class="analogy">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Think of the database tables like the <strong>different registers in a post office.</strong><br><br>
+      One register records every parcel that came in. Another records where each parcel is right now. Another records parcels that got stuck or returned. And one master register logs every single action any staff member performed.<br><br>
+      <strong>When a parcel goes missing, you check the registers.</strong> You find where it was last recorded, what happened to it, and why it stopped moving. That's exactly what you do as L2 when a transaction gets stuck — you check the database tables.
+    </p>
+  </div>
+
+  <!-- THE 6 TABLES -->
+  <div class="sec"><span class="sn">02</span> The 6 MPG Tables — Every Column Explained</div>
+
+  <!-- MPG_AUDIT_LOG -->
+  <div class="tbl-block tbl-indigo">
+    <div class="tbl-header">
+      <div class="tbl-icon">📋</div>
+      <div class="tbl-info">
+        <div class="tbl-name">MPG_AUDIT_LOG</div>
+        <div class="tbl-role">"The master diary — records every action the system performed"</div>
+      </div>
+      <span class="tbl-tag tt-indigo">Audit</span>
+    </div>
+    <div class="tbl-body">
+      <table class="ct">
+        <thead><tr><th>Column</th><th>What it stores</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr><td>LOG_ID</td><td>Unique ID for each log entry — every action gets its own number</td><td><span class="key-badge kb-pk">PK</span></td></tr>
+          <tr><td>REQUEST_ID</td><td>Links this log to a specific payment request or transaction</td><td><span class="key-badge kb-fk">FK</span></td></tr>
+          <tr><td>ACTION_TYPE</td><td>What action happened — e.g. PAYMENT_SENT, VALIDATION_DONE, RESPONSE_RECEIVED</td><td><span class="key-badge kb-imp">Important</span></td></tr>
+          <tr><td>STATUS</td><td>Result of the action — SUCCESS, FAILED, or PENDING</td><td><span class="key-badge kb-imp">Important</span></td></tr>
+          <tr><td>SERVICE_NAME</td><td>Which component performed the action — e.g. MPG-Sender, SAF-Job</td><td></td></tr>
+          <tr><td>CREATED_AT</td><td>Exact timestamp of when the action happened</td><td><span class="key-badge kb-imp">Important</span></td></tr>
+          <tr><td>ERROR_CODE</td><td>If it failed — what error code was returned</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="padding:16px 20px;">
+      <div class="sql-box">
+        <div class="sq-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>Query example</span></div>
+        <div class="sq-code">
+<span class="cm">-- Find all failed actions for a specific request</span><br>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tb">MPG_AUDIT_LOG</span><br>
+<span class="kw">WHERE</span>  <span class="cl">STATUS</span> <span class="op">=</span> <span class="st">'FAILED'</span><br>
+<span class="kw">AND</span>    <span class="cl">REQUEST_ID</span> <span class="op">=</span> <span class="st">'REQ-4421'</span><br>
+<span class="kw">ORDER BY</span> <span class="cl">CREATED_AT</span> <span class="kw">ASC</span>;
+        </div>
+      </div>
+      <div class="note n-indigo" style="margin-top:10px;">💡 <strong>L2 Use:</strong> First table to check when a client reports an issue. Find the exact action that failed and when it happened.</div>
+    </div>
+  </div>
+
+  <!-- MPG_AUDIT_LOG_DETAILS -->
+  <div class="tbl-block tbl-sky">
+    <div class="tbl-header">
+      <div class="tbl-icon">🔍</div>
+      <div class="tbl-info">
+        <div class="tbl-name">MPG_AUDIT_LOG_DETAILS</div>
+        <div class="tbl-role">"The full message body — what was sent and what came back"</div>
+      </div>
+      <span class="tbl-tag tt-sky">Audit Detail</span>
+    </div>
+    <div class="tbl-body">
+      <table class="ct">
+        <thead><tr><th>Column</th><th>What it stores</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr><td>DETAIL_ID</td><td>Unique ID for this detail record</td><td><span class="key-badge kb-pk">PK</span></td></tr>
+          <tr><td>LOG_ID</td><td>Links to the parent record in MPG_AUDIT_LOG</td><td><span class="key-badge kb-fk">FK</span></td></tr>
+          <tr><td>REQUEST_BODY</td><td>The full raw message that was sent — the complete XML or JSON payload</td><td><span class="key-badge kb-imp">Important</span></td></tr>
+          <tr><td>RESPONSE_BODY</td><td>The full raw reply that came back — contains the actual error detail or success message</td><td><span class="key-badge kb-imp">Important</span></td></tr>
+          <tr><td>CREATED_AT</td><td>When this detail was recorded</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="padding:16px 20px;">
+      <div class="sql-box">
+        <div class="sq-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>Query example</span></div>
+        <div class="sq-code">
+<span class="cm">-- Get full request and response for a failed log entry</span><br>
+<span class="kw">SELECT</span> <span class="cl">REQUEST_BODY</span>, <span class="cl">RESPONSE_BODY</span><br>
+<span class="kw">FROM</span>   <span class="tb">MPG_AUDIT_LOG_DETAILS</span><br>
+<span class="kw">WHERE</span>  <span class="cl">LOG_ID</span> <span class="op">=</span> <span class="st">'LOG-8821'</span>;
+        </div>
+      </div>
+      <div class="note n-indigo" style="margin-top:10px;">💡 <strong>L2 Use:</strong> When you find a failed log in AUDIT_LOG, come here to read the exact error message SBP or the gateway returned. The RESPONSE_BODY tells you the real reason.</div>
+    </div>
+  </div>
+
+  <!-- SENDER_BATCH -->
+  <div class="tbl-block tbl-emerald">
+    <div class="tbl-header">
+      <div class="tbl-icon">📦</div>
+      <div class="tbl-info">
+        <div class="tbl-name">SENDER_BATCH</div>
+        <div class="tbl-role">"One record per bulk payment file submitted by a client"</div>
+      </div>
+      <span class="tbl-tag tt-emerald">Batch</span>
+    </div>
+    <div class="tbl-body">
+      <table class="ct">
+        <thead><tr><th>Column</th><th>What it stores</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr><td>BATCH_ID</td><td>Unique ID for the entire batch — your main reference number</td><td><span class="key-badge kb-pk">PK</span></td></tr>
+          <tr><td>CLIENT_ID</td><td>Which bank or client submitted this batch</td><td><span class="key-badge kb-fk">FK</span></td></tr>
+          <tr><td>BATCH_STATUS</td><td>Overall status — RECEIVED, PRE-VALIDATING, PROCESSING, COMPLETED, FAILED</td><td><span class="key-badge kb-imp">Important</span></td></tr>
+          <tr><td>TOTAL_TXN</td><td>Total number of transactions in this batch</td><td></td></tr>
+          <tr><td>SUCCESS_COUNT</td><td>How many transactions succeeded so far</td><td></td></tr>
+          <tr><td>FAILED_COUNT</td><td>How many transactions failed</td><td><span class="key-badge kb-imp">Important</span></td></tr>
+          <tr><td>SUBMITTED_AT</td><td>When the client submitted this batch</td><td></td></tr>
+          <tr><td>COMPLETED_AT</td><td>When the entire batch finished processing — NULL if still running</td><td><span class="key-badge kb-imp">Important</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="padding:16px 20px;">
+      <div class="sql-box">
+        <div class="sq-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>Query example</span></div>
+        <div class="sq-code">
+<span class="cm">-- Check status of a specific batch</span><br>
+<span class="kw">SELECT</span> <span class="cl">BATCH_ID</span>, <span class="cl">BATCH_STATUS</span>, <span class="cl">TOTAL_TXN</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="cl">SUCCESS_COUNT</span>, <span class="cl">FAILED_COUNT</span>, <span class="cl">COMPLETED_AT</span><br>
+<span class="kw">FROM</span>   <span class="tb">SENDER_BATCH</span><br>
+<span class="kw">WHERE</span>  <span class="cl">BATCH_ID</span> <span class="op">=</span> <span class="st">'BATCH-2024-001'</span>;<br>
+<br>
+<span class="cm">-- Find all batches still stuck in PROCESSING</span><br>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tb">SENDER_BATCH</span><br>
+<span class="kw">WHERE</span>  <span class="cl">BATCH_STATUS</span> <span class="op">=</span> <span class="st">'PROCESSING'</span><br>
+<span class="kw">AND</span>    <span class="cl">COMPLETED_AT</span> <span class="kw">IS NULL</span>;
+        </div>
+      </div>
+      <div class="note n-emerald" style="margin-top:10px;">💡 <strong>L2 Use:</strong> Client says "our batch submitted 2 hours ago is still not complete." You query SENDER_BATCH — if COMPLETED_AT is NULL and status is still PROCESSING, the batch is stuck.</div>
+    </div>
+  </div>
+
+  <!-- SENDER_BATCH_DETAIL -->
+  <div class="tbl-block tbl-amber">
+    <div class="tbl-header">
+      <div class="tbl-icon">📄</div>
+      <div class="tbl-info">
+        <div class="tbl-name">SENDER_BATCH_DETAIL</div>
+        <div class="tbl-role">"One row per transaction inside a batch — the individual records"</div>
+      </div>
+      <span class="tbl-tag tt-amber">Transaction</span>
+    </div>
+    <div class="tbl-body">
+      <table class="ct">
+        <thead><tr><th>Column</th><th>What it stores</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr><td>DETAIL_ID</td><td>Unique ID for this individual transaction record</td><td><span class="key-badge kb-pk">PK</span></td></tr>
+          <tr><td>BATCH_ID</td><td>Links back to the parent batch in SENDER_BATCH</td><td><span class="key-badge kb-fk">FK</span></td></tr>
+          <tr><td>TXN_ID</td><td>The individual transaction ID — what the client uses to track a single payment</td><td><span class="key-badge kb-imp">Important</span></td></tr>
+          <tr><td>AMOUNT</td><td>How much money this transaction is for</td><td></td></tr>
+          <tr><td>BENEFICIARY_IBAN</td><td>The receiver's account number — checked during pre-validation</td><td></td></tr>
+          <tr><td>TXN_STATUS</td><td>Status of this specific transaction — PENDING, SUCCESS, FAILED, REJECTED</td><td><span class="key-badge kb-imp">Important</span></td></tr>
+          <tr><td>REJECT_REASON</td><td>If rejected — why. Contains the rejection code from SBP</td><td><span class="key-badge kb-imp">Important</span></td></tr>
+          <tr><td>PROCESSED_AT</td><td>When this specific transaction was processed — NULL if still waiting</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="padding:16px 20px;">
+      <div class="sql-box">
+        <div class="sq-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>Query example</span></div>
+        <div class="sq-code">
+<span class="cm">-- Find all failed transactions in a specific batch</span><br>
+<span class="kw">SELECT</span> <span class="cl">TXN_ID</span>, <span class="cl">AMOUNT</span>, <span class="cl">TXN_STATUS</span>, <span class="cl">REJECT_REASON</span><br>
+<span class="kw">FROM</span>   <span class="tb">SENDER_BATCH_DETAIL</span><br>
+<span class="kw">WHERE</span>  <span class="cl">BATCH_ID</span>    <span class="op">=</span> <span class="st">'BATCH-2024-001'</span><br>
+<span class="kw">AND</span>    <span class="cl">TXN_STATUS</span> <span class="op">=</span> <span class="st">'FAILED'</span>;<br>
+<br>
+<span class="cm">-- Find transactions still PENDING (stuck) in a batch</span><br>
+<span class="kw">SELECT</span> <span class="cl">TXN_ID</span>, <span class="cl">AMOUNT</span>, <span class="cl">PROCESSED_AT</span><br>
+<span class="kw">FROM</span>   <span class="tb">SENDER_BATCH_DETAIL</span><br>
+<span class="kw">WHERE</span>  <span class="cl">BATCH_ID</span>    <span class="op">=</span> <span class="st">'BATCH-2024-001'</span><br>
+<span class="kw">AND</span>    <span class="cl">TXN_STATUS</span> <span class="op">=</span> <span class="st">'PENDING'</span><br>
+<span class="kw">AND</span>    <span class="cl">PROCESSED_AT</span> <span class="kw">IS NULL</span>;
+        </div>
+      </div>
+      <div class="note n-amber" style="margin-top:10px;">💡 <strong>L2 Use:</strong> Client asks "which specific transactions in our batch failed?" You query this table filtered by BATCH_ID and TXN_STATUS = FAILED. You also see the reject reason — so you know exactly why each one failed.</div>
+    </div>
+  </div>
+
+  <!-- MPG_SAF_RESPONSE -->
+  <div class="tbl-block tbl-rose">
+    <div class="tbl-header">
+      <div class="tbl-icon">📨</div>
+      <div class="tbl-info">
+        <div class="tbl-name">MPG_SAF_RESPONSE</div>
+        <div class="tbl-role">"Stores SBP's replies — ACSP or RJCT — for each transaction"</div>
+      </div>
+      <span class="tbl-tag tt-rose">SBP Reply</span>
+    </div>
+    <div class="tbl-body">
+      <table class="ct">
+        <thead><tr><th>Column</th><th>What it stores</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr><td>RESPONSE_ID</td><td>Unique ID for this response record</td><td><span class="key-badge kb-pk">PK</span></td></tr>
+          <tr><td>BATCH_ID</td><td>Which batch this response belongs to</td><td><span class="key-badge kb-fk">FK</span></td></tr>
+          <tr><td>TXN_ID</td><td>Which specific transaction SBP is replying about</td><td><span class="key-badge kb-imp">Important</span></td></tr>
+          <tr><td>RESPONSE_CODE</td><td>ACSP = accepted in progress / RJCT = rejected by SBP</td><td><span class="key-badge kb-imp">Important</span></td></tr>
+          <tr><td>REASON_CODE</td><td>If RJCT — the specific reason code SBP sent back (e.g. AC01 = invalid account)</td><td><span class="key-badge kb-imp">Important</span></td></tr>
+          <tr><td>RAW_RESPONSE</td><td>The full Pacs002 XML message from SBP — complete raw reply</td><td></td></tr>
+          <tr><td>RECEIVED_AT</td><td>When SBP sent this reply</td><td></td></tr>
+          <tr><td>FORWARDED</td><td>Was this response successfully forwarded to the channel? Y or N</td><td><span class="key-badge kb-imp">Important</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="padding:16px 20px;">
+      <div class="sql-box">
+        <div class="sq-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>Query example</span></div>
+        <div class="sq-code">
+<span class="cm">-- Check SBP's reply for a specific transaction</span><br>
+<span class="kw">SELECT</span> <span class="cl">TXN_ID</span>, <span class="cl">RESPONSE_CODE</span>, <span class="cl">REASON_CODE</span>, <span class="cl">FORWARDED</span><br>
+<span class="kw">FROM</span>   <span class="tb">MPG_SAF_RESPONSE</span><br>
+<span class="kw">WHERE</span>  <span class="cl">TXN_ID</span> <span class="op">=</span> <span class="st">'TXN-9823'</span>;<br>
+<br>
+<span class="cm">-- Find responses received but NOT yet forwarded to channel</span><br>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tb">MPG_SAF_RESPONSE</span><br>
+<span class="kw">WHERE</span>  <span class="cl">FORWARDED</span> <span class="op">=</span> <span class="st">'N'</span>;
+        </div>
+      </div>
+      <div class="note n-rose" style="margin-top:10px;">💡 <strong>L2 Use:</strong> Client says "SBP rejected our transaction but we don't know why." You come here, find the REASON_CODE — that's the exact rejection reason from SBP. Also check FORWARDED = N to find replies stuck and not delivered back to the client.</div>
+    </div>
+  </div>
+
+  <!-- MPG_SAF_TRANSACTIONS -->
+  <div class="tbl-block tbl-purple">
+    <div class="tbl-header">
+      <div class="tbl-icon">🔄</div>
+      <div class="tbl-info">
+        <div class="tbl-name">MPG_SAF_TRANSACTIONS</div>
+        <div class="tbl-role">"The Store and Forward queue — transactions waiting to be forwarded"</div>
+      </div>
+      <span class="tbl-tag tt-purple">SAF Queue</span>
+    </div>
+    <div class="tbl-body">
+      <table class="ct">
+        <thead><tr><th>Column</th><th>What it stores</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr><td>SAF_ID</td><td>Unique ID for this SAF queue entry</td><td><span class="key-badge kb-pk">PK</span></td></tr>
+          <tr><td>TXN_ID</td><td>Which transaction is being held for forwarding</td><td><span class="key-badge kb-imp">Important</span></td></tr>
+          <tr><td>BATCH_ID</td><td>Which batch this transaction belongs to</td><td><span class="key-badge kb-fk">FK</span></td></tr>
+          <tr><td>PAYLOAD</td><td>The actual message to be sent — full XML or JSON</td><td></td></tr>
+          <tr><td>SAF_STATUS</td><td>PENDING = waiting to be sent / SENT = already forwarded / FAILED = gave up after retries</td><td><span class="key-badge kb-imp">Important</span></td></tr>
+          <tr><td>RETRY_COUNT</td><td>How many times the SAF Job has tried to send this — if high, something is wrong</td><td><span class="key-badge kb-imp">Important</span></td></tr>
+          <tr><td>LAST_RETRY_AT</td><td>When was the last attempt made to forward this</td><td></td></tr>
+          <tr><td>CREATED_AT</td><td>When this entry was added to the queue</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="padding:16px 20px;">
+      <div class="sql-box">
+        <div class="sq-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>Query example</span></div>
+        <div class="sq-code">
+<span class="cm">-- Find all transactions stuck in SAF queue (PENDING)</span><br>
+<span class="kw">SELECT</span> <span class="cl">TXN_ID</span>, <span class="cl">SAF_STATUS</span>, <span class="cl">RETRY_COUNT</span>, <span class="cl">CREATED_AT</span><br>
+<span class="kw">FROM</span>   <span class="tb">MPG_SAF_TRANSACTIONS</span><br>
+<span class="kw">WHERE</span>  <span class="cl">SAF_STATUS</span> <span class="op">=</span> <span class="st">'PENDING'</span><br>
+<span class="kw">ORDER BY</span> <span class="cl">CREATED_AT</span> <span class="kw">ASC</span>;<br>
+<br>
+<span class="cm">-- Find transactions with high retry count — repeatedly failing</span><br>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tb">MPG_SAF_TRANSACTIONS</span><br>
+<span class="kw">WHERE</span>  <span class="cl">RETRY_COUNT</span> <span class="op">&gt;</span> <span class="nm">3</span>;
+        </div>
+      </div>
+      <div class="note n-indigo" style="margin-top:10px;">💡 <strong>L2 Use:</strong> Client says "transaction was processed by SBP but we never received the reply." You check here — if SAF_STATUS = PENDING and RETRY_COUNT is high, the SAF Job is struggling to forward it. Escalate to L3 to manually reprocess.</div>
+    </div>
+  </div>
+
+  <!-- HOW THEY CONNECT -->
+  <div class="sec"><span class="sn">03</span> How All 6 Tables Connect</div>
+
+  <div class="connect-wrap">
+    <h3>The Full Picture — One Batch, Six Tables</h3>
+    <div class="connect-flow">
+      <div class="cf-row">
+        <div class="cf-box cf-e">SENDER_BATCH<br><span style="font-size:10px;opacity:0.7;">batch submitted</span></div>
+        <div class="cf-arrow">→</div>
+        <div class="cf-box cf-a">SENDER_BATCH_DETAIL<br><span style="font-size:10px;opacity:0.7;">individual transactions</span></div>
+        <div class="cf-arrow">→</div>
+        <div class="cf-box cf-p">MPG_SAF_TRANSACTIONS<br><span style="font-size:10px;opacity:0.7;">queued for forwarding</span></div>
+      </div>
+      <div class="cf-down">↓</div>
+      <div class="cf-row">
+        <div class="cf-box cf-i">MPG_AUDIT_LOG<br><span style="font-size:10px;opacity:0.7;">every action logged</span></div>
+        <div class="cf-arrow">→</div>
+        <div class="cf-box cf-s">MPG_AUDIT_LOG_DETAILS<br><span style="font-size:10px;opacity:0.7;">full message bodies</span></div>
+        <div class="cf-arrow">→</div>
+        <div class="cf-box cf-r">MPG_SAF_RESPONSE<br><span style="font-size:10px;opacity:0.7;">SBP reply stored</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LAB -->
+  <div class="sec"><span class="sn">04</span> Hands-on Lab — Find a Stuck Transaction</div>
+
+  <div class="card">
+    <h3>Scenario: Client reports a batch submitted 3 hours ago is still not complete</h3>
+    <p>Your job is to go into the database, find the batch, identify which transactions are stuck, understand why, and validate whether this is a DB issue or an external issue. Here is the exact investigation path.</p>
+  </div>
+
+  <div class="lab-wrap">
+    <div class="lab-header">
+      <h3>🔬 Lab: Trace a Stuck Transaction Through the DB</h3>
+      <span class="lab-note">MPG Schema · SQL Investigation</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 1 — Check the batch status in SENDER_BATCH</div>
+          <div class="ls-desc">First confirm the batch exists and check its overall status.</div>
+          <div class="sql-box"><div class="sq-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>query</span></div><div class="sq-code">
+<span class="kw">SELECT</span> <span class="cl">BATCH_ID</span>, <span class="cl">BATCH_STATUS</span>, <span class="cl">TOTAL_TXN</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="cl">SUCCESS_COUNT</span>, <span class="cl">FAILED_COUNT</span>, <span class="cl">COMPLETED_AT</span><br>
+<span class="kw">FROM</span>   <span class="tb">SENDER_BATCH</span><br>
+<span class="kw">WHERE</span>  <span class="cl">BATCH_ID</span> <span class="op">=</span> <span class="st">'BATCH-2024-001'</span>;
+          </div></div>
+          <div class="ls-warn">⚠️ <strong>Result:</strong> BATCH_STATUS = 'PROCESSING', COMPLETED_AT = NULL, TOTAL_TXN = 500, SUCCESS_COUNT = 487, FAILED_COUNT = 0 — 13 transactions unaccounted for.</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 2 — Find the stuck transactions in SENDER_BATCH_DETAIL</div>
+          <div class="ls-desc">Drill into the individual transactions — find which ones are still PENDING.</div>
+          <div class="sql-box"><div class="sq-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>query</span></div><div class="sq-code">
+<span class="kw">SELECT</span> <span class="cl">TXN_ID</span>, <span class="cl">AMOUNT</span>, <span class="cl">TXN_STATUS</span>, <span class="cl">PROCESSED_AT</span><br>
+<span class="kw">FROM</span>   <span class="tb">SENDER_BATCH_DETAIL</span><br>
+<span class="kw">WHERE</span>  <span class="cl">BATCH_ID</span>      <span class="op">=</span> <span class="st">'BATCH-2024-001'</span><br>
+<span class="kw">AND</span>    <span class="cl">TXN_STATUS</span>   <span class="op">=</span> <span class="st">'PENDING'</span><br>
+<span class="kw">AND</span>    <span class="cl">PROCESSED_AT</span> <span class="kw">IS NULL</span>;
+          </div></div>
+          <div class="ls-alert">🔴 <strong>Result:</strong> 13 transactions returned — all PENDING, all with PROCESSED_AT = NULL. These are your stuck transactions.</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 3 — Check if SBP already replied for these transactions</div>
+          <div class="ls-desc">Check MPG_SAF_RESPONSE — did SBP send back a reply that was not forwarded?</div>
+          <div class="sql-box"><div class="sq-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>query</span></div><div class="sq-code">
+<span class="kw">SELECT</span> <span class="cl">TXN_ID</span>, <span class="cl">RESPONSE_CODE</span>, <span class="cl">FORWARDED</span>, <span class="cl">RECEIVED_AT</span><br>
+<span class="kw">FROM</span>   <span class="tb">MPG_SAF_RESPONSE</span><br>
+<span class="kw">WHERE</span>  <span class="cl">BATCH_ID</span>   <span class="op">=</span> <span class="st">'BATCH-2024-001'</span><br>
+<span class="kw">AND</span>    <span class="cl">FORWARDED</span> <span class="op">=</span> <span class="st">'N'</span>;
+          </div></div>
+          <div class="ls-warn">⚠️ <strong>Result:</strong> 13 rows found — RESPONSE_CODE = ACSP, FORWARDED = N. SBP already replied hours ago but the replies were never forwarded to the channel.</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 4 — Check the SAF queue for these transactions</div>
+          <div class="ls-desc">Check MPG_SAF_TRANSACTIONS to see if the SAF Job is stuck trying to forward them.</div>
+          <div class="sql-box"><div class="sq-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>query</span></div><div class="sq-code">
+<span class="kw">SELECT</span> <span class="cl">TXN_ID</span>, <span class="cl">SAF_STATUS</span>, <span class="cl">RETRY_COUNT</span>, <span class="cl">LAST_RETRY_AT</span><br>
+<span class="kw">FROM</span>   <span class="tb">MPG_SAF_TRANSACTIONS</span><br>
+<span class="kw">WHERE</span>  <span class="cl">BATCH_ID</span>   <span class="op">=</span> <span class="st">'BATCH-2024-001'</span><br>
+<span class="kw">AND</span>    <span class="cl">SAF_STATUS</span> <span class="op">=</span> <span class="st">'PENDING'</span>;
+          </div></div>
+          <div class="ls-alert">🔴 <strong>Result:</strong> 13 rows, all PENDING, RETRY_COUNT between 5 and 8, LAST_RETRY_AT = 2 hours ago. The SAF Job stopped retrying.</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">05</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 5 — Check the audit log to see what error the SAF Job is hitting</div>
+          <div class="ls-desc">Check MPG_AUDIT_LOG for failed actions related to these transactions.</div>
+          <div class="sql-box"><div class="sq-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>query</span></div><div class="sq-code">
+<span class="kw">SELECT</span> <span class="cl">ACTION_TYPE</span>, <span class="cl">STATUS</span>, <span class="cl">ERROR_CODE</span>, <span class="cl">CREATED_AT</span><br>
+<span class="kw">FROM</span>   <span class="tb">MPG_AUDIT_LOG</span><br>
+<span class="kw">WHERE</span>  <span class="cl">REQUEST_ID</span> <span class="op">=</span> <span class="st">'BATCH-2024-001'</span><br>
+<span class="kw">AND</span>    <span class="cl">STATUS</span>     <span class="op">=</span> <span class="st">'FAILED'</span><br>
+<span class="kw">ORDER BY</span> <span class="cl">CREATED_AT</span> <span class="kw">DESC</span>;
+          </div></div>
+          <div class="ls-finding">✅ <strong>Root Cause Found:</strong> Audit log shows ERROR_CODE = 'CHANNEL_ENDPOINT_UNREACHABLE'. The client's endpoint (where we send the reply) is down. SAF Job tried 8 times, all failed. Issue is on the client side — their receiving endpoint is not responding.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- VALIDATION RESULT -->
+  <div class="sec"><span class="sn">05</span> DB Validation Result — What to Report</div>
+
+  <div class="validation-box">
+    <div class="vb-header">📊 Transaction Validation Summary — BATCH-2024-001</div>
+    <table class="vt">
+      <thead><tr><th>Check</th><th>Table Checked</th><th>Finding</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>Batch exists and was received</td><td>SENDER_BATCH</td><td>Batch found, submitted 3 hours ago</td><td><span class="v-ok">✓ OK</span></td></tr>
+        <tr><td>All transactions submitted</td><td>SENDER_BATCH_DETAIL</td><td>500 transactions present in DB</td><td><span class="v-ok">✓ OK</span></td></tr>
+        <tr><td>SBP processed and replied</td><td>MPG_SAF_RESPONSE</td><td>All 500 replies received from SBP</td><td><span class="v-ok">✓ OK</span></td></tr>
+        <tr><td>Replies forwarded to channel</td><td>MPG_SAF_RESPONSE</td><td>13 replies not forwarded — FORWARDED = N</td><td><span class="v-stuck">⚠ STUCK</span></td></tr>
+        <tr><td>SAF Job processing replies</td><td>MPG_SAF_TRANSACTIONS</td><td>13 entries PENDING, retry count 5-8</td><td><span class="v-stuck">⚠ STUCK</span></td></tr>
+        <tr><td>Root cause identified</td><td>MPG_AUDIT_LOG</td><td>CHANNEL_ENDPOINT_UNREACHABLE — client's endpoint is down</td><td><span class="v-fail">✗ CLIENT SIDE</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn">06</span> Real L2 Scenarios</div>
+
+  <div class="scen-list">
+    <div class="scen-item">
+      <div class="si-id">01</div>
+      <p>Client: <strong>"Transaction TXN-5541 shows PENDING since morning."</strong> Check SENDER_BATCH_DETAIL — TXN_STATUS = PENDING, PROCESSED_AT = NULL. Then check MPG_SAF_TRANSACTIONS — RETRY_COUNT = 6. Then AUDIT_LOG — ERROR: DB_CONNECTION_TIMEOUT. Your system's DB is struggling. Escalate to DBA.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">02</div>
+      <p>Client: <strong>"SBP rejected some transactions but we don't know which ones or why."</strong> Query MPG_SAF_RESPONSE with RESPONSE_CODE = 'RJCT'. You get a list with REASON_CODEs — e.g. AC01 (invalid account), AM04 (insufficient funds). You give the client the exact list with reasons in minutes.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">03</div>
+      <p>Manager: <strong>"How many batches are still stuck in PROCESSING right now?"</strong> Query SENDER_BATCH WHERE BATCH_STATUS = 'PROCESSING' AND COMPLETED_AT IS NULL. You give the exact count and list of stuck batches immediately — no guessing.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">04</div>
+      <p>Client: <strong>"We received some replies but not all — 13 are missing."</strong> Query MPG_SAF_RESPONSE WHERE FORWARDED = 'N'. You find the exact 13 — SBP replied but the SAF Job couldn't deliver them. You identify the issue and coordinate with the team to manually reprocess those 13 entries.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 2 · Day 4 Outcomes — Can You Do This?</h3>
+    <ul>
+      <li>Identify the role of each of the 6 MPG database tables and what data each one holds</li>
+      <li>Query SENDER_BATCH to check the overall status and completion of a bulk payment batch</li>
+      <li>Query SENDER_BATCH_DETAIL to find individual stuck or failed transactions inside a batch</li>
+      <li>Query MPG_SAF_RESPONSE to find SBP's reply and identify rejection reasons using REASON_CODE</li>
+      <li>Query MPG_SAF_TRANSACTIONS to find transactions stuck in the SAF queue with high retry counts</li>
+      <li>Use MPG_AUDIT_LOG and AUDIT_LOG_DETAILS to trace the exact error and its root cause</li>
+      <li>Complete the full lab — trace a stuck batch through all 6 tables and produce a validation summary report</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

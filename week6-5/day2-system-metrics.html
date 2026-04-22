@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 6.5 · Day 2 — System Metrics</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#07090d;
+    --surface:#0d1018;
+    --surface2:#121620;
+    --surface3:#171c28;
+    --border:#1e2535;
+    --text:#a8b8cc;
+    --text-dim:#3e5268;
+    --text-faint:#162035;
+    --white:#eaf2fc;
+
+    --emerald:#10b981;
+    --emerald-bg:#001810;
+    --emerald-border:#003830;
+
+    --sky:#0ea5e9;
+    --sky-bg:#001820;
+    --sky-border:#003848;
+
+    --amber:#f59e0b;
+    --amber-bg:#180c00;
+    --amber-border:#3c2800;
+
+    --rose:#f43f5e;
+    --rose-bg:#180008;
+    --rose-border:#3c0018;
+
+    --purple:#a855f7;
+    --purple-bg:#0e0818;
+    --purple-border:#281840;
+
+    --orange:#f97316;
+    --orange-bg:#180800;
+    --orange-border:#3c2000;
+
+    --green:#22d46a;
+    --green-bg:#001810;
+    --green-border:#003820;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;line-height:1.7;padding:48px 24px 100px;}
+  .page{max-width:940px;margin:0 auto;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:52px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .topbar-left{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;}
+  .tb-right{display:flex;gap:8px;}
+  .tb-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 14px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;}
+  .tb-wk{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tb-d2{background:var(--emerald-bg);border:1px solid var(--emerald-border);color:var(--emerald);}
+
+  .hero{margin-bottom:52px;}
+  .day-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--emerald);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,58px);font-weight:800;line-height:1.05;color:var(--white);margin-bottom:18px;}
+  .hero h1 span{color:var(--emerald);}
+  .hero-desc{color:var(--text-dim);font-size:15px;max-width:540px;}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;}
+  .tag{padding:5px 14px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tag-e{background:var(--emerald-bg);border-color:var(--emerald-border);color:var(--emerald);}
+  .tag-s{background:var(--sky-bg);border-color:var(--sky-border);color:var(--sky);}
+  .tag-a{background:var(--amber-bg);border-color:var(--amber-border);color:var(--amber);}
+  .tag-p{background:var(--purple-bg);border-color:var(--purple-border);color:var(--purple);}
+
+  .sec{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faint);margin-bottom:18px;margin-top:44px;display:flex;align-items:center;gap:12px;}
+  .sec .sn{color:var(--emerald);font-size:12px;}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .analogy{background:var(--emerald-bg);border:1px solid var(--emerald-border);border-left:4px solid var(--emerald);border-radius:12px;padding:22px 28px;margin-bottom:16px;}
+  .analogy .al{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--emerald);margin-bottom:8px;}
+  .analogy p{color:var(--text);font-size:14px;}
+  .analogy strong{color:var(--white);}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 28px;margin-bottom:14px;}
+  .card h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:8px;}
+  .card p{color:var(--text-dim);margin-bottom:8px;font-size:14px;}
+  .card p:last-child{margin-bottom:0;}
+  .card strong{color:var(--text);}
+
+  /* METRIC CARDS - 4 in a row */
+  .metric-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+  .mc{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px 24px;overflow:hidden;}
+  .mc-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .mc-icon{font-size:28px;}
+  .mc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;}
+  .mc-title{font-size:17px;font-weight:700;color:var(--white);}
+  .mc-body p{font-size:13px;color:var(--text-dim);margin-bottom:8px;}
+  .mc-body p:last-child{margin-bottom:0;}
+  .mc-body strong{color:var(--white);}
+  .mc-cmd{font-family:'JetBrains Mono',monospace;font-size:12px;margin-top:10px;padding:9px 14px;border-radius:8px;}
+
+  .mc-e{border-top:3px solid var(--emerald);}
+  .mc-e .mc-label{color:var(--emerald);}
+  .mc-e .mc-cmd{background:var(--emerald-bg);border:1px solid var(--emerald-border);color:var(--emerald);}
+
+  .mc-s{border-top:3px solid var(--sky);}
+  .mc-s .mc-label{color:var(--sky);}
+  .mc-s .mc-cmd{background:var(--sky-bg);border:1px solid var(--sky-border);color:var(--sky);}
+
+  .mc-a{border-top:3px solid var(--amber);}
+  .mc-a .mc-label{color:var(--amber);}
+  .mc-a .mc-cmd{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+
+  .mc-p{border-top:3px solid var(--purple);}
+  .mc-p .mc-label{color:var(--purple);}
+  .mc-p .mc-cmd{background:var(--purple-bg);border:1px solid var(--purple-border);color:var(--purple);}
+
+  /* THRESHOLD TABLE */
+  .ref-table{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+  .rt-head{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:15px;font-weight:700;color:var(--white);}
+  table.rt{width:100%;border-collapse:collapse;}
+  table.rt th{padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);text-align:left;border-bottom:1px solid var(--border);font-weight:400;background:var(--surface3);}
+  table.rt td{padding:12px 18px;font-size:13px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;}
+  table.rt tr:last-child td{border-bottom:none;}
+  table.rt tr:hover td{background:rgba(255,255,255,0.02);}
+  table.rt td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--emerald);white-space:nowrap;}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 9px;border-radius:100px;white-space:nowrap;}
+  .p-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .p-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .p-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+
+  /* CODE */
+  .cbox{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:8px 0;}
+  .cbox-bar{padding:7px 14px;background:var(--surface3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+  .d{width:8px;height:8px;border-radius:50%;}.dr{background:#ff5f56;}.dy{background:#ffbd2e;}.dg{background:#27c93f;}
+  .ct{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);margin-left:4px;letter-spacing:1px;}
+  .cbox-code{padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2.0;overflow-x:auto;}
+  .kw{color:#ff7b72;}.fn{color:#79c0ff;}.str{color:#a5d6ff;}.var{color:#ffa657;}.cm{color:#2e4050;}.op{color:#c9d1d9;}
+
+  /* NOTE */
+  .note{border-radius:10px;padding:10px 16px;font-size:13px;margin-bottom:10px;}
+  .n-e{background:var(--emerald-bg);border:1px solid var(--emerald-border);color:var(--emerald);}
+  .n-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .n-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .n-s{background:var(--sky-bg);border:1px solid var(--sky-border);color:var(--sky);}
+  .note strong{color:var(--white);}
+
+  /* LAB */
+  .lab{border:2px solid var(--emerald-border);border-radius:16px;overflow:hidden;margin-bottom:14px;}
+  .lab-head{padding:16px 26px;background:var(--emerald-bg);border-bottom:1px solid var(--emerald-border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .lab-head h3{font-size:15px;font-weight:700;color:var(--white);}
+  .lab-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 12px;border-radius:100px;background:rgba(16,185,129,0.1);border:1px solid var(--emerald-border);color:var(--emerald);}
+  .lab-body{padding:26px;display:flex;flex-direction:column;gap:0;background:var(--surface);}
+  .lab-step{display:flex;gap:18px;position:relative;}
+  .lab-step:not(:last-child) .ls-left::after{content:'';position:absolute;left:19px;top:44px;bottom:0;width:2px;background:var(--border);z-index:0;}
+  .ls-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+  .ls-num{width:40px;height:40px;border-radius:50%;background:var(--emerald-bg);border:2px solid var(--emerald-border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--emerald);z-index:1;position:relative;}
+  .ls-content{flex:1;padding-bottom:22px;padding-top:4px;}
+  .ls-title{font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px;}
+  .ls-desc{font-size:13px;color:var(--text-dim);margin-bottom:8px;}
+  .ls-out{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--emerald-bg);border:1px solid var(--emerald-border);color:var(--emerald);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+  .ls-out-g{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+
+  /* SCEN */
+  .scen-list{display:flex;flex-direction:column;gap:12px;margin-bottom:14px;}
+  .scen-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;}
+  .si-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--emerald);background:var(--emerald-bg);border:1px solid var(--emerald-border);border-radius:6px;padding:4px 8px;flex-shrink:0;margin-top:2px;}
+  .scen-item p{font-size:14px;color:var(--text-dim);}
+  .scen-item p strong{color:var(--white);}
+
+  .outcome{background:linear-gradient(135deg,var(--emerald-bg) 0%,var(--surface) 100%);border:1px solid var(--emerald-border);border-radius:16px;padding:32px;margin-top:48px;}
+  .outcome h3{font-size:20px;font-weight:700;color:var(--emerald);margin-bottom:18px;}
+  .outcome ul{display:flex;flex-direction:column;gap:9px;list-style:none;}
+  .outcome ul li{font-size:14px;color:var(--text-dim);padding-left:22px;position:relative;}
+  .outcome ul li::before{content:'✓';position:absolute;left:0;color:var(--emerald);font-family:'JetBrains Mono',monospace;}
+
+  @media(max-width:640px){.metric-cards{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 6.5</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-wk">Week 6.5</span>
+      <span class="tb-badge tb-d2">Day 2</span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="day-label">Week 6.5 · Day 2</div>
+    <h1>System <span>Metrics</span></h1>
+    <p class="hero-desc">CPU, Memory, Disk, and Network — the four resources every server runs on. When one of them gets stressed, everything slows down or breaks. Today you learn to read each one, understand what stress looks like, and trace it to its cause.</p>
+    <div class="tags">
+      <span class="tag tag-e">CPU</span>
+      <span class="tag tag-s">Memory</span>
+      <span class="tag tag-a">Disk</span>
+      <span class="tag tag-p">Network</span>
+      <span class="tag">Resource Spike</span>
+      <span class="tag">Troubleshooting</span>
+    </div>
+  </div>
+
+  <!-- ANALOGY -->
+  <div class="sec"><span class="sn">01</span> The Simple Idea First</div>
+
+  <div class="analogy">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Think of a server like a <strong>person running a busy office</strong>. They have four things they depend on every second of the day — their <strong>brain to think</strong> (CPU), <strong>desk space to work</strong> (Memory/RAM), a <strong>filing cabinet to store things</strong> (Disk), and a <strong>phone to communicate</strong> (Network).<br><br>
+      If their brain is overloaded — they think slowly and make mistakes. If the desk is full — they cannot start new work. If the filing cabinet is jammed — they cannot save or find anything. If the phone line is congested — communication stops.<br><br>
+      <strong>Resource troubleshooting is finding which of the four is overwhelmed — and why.</strong>
+    </p>
+  </div>
+
+  <!-- THE 4 RESOURCES -->
+  <div class="sec"><span class="sn">02</span> The 4 System Resources — Deep Dive</div>
+
+  <div class="metric-cards">
+
+    <!-- CPU -->
+    <div class="mc mc-e">
+      <div class="mc-head">
+        <div class="mc-icon">⚙️</div>
+        <div>
+          <div class="mc-label">Resource 1</div>
+          <div class="mc-title">CPU — The Brain</div>
+        </div>
+      </div>
+      <div class="mc-body">
+        <p>The CPU executes every instruction your server runs — processing transactions, running queries, handling API requests. When CPU is overloaded, <strong>everything slows down proportionally</strong>. A task that took 200ms now takes 2 seconds.</p>
+        <p><strong>What high CPU looks like:</strong> Slow response times across all services. Applications hanging. Load average growing over time.</p>
+        <p><strong>What to check:</strong> Which process is consuming it. How long it has been high. Whether it is trending up or plateauing.</p>
+        <div class="mc-cmd">top -bn1 | grep "Cpu"<br>ps aux --sort=-%cpu | head -6</div>
+      </div>
+    </div>
+
+    <!-- MEMORY -->
+    <div class="mc mc-s">
+      <div class="mc-head">
+        <div class="mc-icon">🧠</div>
+        <div>
+          <div class="mc-label">Resource 2</div>
+          <div class="mc-title">Memory — The Desk</div>
+        </div>
+      </div>
+      <div class="mc-body">
+        <p>RAM holds everything the server is actively working on. When RAM fills up, the OS starts using disk as backup memory — this is called <strong>swap</strong>. Swap is 100x slower than RAM. When swap grows, the server becomes painfully slow even if CPU looks fine.</p>
+        <p><strong>What high memory looks like:</strong> Increasing swap usage. Applications crashing with OutOfMemory errors. Gradual slowdown that gets worse over hours.</p>
+        <p><strong>What to check:</strong> Available RAM. Swap used. Which process is the biggest memory consumer.</p>
+        <div class="mc-cmd">free -h<br>ps aux --sort=-%mem | head -6</div>
+      </div>
+    </div>
+
+    <!-- DISK -->
+    <div class="mc mc-a">
+      <div class="mc-head">
+        <div class="mc-icon">💾</div>
+        <div>
+          <div class="mc-label">Resource 3</div>
+          <div class="mc-title">Disk — The Filing Cabinet</div>
+        </div>
+      </div>
+      <div class="mc-body">
+        <p>Disk stores everything permanently — logs, databases, application files. When disk hits 100%, <strong>the server cannot write anything new</strong>. The DB stops recording transactions. Log files stop growing. Applications crash trying to write.</p>
+        <p><strong>What a full disk looks like:</strong> Write errors in logs. DB transactions failing. Applications unable to start.</p>
+        <p><strong>What to check:</strong> Which partition is full. Which folder is taking the most space. Whether logs are the culprit.</p>
+        <div class="mc-cmd">df -h<br>du -sh /* 2>/dev/null | sort -rh | head -8</div>
+      </div>
+    </div>
+
+    <!-- NETWORK -->
+    <div class="mc mc-p">
+      <div class="mc-head">
+        <div class="mc-icon">🌐</div>
+        <div>
+          <div class="mc-label">Resource 4</div>
+          <div class="mc-title">Network — The Phone Line</div>
+        </div>
+      </div>
+      <div class="mc-body">
+        <p>Network carries data between your server, the DB, external APIs (SBP, 1LINK), and clients. When the network is congested or a connection is broken, <strong>transactions time out even if every other resource is perfectly healthy</strong>.</p>
+        <p><strong>What network issues look like:</strong> SOCKET_TIMEOUT and CONNECTION_REFUSED errors. Intermittent failures. Selective failures for external APIs only.</p>
+        <p><strong>What to check:</strong> Can you reach the target server? Is packet loss occurring? Is bandwidth saturated?</p>
+        <div class="mc-cmd">ping -c 4 8.8.8.8<br>netstat -an | grep ESTABLISHED | wc -l</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- THRESHOLDS -->
+  <div class="sec"><span class="sn">03</span> Resource Thresholds — When to Act</div>
+
+  <div class="ref-table">
+    <div class="rt-head">⚠️ Action Thresholds for All 4 Resources</div>
+    <table class="rt">
+      <thead><tr><th>Resource</th><th>Healthy</th><th>Warning — Monitor</th><th>Critical — Act Now</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>CPU Usage</td>
+          <td><span class="pill p-g">Below 70%</span></td>
+          <td><span class="pill p-a">70% – 85%</span></td>
+          <td><span class="pill p-r">Above 90%</span> — find the process</td>
+        </tr>
+        <tr>
+          <td>RAM Available</td>
+          <td><span class="pill p-g">Above 30% free</span></td>
+          <td><span class="pill p-a">15% – 30% free</span></td>
+          <td><span class="pill p-r">Below 15% free</span> — check swap</td>
+        </tr>
+        <tr>
+          <td>Swap Used</td>
+          <td><span class="pill p-g">0 – low</span></td>
+          <td><span class="pill p-a">Growing steadily</span></td>
+          <td><span class="pill p-r">High and maxed</span> — RAM gone</td>
+        </tr>
+        <tr>
+          <td>Disk Usage</td>
+          <td><span class="pill p-g">Below 80%</span></td>
+          <td><span class="pill p-a">80% – 90%</span></td>
+          <td><span class="pill p-r">Above 90%</span> — clean up now</td>
+        </tr>
+        <tr>
+          <td>Network Ping</td>
+          <td><span class="pill p-g">Under 20ms</span></td>
+          <td><span class="pill p-a">20ms – 100ms</span></td>
+          <td><span class="pill p-r">Over 200ms / packet loss</span></td>
+        </tr>
+        <tr>
+          <td>Open Connections</td>
+          <td><span class="pill p-g">Normal baseline</span></td>
+          <td><span class="pill p-a">2x normal</span></td>
+          <td><span class="pill p-r">Maxed out</span> — connection leak</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- HOW RESOURCES AFFECT EACH OTHER -->
+  <div class="sec"><span class="sn">04</span> How the 4 Resources Affect Each Other</div>
+
+  <div class="card">
+    <h3>Resources do not fail in isolation</h3>
+    <p>This is the most important thing to understand. A problem in one resource almost always creates symptoms in another. <strong>The visible symptom is not always the root cause.</strong></p>
+    <p><strong>Disk full → CPU spikes.</strong> When disk is full, applications start throwing errors and retrying. The retry loops consume CPU. You see high CPU but the real cause is disk.</p>
+    <p><strong>RAM full → Disk activity spikes.</strong> When RAM is exhausted, the OS swaps to disk constantly. Disk read/write speeds shoot up and disk appears busy — but the real cause is RAM exhaustion.</p>
+    <p><strong>Network congestion → CPU spikes.</strong> When network is slow, connection queues build up. The application keeps trying to push data out, consuming CPU while waiting. CPU looks high but the network is the bottleneck.</p>
+    <p><strong>Rule: Always check all 4 resources together.</strong> Run disk, memory, CPU, and network checks before concluding anything. The noisy one is often covering for the real culprit.</p>
+  </div>
+
+  <div class="note n-e">💡 <strong>The investigation order that works every time:</strong> Check disk first (most common silent killer) → Check memory and swap → Check CPU and which process → Check network if all three above look fine.</div>
+
+  <!-- COMMANDS REFERENCE -->
+  <div class="sec"><span class="sn">05</span> Commands for Every Resource</div>
+
+  <div class="cbox">
+    <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">Full resource investigation — run these in order</span></div>
+    <div class="cbox-code">
+<span class="cm"># ===== DISK — check first =====</span><br>
+<span class="fn">df</span> -h                                         <span class="cm"># all partitions with % used</span><br>
+<span class="fn">du</span> -sh /var/log/* 2&gt;/dev/null | <span class="fn">sort</span> -rh | <span class="fn">head</span> -5  <span class="cm"># biggest log folders</span><br>
+<br>
+<span class="cm"># ===== MEMORY — check second =====</span><br>
+<span class="fn">free</span> -h                                        <span class="cm"># RAM and swap overview</span><br>
+<span class="fn">ps</span> aux --sort=-%mem | <span class="fn">head</span> -5                 <span class="cm"># top memory consumers</span><br>
+<br>
+<span class="cm"># ===== CPU — check third =====</span><br>
+<span class="fn">ps</span> aux --sort=-%cpu | <span class="fn">head</span> -5                 <span class="cm"># top CPU consumers</span><br>
+<span class="fn">cat</span> /proc/loadavg                              <span class="cm"># load average 1m 5m 15m</span><br>
+<br>
+<span class="cm"># ===== NETWORK — check if above 3 look fine =====</span><br>
+<span class="fn">ping</span> -c 4 8.8.8.8                              <span class="cm"># basic connectivity test</span><br>
+<span class="fn">netstat</span> -an | <span class="fn">grep</span> ESTABLISHED | <span class="fn">wc</span> -l        <span class="cm"># open connection count</span><br>
+<span class="fn">netstat</span> -an | <span class="fn">grep</span> TIME_WAIT | <span class="fn">wc</span> -l          <span class="cm"># stuck connections</span>
+    </div>
+  </div>
+
+  <!-- LAB -->
+  <div class="sec"><span class="sn">06</span> Hands-on Lab — Detect a Resource Spike</div>
+
+  <div class="lab">
+    <div class="lab-head">
+      <h3>🔬 Lab: Detect and Investigate a Resource Spike</h3>
+      <span class="lab-badge">Kali Linux · Real Commands</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Create a full resource snapshot — your baseline</div>
+          <div class="ls-desc">Before creating a spike, record what normal looks like. This is what you compare against when investigating.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — record baseline</span></div><div class="cbox-code">
+<span class="fn">echo</span> <span class="str">"=== BASELINE READING — $(date) ==="</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"-- DISK --"</span><br>
+<span class="fn">df</span> -h /<br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"-- MEMORY --"</span><br>
+<span class="fn">free</span> -h<br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"-- CPU LOAD --"</span><br>
+<span class="fn">cat</span> /proc/loadavg<br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"-- NETWORK --"</span><br>
+<span class="fn">ping</span> -c 2 8.8.8.8 | <span class="fn">tail</span> -2
+          </div></div>
+          <span class="ls-out">→ Save these numbers. They are your "normal." When a spike happens you compare the new reading against this.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Create a real CPU spike and catch it</div>
+          <div class="ls-desc">Run the spike in background, then immediately investigate it the proper way.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — create spike then investigate</span></div><div class="cbox-code">
+<span class="cm"># Step 1 — create a 30 second CPU spike in background</span><br>
+<span class="fn">timeout</span> 30 <span class="fn">yes</span> &gt; /dev/null &amp;<br>
+<span class="fn">echo</span> <span class="str">"Spike started. PID: $!"</span><br>
+<br>
+<span class="cm"># Step 2 — immediately run the investigation</span><br>
+<span class="fn">ps</span> aux --sort=-%cpu | <span class="fn">head</span> -6<br>
+<br>
+<span class="cm"># Step 3 — what is load average now vs baseline?</span><br>
+<span class="fn">cat</span> /proc/loadavg<br>
+<br>
+<span class="cm"># Step 4 — find which process and how long it has run</span><br>
+<span class="fn">ps</span> aux --sort=-%cpu | <span class="fn">awk</span> <span class="str">'NR==2 {print "PID: "$2, "CPU: "$3"%", "Process: "$11}'</span>
+          </div></div>
+          <span class="ls-out">→ "yes" process appears at top using high CPU. You can see the PID, CPU%, and load average increased from baseline — real resource spike detected.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Simulate a disk pressure check</div>
+          <div class="ls-desc">Create a large temporary file to simulate disk pressure, check it, then clean it up.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="cm"># Create a temporary 100MB file (simulating log growth)</span><br>
+<span class="fn">dd</span> if=/dev/zero of=~/test-large-file.tmp bs=1M count=100 2&gt;/dev/null<br>
+<span class="fn">echo</span> <span class="str">"File created. Checking disk..."</span><br>
+<br>
+<span class="cm"># Check disk after creating the file</span><br>
+<span class="fn">df</span> -h ~<br>
+<br>
+<span class="cm"># Find the biggest files in home folder</span><br>
+<span class="fn">du</span> -sh ~/* 2&gt;/dev/null | <span class="fn">sort</span> -rh | <span class="fn">head</span> -5<br>
+<br>
+<span class="cm"># Clean up — always delete test files</span><br>
+<span class="fn">rm</span> ~/test-large-file.tmp<br>
+<span class="fn">echo</span> <span class="str">"Cleaned up. Disk back to normal."</span>
+          </div></div>
+          <span class="ls-out">→ After creating the file, disk usage increases. du shows the test file at the top as biggest item. After rm, disk returns to baseline. This is how you find what is eating disk space.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Check memory and swap — the hidden slowdown</div>
+          <div class="ls-desc">Read the free command output carefully — available RAM and swap usage together tell the full story.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — memory deep dive</span></div><div class="cbox-code">
+<span class="cm"># Full memory breakdown</span><br>
+<span class="fn">free</span> -h<br>
+<br>
+<span class="cm"># Just the numbers you need — available RAM and swap used</span><br>
+<span class="fn">free</span> -m | <span class="fn">awk</span> <span class="str">'NR==2 {print "RAM Available: "$7"MB"} NR==3 {print "Swap Used:     "$3"MB"}'</span><br>
+<br>
+<span class="cm"># Top 3 memory-consuming processes</span><br>
+<span class="fn">ps</span> aux --sort=-%mem | <span class="fn">awk</span> <span class="str">'NR==2,NR==4 {printf "%-25s %s%%\n", $11, $4}'</span>
+          </div></div>
+          <span class="ls-out">→ Shows RAM available in MB, swap used, and top 3 memory hogs. On Kali this will likely be your browser and desktop environment — on a server it would be Java apps and the DB process.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">05</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Build a full resource spike detection script</div>
+          <div class="ls-desc">This script checks all 4 resources, compares against thresholds, and prints a verdict for each.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">resource-check.sh — create and run</span></div><div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Full resource spike detector</span><br>
+<span class="cm"># chmod +x resource-check.sh && ./resource-check.sh</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"========================================"</span><br>
+<span class="fn">echo</span> <span class="str">" Resource Spike Check — $(date)"</span><br>
+<span class="fn">echo</span> <span class="str">"========================================"</span><br>
+<br>
+<span class="cm"># DISK</span><br>
+<span class="var">DISK</span>=<span class="op">$(</span><span class="fn">df</span> / | <span class="fn">awk</span> <span class="str">'NR==2{print $5}'</span> | <span class="fn">tr</span> -d <span class="str">'%'</span><span class="op">)</span><br>
+[ <span class="str">"$DISK"</span> -ge 90 ] &amp;&amp; <span class="fn">echo</span> <span class="str">"[DISK  ] CRITICAL: $DISK% used!"</span> \<br>
+|| { [ <span class="str">"$DISK"</span> -ge 80 ] &amp;&amp; <span class="fn">echo</span> <span class="str">"[DISK  ] WARNING : $DISK% used"</span> \<br>
+|| <span class="fn">echo</span> <span class="str">"[DISK  ] OK      : $DISK% used"; }</span><br>
+<br>
+<span class="cm"># SWAP</span><br>
+<span class="var">SWAP</span>=<span class="op">$(</span><span class="fn">free</span> -m | <span class="fn">awk</span> <span class="str">'NR==3{print $3}'</span><span class="op">)</span><br>
+[ <span class="str">"$SWAP"</span> -gt 500 ] &amp;&amp; <span class="fn">echo</span> <span class="str">"[MEMORY] WARNING : Swap ${SWAP}MB — RAM low!"</span> \<br>
+|| <span class="fn">echo</span> <span class="str">"[MEMORY] OK      : Swap ${SWAP}MB"</span><br>
+<br>
+<span class="cm"># CPU — load average</span><br>
+<span class="var">LOAD</span>=<span class="op">$(</span><span class="fn">cat</span> /proc/loadavg | <span class="fn">awk</span> <span class="str">'{print $1}'</span><span class="op">)</span><br>
+<span class="fn">echo</span> <span class="str">"[CPU   ] Load avg: $LOAD (1 min)"</span><br>
+<span class="fn">echo</span> <span class="str">"[CPU   ] Top process: $(ps aux --sort=-%cpu | awk 'NR==2{print $11, $3"%"}')"</span><br>
+<br>
+<span class="cm"># NETWORK</span><br>
+<span class="fn">ping</span> -c 1 -W 2 8.8.8.8 &gt;/dev/null 2&gt;&amp;1 \<br>
+&amp;&amp; <span class="fn">echo</span> <span class="str">"[NETWORK] OK — external reach confirmed"</span> \<br>
+|| <span class="fn">echo</span> <span class="str">"[NETWORK] WARNING — cannot reach 8.8.8.8"</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"========================================"</span>
+          </div></div>
+          <span class="ls-out-g">→ Single script covers all 4 resources. Each one prints OK, WARNING, or CRITICAL with the actual value. Schedule this with crontab to run every 30 minutes. ✅</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn">07</span> Real L2 Scenarios</div>
+  <div class="scen-list">
+    <div class="scen-item"><div class="si-id">01</div>
+      <p>CPU looks fine at 45%. Memory looks fine. But transactions are timing out. You check network — <strong>ping to SBP gateway is 800ms with 30% packet loss.</strong> Not a server resource issue at all. Pure network problem between your server and SBP. You escalate to the network team and notify the bridge.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">02</div>
+      <p>Server is extremely slow. CPU is at 95%. You investigate — top process is the Java app. But you also check memory — <strong>swap is at 2GB and RAM is 98% used.</strong> The real cause is RAM exhaustion causing constant swapping which in turn is driving up CPU. Fix the memory leak, CPU comes down on its own.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">03</div>
+      <p>Applications start failing to write logs. DB transactions start failing. CPU is normal. Memory is normal. You check disk — <strong>disk is at 100%.</strong> You run du -sh /var/log/* — the application has been writing debug logs for a week and they are 48GB. You archive the old logs, disk drops to 62%, everything resumes within seconds.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">04</div>
+      <p>Everything looks healthy at first glance. But response times are slow only for external API calls — internal calls are fast. You run netstat — <strong>2,400 connections in TIME_WAIT state</strong>, way above normal. The connection pool to the external gateway is exhausted. A connection leak in the app is holding sockets open. L3 to fix the leak, netstat count drops to normal.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 6.5 · Day 2 Outcomes</h3>
+    <ul>
+      <li>Explain what each of the 4 system resources does — CPU (processing), Memory (active work), Disk (storage), Network (communication)</li>
+      <li>Understand how resources affect each other — full disk can spike CPU, RAM exhaustion spikes disk I/O, network congestion spikes CPU</li>
+      <li>Know the key commands for each resource — df -h, free -h, ps aux, ping, netstat</li>
+      <li>Apply the correct investigation order — Disk first, then Memory, then CPU, then Network</li>
+      <li>Know the thresholds for each resource — what is OK, Warning, and Critical</li>
+      <li>Complete the lab — record a baseline, create and detect a real CPU spike, simulate disk pressure, read memory and swap output, and build a full resource-check.sh script that covers all 4</li>
+      <li>Schedule the resource check script with crontab for automatic monitoring every 30 minutes</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

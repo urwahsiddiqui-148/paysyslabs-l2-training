@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 4 · Day 3 & 4 — Open ACS & IBFT/BillPay</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#08080e;
+    --surface:#0e0e18;
+    --surface2:#131320;
+    --surface3:#181828;
+    --border:#202030;
+    --text:#b0b8d0;
+    --text-dim:#404858;
+    --text-faint:#181828;
+    --white:#eef0fc;
+
+    --indigo:#6070ff;
+    --indigo-bg:#060818;
+    --indigo-border:#181840;
+
+    --teal:#00d4b0;
+    --teal-bg:#001814;
+    --teal-border:#003830;
+
+    --orange:#ff8c30;
+    --orange-bg:#180c00;
+    --orange-border:#3c2000;
+
+    --rose:#ff3868;
+    --rose-bg:#180008;
+    --rose-border:#3c0018;
+
+    --amber:#ffbb00;
+    --amber-bg:#181000;
+    --amber-border:#3c2800;
+
+    --green:#22d46a;
+    --green-bg:#001810;
+    --green-border:#003820;
+
+    --purple:#c060ff;
+    --purple-bg:#100818;
+    --purple-border:#2c1840;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.7;padding:48px 24px 100px;}
+  .page{max-width:940px;margin:0 auto;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:52px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .topbar-left{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;}
+  .tb-right{display:flex;gap:8px;}
+  .tb-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 14px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;}
+  .tb-wk{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tb-d3{background:var(--indigo-bg);border:1px solid var(--indigo-border);color:var(--indigo);}
+  .tb-d4{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+
+  .hero{margin-bottom:52px;}
+  .day-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--indigo);margin-bottom:14px;}
+  .hero h1{font-size:clamp(28px,5vw,54px);font-weight:700;line-height:1.05;color:var(--white);margin-bottom:18px;}
+  .hero h1 .i{color:var(--indigo);} .hero h1 .t{color:var(--teal);}
+  .hero-desc{color:var(--text-dim);font-size:15px;max-width:540px;}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;}
+  .tag{padding:5px 14px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tag-i{background:var(--indigo-bg);border-color:var(--indigo-border);color:var(--indigo);}
+  .tag-t{background:var(--teal-bg);border-color:var(--teal-border);color:var(--teal);}
+
+  .day-div{display:flex;align-items:center;gap:16px;margin:56px 0 28px;}
+  .dd-pill{font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 20px;border-radius:100px;letter-spacing:2px;text-transform:uppercase;font-weight:600;flex-shrink:0;}
+  .dd-i{background:var(--indigo-bg);border:2px solid var(--indigo-border);color:var(--indigo);}
+  .dd-t{background:var(--teal-bg);border:2px solid var(--teal-border);color:var(--teal);}
+  .dd-li{flex:1;height:1px;background:var(--indigo-border);}
+  .dd-lt{flex:1;height:1px;background:var(--teal-border);}
+  .dd-title{font-size:17px;font-weight:700;}
+  .dd-ti{color:var(--indigo);} .dd-tt{color:var(--teal);}
+
+  .sec{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faint);margin-bottom:18px;margin-top:44px;display:flex;align-items:center;gap:12px;}
+  .sec .sn{font-size:12px;}
+  .sn-i{color:var(--indigo);} .sn-t{color:var(--teal);}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .analogy{border-left:4px solid;border-radius:12px;padding:22px 28px;margin-bottom:16px;}
+  .an-i{background:var(--indigo-bg);border-color:var(--indigo);}
+  .an-t{background:var(--teal-bg);border-color:var(--teal);}
+  .analogy .al{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+  .an-i .al{color:var(--indigo);} .an-t .al{color:var(--teal);}
+  .analogy p{color:var(--text);font-size:14px;}
+  .analogy strong{color:var(--white);}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 28px;margin-bottom:14px;}
+  .card h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:8px;}
+  .card p{color:var(--text-dim);margin-bottom:8px;font-size:14px;}
+  .card p:last-child{margin-bottom:0;}
+  .card strong{color:var(--text);}
+
+  /* FLOW */
+  .flow-block{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:14px;}
+  .flow-block h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:24px;text-align:center;}
+  .fs-item{display:flex;gap:18px;position:relative;}
+  .fs-item:not(:last-child) .fsi-left::after{content:'';position:absolute;left:19px;top:44px;bottom:0;width:2px;background:var(--border);z-index:0;}
+  .fsi-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+  .fsi-dot{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;z-index:1;position:relative;}
+  .fd-i{background:var(--indigo-bg);border:2px solid var(--indigo-border);}
+  .fd-o{background:var(--orange-bg);border:2px solid var(--orange-border);}
+  .fd-g{background:var(--green-bg);border:2px solid var(--green-border);}
+  .fd-r{background:var(--rose-bg);border:2px solid var(--rose-border);}
+  .fd-a{background:var(--amber-bg);border:2px solid var(--amber-border);}
+  .fd-t{background:var(--teal-bg);border:2px solid var(--teal-border);}
+  .fd-p{background:var(--purple-bg);border:2px solid var(--purple-border);}
+  .fsi-content{flex:1;padding-bottom:22px;padding-top:4px;}
+  .fsi-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;}
+  .fl-i{color:var(--indigo);} .fl-o{color:var(--orange);} .fl-g{color:var(--green);}
+  .fl-r{color:var(--rose);} .fl-a{color:var(--amber);} .fl-t{color:var(--teal);} .fl-p{color:var(--purple);}
+  .fsi-title{font-size:15px;font-weight:700;color:var(--white);margin-bottom:4px;}
+  .fsi-desc{font-size:13px;color:var(--text-dim);}
+  .fsi-code{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 12px;margin-top:6px;display:inline-block;color:var(--text-dim);}
+
+  /* TWO COL */
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+  .col-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;}
+  .col-card .cc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+  .col-card h4{font-size:15px;font-weight:700;color:var(--white);margin-bottom:8px;}
+  .col-card ul{list-style:none;display:flex;flex-direction:column;gap:7px;}
+  .col-card ul li{font-size:13px;color:var(--text-dim);padding-left:16px;position:relative;}
+  .col-card ul li::before{content:'→';position:absolute;left:0;font-family:'JetBrains Mono',monospace;font-size:10px;}
+  .col-i .cc-label,.col-i ul li::before{color:var(--indigo);}
+  .col-r .cc-label,.col-r ul li::before{color:var(--rose);}
+  .col-i{border-top:3px solid var(--indigo);}
+  .col-r{border-top:3px solid var(--rose);}
+
+  /* NOTE */
+  .note{border-radius:10px;padding:10px 16px;font-size:13px;margin-bottom:12px;}
+  .n-i{background:var(--indigo-bg);border:1px solid var(--indigo-border);color:var(--indigo);}
+  .n-t{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+  .n-o{background:var(--orange-bg);border:1px solid var(--orange-border);color:var(--orange);}
+  .n-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .n-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .note strong{color:var(--white);}
+
+  /* TABLE */
+  .ref-table{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+  .rt-head{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:15px;font-weight:700;color:var(--white);}
+  table.rt{width:100%;border-collapse:collapse;}
+  table.rt th{padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);text-align:left;border-bottom:1px solid var(--border);font-weight:400;background:var(--surface3);}
+  table.rt td{padding:12px 18px;font-size:13px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;}
+  table.rt tr:last-child td{border-bottom:none;}
+  table.rt tr:hover td{background:rgba(255,255,255,0.02);}
+  table.rt td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--indigo);white-space:nowrap;}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 9px;border-radius:100px;white-space:nowrap;}
+  .p-i{background:var(--indigo-bg);border:1px solid var(--indigo-border);color:var(--indigo);}
+  .p-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .p-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .p-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .p-t{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+
+  /* CODE */
+  .cbox{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px;}
+  .cbox-bar{padding:7px 14px;background:var(--surface3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+  .d{width:8px;height:8px;border-radius:50%;}.dr{background:#ff5f56;}.dy{background:#ffbd2e;}.dg{background:#27c93f;}
+  .ct{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);margin-left:4px;letter-spacing:1px;}
+  .cbox-code{padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2.0;overflow-x:auto;}
+  .kw{color:#ff7b72;}.fn{color:#79c0ff;}.str{color:#a5d6ff;}.var{color:#ffa657;}.cm{color:#354555;}.op{color:#c9d1d9;}
+
+  /* LAB */
+  .lab{border-radius:16px;overflow:hidden;margin-bottom:14px;}
+  .lab-i{border:2px solid var(--indigo-border);}
+  .lab-t{border:2px solid var(--teal-border);}
+  .lab-head{padding:16px 26px;border-bottom:1px solid;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .lab-i .lab-head{background:var(--indigo-bg);border-color:var(--indigo-border);}
+  .lab-t .lab-head{background:var(--teal-bg);border-color:var(--teal-border);}
+  .lab-head h3{font-size:15px;font-weight:700;color:var(--white);}
+  .lbadge-i{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 12px;border-radius:100px;background:rgba(96,112,255,0.1);border:1px solid var(--indigo-border);color:var(--indigo);}
+  .lbadge-t{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 12px;border-radius:100px;background:rgba(0,212,176,0.1);border:1px solid var(--teal-border);color:var(--teal);}
+  .lab-body{padding:26px;display:flex;flex-direction:column;gap:0;background:var(--surface);}
+  .lab-step{display:flex;gap:18px;position:relative;}
+  .lab-step:not(:last-child) .ls-left::after{content:'';position:absolute;left:19px;top:44px;bottom:0;width:2px;background:var(--border);z-index:0;}
+  .ls-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+  .ls-num{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;z-index:1;position:relative;}
+  .lab-i .ls-num{background:var(--indigo-bg);border:2px solid var(--indigo-border);color:var(--indigo);}
+  .lab-t .ls-num{background:var(--teal-bg);border:2px solid var(--teal-border);color:var(--teal);}
+  .ls-content{flex:1;padding-bottom:22px;padding-top:4px;}
+  .ls-title{font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px;}
+  .ls-desc{font-size:13px;color:var(--text-dim);margin-bottom:8px;}
+  .ls-out-i{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--indigo-bg);border:1px solid var(--indigo-border);color:var(--indigo);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+  .ls-out-t{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+
+  /* SCENARIOS */
+  .scen-list{display:flex;flex-direction:column;gap:12px;margin-bottom:14px;}
+  .scen-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;}
+  .si-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--indigo);background:var(--indigo-bg);border:1px solid var(--indigo-border);border-radius:6px;padding:4px 8px;flex-shrink:0;margin-top:2px;}
+  .scen-item p{font-size:14px;color:var(--text-dim);}
+  .scen-item p strong{color:var(--white);}
+
+  .outcome{background:linear-gradient(135deg,var(--indigo-bg) 0%,var(--surface) 50%,var(--teal-bg) 100%);border:1px solid var(--border);border-radius:16px;padding:32px;margin-top:48px;}
+  .outcome h3{font-size:20px;font-weight:700;color:var(--indigo);margin-bottom:18px;}
+  .outcome ul{display:flex;flex-direction:column;gap:9px;list-style:none;}
+  .outcome ul li{font-size:14px;color:var(--text-dim);padding-left:22px;position:relative;}
+  .outcome ul li::before{content:'✓';position:absolute;left:0;color:var(--indigo);font-family:'JetBrains Mono',monospace;}
+  .outcome ul li.dt::before{color:var(--teal);}
+
+  @media(max-width:640px){.two-col{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 4</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-wk">Week 4</span>
+      <span class="tb-badge tb-d3">Day 3</span>
+      <span class="tb-badge tb-d4">Day 4</span>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="day-label">Week 4 · Day 3 & Day 4</div>
+    <h1>Open <span class="i">ACS</span> &<br>IBFT & <span class="t">Bill Pay</span></h1>
+    <p class="hero-desc">Day 3 covers how 3D Secure protects online card payments using OTP. Day 4 covers how interbank fund transfers and utility bill payments flow through the system.</p>
+    <div class="tags">
+      <span class="tag tag-i">Day 3 — ACS / 3D Secure</span>
+      <span class="tag tag-t">Day 4 — IBFT & BillPay</span>
+      <span class="tag">3DS</span><span class="tag">OTP</span>
+      <span class="tag">IBFT Lifecycle</span><span class="tag">UBPS</span>
+    </div>
+  </div>
+
+  <!-- ===== DAY 3 ===== -->
+  <div class="day-div">
+    <span class="dd-pill dd-i">Day 3</span>
+    <span class="dd-li"></span>
+    <span class="dd-title dd-ti">Open ACS — 3D Secure Flow & OTP</span>
+  </div>
+
+  <div class="sec"><span class="sn sn-i">01</span> The Simple Idea</div>
+
+  <div class="analogy an-i">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Think of buying something online with your card. You enter your card details and then suddenly a box appears asking for an <strong>OTP sent to your phone</strong>. That extra step is 3D Secure.<br><br>
+      Without it, anyone who steals your card number can shop online. With it, even if they have your card number, they can't complete the payment without your phone.<br><br>
+      <strong>ACS (Access Control Server) is the system that generates and verifies that OTP.</strong> It is the gatekeeper of every online card transaction.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>What is Open ACS?</h3>
+    <p><strong>ACS (Access Control Server)</strong> is the component that handles 3D Secure authentication for online card transactions. When a customer pays on a website, the payment page sends a request to the ACS. The ACS checks if the card is enrolled, sends an OTP to the customer's registered phone, and verifies the OTP before allowing the payment to proceed.</p>
+    <p>As L2, you deal with ACS when customers report <strong>"OTP not received"</strong>, <strong>"payment page stuck"</strong>, or <strong>"OTP entered correctly but transaction still failed"</strong>. All of these point to different breakpoints inside the 3DS flow.</p>
+  </div>
+
+  <!-- 3DS FLOW -->
+  <div class="sec"><span class="sn sn-i">02</span> 3D Secure Flow — Step by Step</div>
+
+  <div class="flow-block">
+    <h3>🔐 3D Secure Authentication Flow</h3>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-i">🛒</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-i">Step 1 — Customer</div>
+        <div class="fsi-title">Customer enters card details on merchant website</div>
+        <div class="fsi-desc">Customer fills in card number, expiry, CVV on an online checkout. Merchant's payment gateway sends an authentication request to the card network.</div>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-i">🌐</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-i">Step 2 — Directory Server</div>
+        <div class="fsi-title">Card network checks if card is 3DS enrolled</div>
+        <div class="fsi-desc">The card network's Directory Server checks if the card is enrolled for 3D Secure. If enrolled, the request is forwarded to the bank's ACS. If not enrolled, transaction may proceed without OTP or be declined.</div>
+        <span class="fsi-code">Enrolled → route to ACS | Not enrolled → fallback decision</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-o">🔐</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-o">Step 3 — ACS</div>
+        <div class="fsi-title">ACS generates and sends OTP to customer</div>
+        <div class="fsi-desc">The ACS receives the authentication request, validates the card, generates a one-time password, and sends it to the customer's registered mobile number via SMS. The customer sees an OTP input screen.</div>
+        <span class="fsi-code">ACS → SMS Gateway → Customer's phone → OTP received</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-i">📱</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-i">Step 4 — Customer</div>
+        <div class="fsi-title">Customer enters OTP on the payment page</div>
+        <div class="fsi-desc">Customer receives OTP on their phone and enters it in the OTP field. The entered OTP is sent back to the ACS for verification. OTP usually expires in 3 to 5 minutes.</div>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-g">✅</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-g">Step 5 — ACS Verification</div>
+        <div class="fsi-title">ACS verifies OTP and sends authentication result</div>
+        <div class="fsi-desc">ACS checks the OTP — correct and within time limit = Authentication Successful. Wrong OTP or expired = Authentication Failed. The result is sent back to the merchant as an authentication response (Y = success, N = failed, U = unavailable).</div>
+        <span class="fsi-code">Y = Authenticated | N = Failed | U = ACS Unavailable | A = Attempted</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-g">💳</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-g">Step 6 — Authorization</div>
+        <div class="fsi-title">Payment proceeds to card authorization</div>
+        <div class="fsi-desc">If ACS returns Y, the merchant sends the authorization request to the bank. CMS processes the authorization (balance check, limit check) and approves or declines. Both ACS and CMS must pass for a successful online payment.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACS STATUS CODES -->
+  <div class="ref-table">
+    <div class="rt-head">📋 ACS Authentication Status Codes</div>
+    <table class="rt">
+      <thead><tr><th>Code</th><th>Meaning</th><th>L2 Action</th></tr></thead>
+      <tbody>
+        <tr><td>Y</td><td>Authentication Successful — OTP verified, proceed</td><td><span class="pill p-g">All good</span> — transaction moves to CMS authorization</td></tr>
+        <tr><td>N</td><td>Authentication Failed — wrong OTP or too many attempts</td><td><span class="pill p-r">Check logs</span> — customer entered wrong OTP. Check attempt count in ACS logs.</td></tr>
+        <tr><td>U</td><td>ACS Unavailable — system could not process the request</td><td><span class="pill p-r">System issue</span> — ACS is down or unreachable. Check ACS service health.</td></tr>
+        <tr><td>A</td><td>Attempted — 3DS was tried but card not fully enrolled</td><td><span class="pill p-a">Monitor</span> — bank attempted authentication. Merchant decides to proceed or not.</td></tr>
+        <tr><td>R</td><td>Rejected — bank rejects the transaction entirely</td><td><span class="pill p-r">Investigate</span> — check ACS logs for rejection reason.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 3DS BREAKPOINTS -->
+  <div class="sec"><span class="sn sn-i">03</span> ACS Breakpoints — Where 3DS Fails</div>
+
+  <div class="two-col">
+    <div class="col-card col-i">
+      <div class="cc-label">Common Issues</div>
+      <h4>OTP Not Received</h4>
+      <ul>
+        <li>SMS gateway is down or delayed</li>
+        <li>Customer's phone number not registered</li>
+        <li>Phone number changed but not updated in bank</li>
+        <li>Customer's network has no signal</li>
+        <li>ACS sent OTP but SMS provider failed delivery</li>
+      </ul>
+    </div>
+    <div class="col-card col-r">
+      <div class="cc-label">System Issues</div>
+      <h4>OTP Entered but Still Failed</h4>
+      <ul>
+        <li>OTP expired — customer took too long (over 5 min)</li>
+        <li>Customer entered OTP from old SMS, not latest</li>
+        <li>ACS database out of sync with card records</li>
+        <li>ACS returned U — service unavailable</li>
+        <li>Timeout between ACS and card network</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note n-i">💡 <strong>Golden rule for ACS tickets:</strong> Always check two things first — (1) did the ACS actually send the OTP (check ACS logs for SMS dispatch record) and (2) what response code did ACS return (Y/N/U/A/R). These two answers tell you 80% of what you need to know.</div>
+
+  <!-- DAY 3 LAB -->
+  <div class="sec"><span class="sn sn-i">04</span> Day 3 Lab — Simulate 3DS Failure</div>
+
+  <div class="lab lab-i">
+    <div class="lab-head">
+      <h3>🔬 Lab: Investigate a 3DS Authentication Failure</h3>
+      <span class="lbadge-i">ACS Investigation</span>
+    </div>
+    <div class="lab-body">
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Client says: "Customer OTP not arriving"</div>
+          <div class="ls-desc">Check the ACS authentication log — did the ACS even try to send an OTP?</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">SQL — ACS schema</span></div><div class="cbox-code">
+<span class="kw">SELECT</span> <span class="var">TXN_ID</span>, <span class="var">CARD_NUMBER</span>, <span class="var">AUTH_STATUS</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="var">OTP_SENT</span>, <span class="var">OTP_ATTEMPTS</span>, <span class="var">CREATED_AT</span><br>
+<span class="kw">FROM</span>   <span class="fn">ACS_AUTH_LOG</span><br>
+<span class="kw">WHERE</span>  <span class="var">CARD_NUMBER</span> <span class="op">=</span> <span class="str">'****5678'</span><br>
+<span class="kw">ORDER BY</span> <span class="var">CREATED_AT</span> <span class="kw">DESC</span><br>
+<span class="kw">LIMIT</span> <span class="op">5</span>;
+          </div></div>
+          <span class="ls-out-i">→ OTP_SENT = N means ACS never dispatched the OTP. Check SMS gateway. OTP_SENT = Y but customer says not received = SMS delivery failure.</span>
+        </div>
+      </div>
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Check OTP attempt history</div>
+          <div class="ls-desc">How many times did the customer try? Did they enter the wrong OTP?</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">SQL</span></div><div class="cbox-code">
+<span class="kw">SELECT</span> <span class="var">TXN_ID</span>, <span class="var">ATTEMPT_NUMBER</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="var">OTP_ENTERED</span>, <span class="var">RESULT</span>, <span class="var">ATTEMPT_TIME</span><br>
+<span class="kw">FROM</span>   <span class="fn">ACS_OTP_ATTEMPTS</span><br>
+<span class="kw">WHERE</span>  <span class="var">TXN_ID</span> <span class="op">=</span> <span class="str">'TXN-ACS-001'</span>;
+          </div></div>
+          <span class="ls-out-i">→ 3 FAILED attempts = customer entered wrong OTP 3 times. Card may be temporarily blocked for online payments.</span>
+        </div>
+      </div>
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Check if the card is enrolled for 3DS</div>
+          <div class="ls-desc">If the card is not enrolled, the ACS will not send an OTP at all.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">SQL</span></div><div class="cbox-code">
+<span class="kw">SELECT</span> <span class="var">CARD_NUMBER</span>, <span class="var">ENROLLED_3DS</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="var">MOBILE_NUMBER</span>, <span class="var">ENROLLMENT_DATE</span><br>
+<span class="kw">FROM</span>   <span class="fn">ACS_CARD_ENROLLMENT</span><br>
+<span class="kw">WHERE</span>  <span class="var">CARD_NUMBER</span> <span class="op">=</span> <span class="str">'****5678'</span>;
+          </div></div>
+          <span class="ls-out-i">→ ENROLLED_3DS = N means card is not enrolled. Customer needs to register their mobile number for 3DS at the bank.</span>
+        </div>
+      </div>
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Find all transactions where ACS returned U (unavailable)</div>
+          <div class="ls-desc">ACS returning U to all transactions means the system is down — this is a P1.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">SQL — find system-wide ACS failure</span></div><div class="cbox-code">
+<span class="kw">SELECT</span> <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> <span class="var">FAILED_COUNT</span><br>
+<span class="kw">FROM</span>   <span class="fn">ACS_AUTH_LOG</span><br>
+<span class="kw">WHERE</span>  <span class="var">AUTH_STATUS</span> <span class="op">=</span> <span class="str">'U'</span><br>
+<span class="kw">AND</span>    <span class="var">CREATED_AT</span> <span class="op">&gt;</span> <span class="fn">NOW</span>() - <span class="fn">INTERVAL</span> <span class="str">'15 minutes'</span>;
+          </div></div>
+          <span class="ls-out-i">→ High count of U in last 15 minutes = ACS is down. Raise P1 immediately and check ACS service health.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DAY 4 ===== -->
+  <div class="day-div" style="margin-top:60px;">
+    <span class="dd-pill dd-t">Day 4</span>
+    <span class="dd-lt"></span>
+    <span class="dd-title dd-tt">IBFT & Bill Pay — Funds Transfer Lifecycle</span>
+  </div>
+
+  <div class="sec"><span class="sn sn-t">05</span> The Simple Idea</div>
+
+  <div class="analogy an-t">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Think of IBFT like a <strong>courier service between banks</strong>. You hand a parcel (money) to your courier (your bank), they check it, label it, send it through the courier network (1LINK), and deliver it to the recipient at another bank. Every step is logged.<br><br>
+      <strong>Bill Pay is the same idea but for utility companies</strong> — instead of sending money to another person, the money goes to LESCO, SNGPL, PTCL or any registered utility company. The bank looks up the consumer's bill, confirms the amount, and processes the payment.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>What is IBFT?</h3>
+    <p><strong>IBFT (Inter Bank Funds Transfer)</strong> is the service that allows customers to transfer money from their account in one bank to an account in a different bank. It goes through the <strong>1LINK switch</strong> which acts as the central router between all Pakistani banks.</p>
+    <p>IBFT is the most common daily transaction type you will support — salary payments, personal transfers, business payments. Most IBFT issues come down to wrong IBANs, account status problems, or 1LINK connectivity issues.</p>
+  </div>
+
+  <div class="card">
+    <h3>What is Bill Pay (UBPS)?</h3>
+    <p><strong>UBPS (Utility Bill Payment System)</strong> allows customers to pay their electricity, gas, water, telephone, and other utility bills directly through their bank. The bank is connected to each utility company's billing system. The customer enters their consumer reference number, the system fetches the bill amount, and the payment is processed.</p>
+  </div>
+
+  <!-- IBFT LIFECYCLE -->
+  <div class="sec"><span class="sn sn-t">06</span> IBFT Transaction Lifecycle</div>
+
+  <div class="flow-block">
+    <h3>🔄 IBFT — Full Transfer Lifecycle</h3>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-t">👤</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-t">Step 1 — Initiation</div>
+        <div class="fsi-title">Customer initiates transfer in banking app</div>
+        <div class="fsi-desc">Customer enters beneficiary IBAN, amount, and remarks. Before confirming, the app calls <strong>TF2.0 (Title Fetch)</strong> — fetches and shows the beneficiary's name from the destination bank for confirmation.</div>
+        <span class="fsi-code">TF2.0 request → Destination bank → Returns account name</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-t">🏦</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-t">Step 2 — Sender Bank Validation</div>
+        <div class="fsi-title">Sender bank validates the request</div>
+        <div class="fsi-desc">Sender bank checks: Does the sender account have sufficient balance? Is the account active? Is the amount within transfer limits? If all pass — the request is sent to 1LINK.</div>
+        <span class="fsi-code">Balance check → Limit check → Account status check</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-p">🔀</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-p">Step 3 — 1LINK Routing</div>
+        <div class="fsi-title">1LINK receives and routes to destination bank</div>
+        <div class="fsi-desc">1LINK receives the IBFT request, identifies the destination bank from the IBAN, and routes the request to that bank's switch interface. 1LINK logs every hop and assigns a unique switch reference number.</div>
+        <span class="fsi-code">1LINK Switch Reference: ILNK-2024-88821</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-t">🏦</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-t">Step 4 — Destination Bank Processing</div>
+        <div class="fsi-title">Destination bank receives and credits account</div>
+        <div class="fsi-desc">The destination bank receives the transfer, validates the beneficiary IBAN, and credits the account. It sends a confirmation response back to 1LINK which forwards it to the sender bank.</div>
+        <span class="fsi-code">CREDIT applied → Response: SUCCESS sent back to 1LINK</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-g">✅</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-g">Step 5 — Sender Bank Settlement</div>
+        <div class="fsi-title">Sender account debited, customer notified</div>
+        <div class="fsi-desc">Sender bank receives the SUCCESS response, debits the customer's account, and sends an SMS/push notification. The full transaction is recorded in the database.</div>
+        <span class="fsi-code">DB: STATUS = SUCCESS | Debit applied | SMS sent</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- BILL PAY FLOW -->
+  <div class="sec"><span class="sn sn-t">07</span> Bill Pay (UBPS) Flow</div>
+
+  <div class="flow-block">
+    <h3>💡 Bill Payment — How It Works</h3>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-t">📱</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-t">Step 1 — Bill Inquiry</div>
+        <div class="fsi-title">Customer enters consumer reference number</div>
+        <div class="fsi-desc">Customer selects utility company (e.g. LESCO) and enters their consumer reference number. The system sends a bill inquiry request to the utility company's billing system to fetch the outstanding bill.</div>
+        <span class="fsi-code">Bill Inquiry → LESCO API → Returns: Amount Due = PKR 4,200</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-t">✅</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-t">Step 2 — Customer Confirms</div>
+        <div class="fsi-title">Customer sees bill details and confirms payment</div>
+        <div class="fsi-desc">Bill details are displayed — consumer name, bill amount, due date. Customer confirms and authorizes the payment from their account.</div>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-t">🏦</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-t">Step 3 — Bank Processes Payment</div>
+        <div class="fsi-title">Bank debits account and sends payment to utility</div>
+        <div class="fsi-desc">Bank checks balance, debits the customer's account, and sends the payment to the utility company through UBPS. A payment confirmation number is generated.</div>
+        <span class="fsi-code">UBPS sends payment → Utility confirms receipt → Transaction ID generated</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-g">📄</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-g">Step 4 — Confirmation</div>
+        <div class="fsi-title">Payment confirmed and receipt generated</div>
+        <div class="fsi-desc">Utility company confirms payment received. Customer gets a receipt with a transaction reference number. Bill is marked as paid in the utility company's system.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IBFT FAILURE CODES -->
+  <div class="ref-table">
+    <div class="rt-head">❌ Common IBFT Failure Codes</div>
+    <table class="rt">
+      <thead><tr><th>Code / Reason</th><th>Meaning</th><th>L2 Action</th></tr></thead>
+      <tbody>
+        <tr><td>Invalid IBAN</td><td>Beneficiary IBAN format is wrong or account does not exist</td><td><span class="pill p-t">Client side</span> — verify IBAN with beneficiary. Nothing wrong in the system.</td></tr>
+        <tr><td>Account Inactive</td><td>Destination account is closed, dormant, or frozen</td><td><span class="pill p-a">Investigate</span> — beneficiary needs to activate their account.</td></tr>
+        <tr><td>Insufficient Funds</td><td>Sender account balance too low for the transfer + charges</td><td><span class="pill p-t">Client side</span> — customer needs to top up. Not a system issue.</td></tr>
+        <tr><td>Daily Limit Exceeded</td><td>Customer has hit their daily IBFT transfer limit</td><td><span class="pill p-a">Check limits</span> — verify limit in system. Advise customer to try next day.</td></tr>
+        <tr><td>1LINK Timeout</td><td>1LINK did not respond in time — possible connectivity issue</td><td><span class="pill p-r">Escalate</span> — check 1LINK connectivity. Multiple customers affected = P1.</td></tr>
+        <tr><td>Duplicate Transaction</td><td>Same transaction reference submitted twice</td><td><span class="pill p-a">Check DB</span> — verify if first transaction succeeded. Inform client.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- DAY 4 LAB -->
+  <div class="sec"><span class="sn sn-t">08</span> Day 4 Lab — Trace an IBFT Transaction</div>
+
+  <div class="lab lab-t">
+    <div class="lab-head">
+      <h3>🔬 Lab: Trace an IBFT Transfer End to End</h3>
+      <span class="lbadge-t">1LINK / IBFT Investigation</span>
+    </div>
+    <div class="lab-body">
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Client says: "Customer transferred money but it didn't arrive"</div>
+          <div class="ls-desc">First find the transaction in the sender bank's transfer log and check its status.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">SQL — IBFT log</span></div><div class="cbox-code">
+<span class="kw">SELECT</span> <span class="var">TXN_ID</span>, <span class="var">SENDER_IBAN</span>, <span class="var">BENEFICIARY_IBAN</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="var">AMOUNT</span>, <span class="var">STATUS</span>, <span class="var">SWITCH_REF</span>, <span class="var">CREATED_AT</span><br>
+<span class="kw">FROM</span>   <span class="fn">IBFT_TRANSACTIONS</span><br>
+<span class="kw">WHERE</span>  <span class="var">TXN_ID</span> <span class="op">=</span> <span class="str">'TXN-IBFT-4421'</span>;
+          </div></div>
+          <span class="ls-out-t">→ STATUS = PENDING with SWITCH_REF filled = request reached 1LINK but no reply yet</span>
+        </div>
+      </div>
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Check if the sender account was debited</div>
+          <div class="ls-desc">Was money taken from the sender? If yes but transfer failed, this is a reconciliation issue.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">SQL</span></div><div class="cbox-code">
+<span class="kw">SELECT</span> <span class="var">ACCOUNT</span>, <span class="var">TXN_TYPE</span>, <span class="var">AMOUNT</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="var">BALANCE_AFTER</span>, <span class="var">TXN_TIME</span>, <span class="var">REFERENCE</span><br>
+<span class="kw">FROM</span>   <span class="fn">ACCOUNT_LEDGER</span><br>
+<span class="kw">WHERE</span>  <span class="var">REFERENCE</span> <span class="op">=</span> <span class="str">'TXN-IBFT-4421'</span>;
+          </div></div>
+          <span class="ls-out-t">→ If DEBIT record exists but STATUS = FAILED, money was taken but transfer failed. Escalate immediately — refund needed.</span>
+        </div>
+      </div>
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Trace the Bill Pay transaction</div>
+          <div class="ls-desc">Client says: "Bill payment processed but utility company didn't receive it."</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">SQL — UBPS log</span></div><div class="cbox-code">
+<span class="kw">SELECT</span> <span class="var">TXN_ID</span>, <span class="var">UTILITY_CODE</span>, <span class="var">CONSUMER_REF</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="var">BILL_AMOUNT</span>, <span class="var">STATUS</span>, <span class="var">UTILITY_RESPONSE</span><br>
+<span class="kw">FROM</span>   <span class="fn">UBPS_TRANSACTIONS</span><br>
+<span class="kw">WHERE</span>  <span class="var">TXN_ID</span> <span class="op">=</span> <span class="str">'TXN-BP-8821'</span>;
+          </div></div>
+          <span class="ls-out-t">→ UTILITY_RESPONSE = TIMEOUT means payment reached UBPS but utility company didn't respond. Check utility company status.</span>
+        </div>
+      </div>
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Find all failed IBFT transactions in the last hour</div>
+          <div class="ls-desc">Quickly see the scope of any IBFT issue affecting multiple customers.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">SQL</span></div><div class="cbox-code">
+<span class="kw">SELECT</span> <span class="var">STATUS</span>, <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> <span class="var">TOTAL</span><br>
+<span class="kw">FROM</span>   <span class="fn">IBFT_TRANSACTIONS</span><br>
+<span class="kw">WHERE</span>  <span class="var">CREATED_AT</span> <span class="op">&gt;</span> <span class="fn">NOW</span>() - <span class="fn">INTERVAL</span> <span class="str">'1 hour'</span><br>
+<span class="kw">GROUP BY</span> <span class="var">STATUS</span>;
+          </div></div>
+          <span class="ls-out-t">→ High FAILED count in last hour = systemic issue. Check 1LINK connectivity and escalate.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn sn-i">09</span> Real L2 Scenarios</div>
+  <div class="scen-list">
+    <div class="scen-item"><div class="si-id">01</div>
+      <p>Customer says <strong>"I entered my OTP correctly but payment still failed."</strong> You check ACS_OTP_ATTEMPTS — all 3 attempts show FAILED even though OTP_ENTERED matches what was sent. You check the timestamp — the OTP was generated 8 minutes ago. <strong>It expired after 5 minutes.</strong> Customer needs a fresh OTP.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">02</div>
+      <p>Multiple clients call at the same time reporting 3DS failures. You run the ACS query for AUTH_STATUS = U in the last 15 minutes — you get 400 results. <strong>ACS is down.</strong> This is a P1. Every online card transaction in the system is failing. Open bridge immediately.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">03</div>
+      <p>Client says <strong>"Customer transferred PKR 50,000 but money not received at destination."</strong> You check IBFT_TRANSACTIONS — STATUS = FAILED. Check ACCOUNT_LEDGER — DEBIT record exists. <strong>Money left sender but never arrived.</strong> Immediate escalation — funds are in transit. Reconciliation team must recover and refund.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">04</div>
+      <p>Customer paid electricity bill but LESCO still shows outstanding. You check UBPS_TRANSACTIONS — STATUS = SUCCESS, UTILITY_RESPONSE = ACK_RECEIVED. <strong>Payment was processed successfully on our side.</strong> The issue is with LESCO's internal update delay. You give the customer the transaction ID and advise 24 hours for LESCO to reflect it.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 4 · Day 3 & 4 Outcomes</h3>
+    <ul>
+      <li>Explain what ACS is and its role in protecting online card payments</li>
+      <li>Describe the full 3D Secure flow — from checkout to OTP to authentication result</li>
+      <li>Read ACS status codes — Y, N, U, A, R — and know what each one means for L2</li>
+      <li>Identify the common ACS breakpoints — OTP not sent, OTP expired, ACS unavailable</li>
+      <li>Trace a 3DS failure through ACS_AUTH_LOG, ACS_OTP_ATTEMPTS, and ACS_CARD_ENROLLMENT</li>
+      <li class="dt">Explain what IBFT is and the full lifecycle — initiation → TF2.0 → 1LINK → destination → debit</li>
+      <li class="dt">Explain what UBPS is and how bill payments are processed through utility company APIs</li>
+      <li class="dt">Map IBFT failure codes to root causes and the correct L2 response</li>
+      <li class="dt">Trace an IBFT transaction through IBFT_TRANSACTIONS and ACCOUNT_LEDGER</li>
+      <li class="dt">Identify the critical scenario — money debited but transfer failed — and know to escalate immediately</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

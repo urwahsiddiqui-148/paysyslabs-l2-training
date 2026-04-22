@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SaaS Client Service Matrix — Multinet & Jazz</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #f8f5f0;
+    --surface: #ffffff;
+    --surface2: #f1ede6;
+    --border: #e2dbd0;
+    --ink: #1a1714;
+    --ink-dim: #6b6258;
+    --ink-faint: #aaa098;
+
+    --multinet: #e8610a;
+    --multinet-bg: #fff4ed;
+    --multinet-border: #fdd5b8;
+
+    --jazz: #1a5fd4;
+    --jazz-bg: #eef4ff;
+    --jazz-border: #c0d4f8;
+
+    --ntc: #7c3aed;
+    --ntc-bg: #f5f0ff;
+    --ntc-border: #d4bff8;
+
+    --active: #15803d;
+    --active-bg: #edfaf3;
+    --active-border: #b4eacf;
+
+    --na: #c0bab2;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; line-height: 1.7; padding: 40px 20px 80px; }
+  .page { max-width: 1100px; margin: 0 auto; }
+
+  /* HEADER */
+  .report-header { margin-bottom: 48px; padding-bottom: 24px; border-bottom: 2px solid var(--border); }
+  .rh-meta { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-faint); letter-spacing:1px; text-transform:uppercase; margin-bottom:12px; }
+  .report-header h1 { font-family:'Bricolage Grotesque',sans-serif; font-size:clamp(28px,5vw,48px); font-weight:800; color:var(--ink); margin-bottom:10px; line-height:1.1; }
+  .report-header h1 span.m { color:var(--multinet); }
+  .report-header h1 span.j { color:var(--jazz); }
+  .report-header p { color:var(--ink-dim); font-size:15px; max-width:620px; }
+
+  /* VPN LEGEND */
+  .legend { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:40px; }
+  .leg-item { display:flex; align-items:center; gap:8px; padding:8px 16px; border-radius:100px; border:1px solid; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:500; }
+  .leg-m { background:var(--multinet-bg); border-color:var(--multinet-border); color:var(--multinet); }
+  .leg-j { background:var(--jazz-bg); border-color:var(--jazz-border); color:var(--jazz); }
+  .leg-n { background:var(--ntc-bg); border-color:var(--ntc-border); color:var(--ntc); }
+  .leg-dot { width:8px; height:8px; border-radius:50%; }
+  .leg-m .leg-dot { background:var(--multinet); }
+  .leg-j .leg-dot { background:var(--jazz); }
+  .leg-n .leg-dot { background:var(--ntc); }
+
+  /* SECTION */
+  .sec { font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--ink-faint); margin-bottom:20px; margin-top:48px; display:flex; align-items:center; gap:12px; }
+  .sec .sn { font-size:12px; }
+  .sec.m .sn { color:var(--multinet); }
+  .sec.j .sn { color:var(--jazz); }
+  .sec.all .sn { color:var(--active); }
+  .sec::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* CLIENT CARD */
+  .client-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:16px; }
+  .cc-header { padding:18px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:14px; flex-wrap:wrap; background:var(--surface2); }
+  .cc-name { font-family:'Bricolage Grotesque',sans-serif; font-size:19px; font-weight:700; color:var(--ink); }
+  .vpn-badge { font-family:'IBM Plex Mono',monospace; font-size:10px; padding:4px 12px; border-radius:100px; letter-spacing:1px; text-transform:uppercase; }
+  .vpn-m { background:var(--multinet-bg); border:1px solid var(--multinet-border); color:var(--multinet); }
+  .vpn-j { background:var(--jazz-bg); border:1px solid var(--jazz-border); color:var(--jazz); }
+  .vpn-n { background:var(--ntc-bg); border:1px solid var(--ntc-border); color:var(--ntc); }
+  .cc-body { padding:20px 24px; display:flex; flex-direction:column; gap:12px; }
+
+  /* SERVICE ROW */
+  .svc-row { display:flex; gap:14px; align-items:flex-start; padding:14px 16px; border-radius:10px; background:var(--active-bg); border:1px solid var(--active-border); }
+  .svc-name { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--active); background:var(--active-bg); border:1px solid var(--active-border); padding:4px 10px; border-radius:6px; white-space:nowrap; min-width:160px; text-align:center; flex-shrink:0; }
+  .svc-content { flex:1; }
+  .svc-what { font-size:13px; font-weight:600; color:var(--ink); margin-bottom:3px; }
+  .svc-example { font-size:13px; color:var(--ink-dim); }
+  .svc-example strong { color:var(--ink); }
+
+  /* SERVICE DEFINITIONS */
+  .def-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+  .def-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px 22px; }
+  .def-card .d-name { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--active); margin-bottom:6px; letter-spacing:1px; }
+  .def-card h4 { font-family:'Bricolage Grotesque',sans-serif; font-size:15px; font-weight:700; color:var(--ink); margin-bottom:6px; }
+  .def-card p { font-size:13px; color:var(--ink-dim); margin-bottom:8px; }
+  .def-card .d-example { font-size:12px; background:var(--active-bg); border:1px solid var(--active-border); border-radius:8px; padding:8px 12px; color:var(--active); }
+  .def-card .d-example strong { color:var(--ink); }
+
+  /* MATRIX TABLE */
+  .matrix-wrap { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:auto; margin-bottom:14px; }
+  .mx-header { padding:16px 24px; background:var(--ink); color:#fff; font-family:'Bricolage Grotesque',sans-serif; font-size:16px; font-weight:700; }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  th { padding:10px 14px; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--ink-faint); text-align:center; border-bottom:1px solid var(--border); border-right:1px solid var(--border); background:var(--surface2); font-weight:400; white-space:nowrap; }
+  th:first-child { text-align:left; }
+  td { padding:11px 14px; border-bottom:1px solid var(--border); border-right:1px solid var(--border); text-align:center; vertical-align:middle; }
+  td:first-child { text-align:left; font-weight:600; color:var(--ink); white-space:nowrap; }
+  td:last-child, th:last-child { border-right:none; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:var(--surface2); }
+  .tick { color:var(--active); font-size:16px; }
+  .cross { color:var(--na); font-size:14px; }
+  .vpn-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; padding:3px 8px; border-radius:100px; }
+
+  /* OUTCOME / SUMMARY */
+  .summary { background:var(--ink); border-radius:16px; padding:32px; margin-top:48px; }
+  .summary h3 { font-family:'Bricolage Grotesque',sans-serif; font-size:20px; font-weight:800; color:#fff; margin-bottom:18px; }
+  .sum-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+  .sum-card { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:18px; }
+  .sum-card .s-label { font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,0.4); margin-bottom:8px; }
+  .sum-card .s-num { font-family:'Bricolage Grotesque',sans-serif; font-size:32px; font-weight:800; margin-bottom:4px; }
+  .sum-card .s-desc { font-size:13px; color:rgba(255,255,255,0.5); }
+  .s-m .s-num { color:var(--multinet); }
+  .s-j .s-num { color:#7aadff; }
+  .s-all .s-num { color:#4fffb0; }
+
+  @media(max-width:640px){
+    .def-grid { grid-template-columns:1fr; }
+    .sum-grid { grid-template-columns:1fr; }
+    .svc-row { flex-direction:column; gap:8px; }
+    .svc-name { min-width:unset; width:fit-content; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="report-header">
+    <div class="rh-meta">Internal Report · SaaS Client Matrix · L2 Support</div>
+    <h1>SaaS Clients on <span class="m">Multinet</span> &amp; <span class="j">Jazz</span></h1>
+    <p>Full list of all clients hosted on SaaS model, their VPN platform, active services, and a real-world example of what each service actually does.</p>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="leg-item leg-m"><span class="leg-dot"></span> Multinet VPN</div>
+    <div class="leg-item leg-j"><span class="leg-dot"></span> Jazz PSL / Jazz NBP</div>
+    <div class="leg-item leg-n"><span class="leg-dot"></span> NTC Core / Jazz PSL</div>
+  </div>
+
+  <!-- SERVICE DEFINITIONS -->
+  <div class="sec all"><span class="sn">01</span> What Each Service Does — With Real Examples</div>
+
+  <div class="def-grid">
+    <div class="def-card">
+      <div class="d-name">RAAST Bulk Receiving</div>
+      <h4>Receive many payments at once</h4>
+      <p>The bank receives a large batch of payments through Pakistan's RAAST instant payment system all at once instead of one by one.</p>
+      <div class="d-example">📥 <strong>Example:</strong> A company pays 500 employees their salaries — all 500 transfers arrive at the receiving bank in one bulk batch through RAAST.</div>
+    </div>
+    <div class="def-card">
+      <div class="d-name">RAAST Bulk Sending</div>
+      <h4>Send many payments at once</h4>
+      <p>The bank sends out a large batch of payments to multiple people at the same time through RAAST.</p>
+      <div class="d-example">📤 <strong>Example:</strong> Government sends pension payments to 10,000 pensioners — all sent in one bulk transaction via RAAST.</div>
+    </div>
+    <div class="def-card">
+      <div class="d-name">RAAST P2P</div>
+      <h4>Person sends money to another person instantly</h4>
+      <p>One individual sends money directly to another individual using their phone number or IBAN through RAAST. Instant, 24/7.</p>
+      <div class="d-example">📱 <strong>Example:</strong> Ali opens his banking app and sends PKR 5,000 to his friend Sara's account instantly using her phone number.</div>
+    </div>
+    <div class="def-card">
+      <div class="d-name">P2M Issuance</div>
+      <h4>Bank issues QR codes for merchants to receive payments</h4>
+      <p>The bank generates and issues QR codes that merchants can display at their shop. Customers scan the QR to pay.</p>
+      <div class="d-example">🏪 <strong>Example:</strong> A shopkeeper goes to EasyPaisa Bank and gets a QR code for their shop. Customers now scan it to pay directly.</div>
+    </div>
+    <div class="def-card">
+      <div class="d-name">P2M Acquiring</div>
+      <h4>Bank collects and processes QR payments for merchants</h4>
+      <p>The bank processes and settles the payments that come in through QR scans at merchants — the money lands in the merchant's account.</p>
+      <div class="d-example">💳 <strong>Example:</strong> A customer scans a QR at a restaurant. Faysal Bank processes that payment and deposits the money into the restaurant's account.</div>
+    </div>
+    <div class="def-card">
+      <div class="d-name">RTGS</div>
+      <h4>Large value transfers between banks — real time</h4>
+      <p>Real Time Gross Settlement — used for very large amounts (usually millions) that need to move between banks immediately and individually.</p>
+      <div class="d-example">🏦 <strong>Example:</strong> A corporation transfers PKR 500 million to another bank for a property deal. RTGS settles it instantly, one by one, in real time.</div>
+    </div>
+    <div class="def-card">
+      <div class="d-name">IBFT</div>
+      <h4>Regular interbank money transfers for everyday use</h4>
+      <p>Inter Bank Funds Transfer — the standard way customers transfer money from their account in one bank to an account in a different bank.</p>
+      <div class="d-example">🔄 <strong>Example:</strong> A customer with a National Bank account transfers PKR 20,000 to their friend's Meezan Bank account through internet banking.</div>
+    </div>
+    <div class="def-card">
+      <div class="d-name">UBPS</div>
+      <h4>Pay utility bills through the bank</h4>
+      <p>Utility Bill Payment System — allows customers to pay their electricity, gas, water, and other utility bills directly through their bank or app.</p>
+      <div class="d-example">💡 <strong>Example:</strong> A customer logs into their National Bank app and pays their LESCO electricity bill directly — no need to visit a payment center.</div>
+    </div>
+    <div class="def-card">
+      <div class="d-name">ACS</div>
+      <h4>Scheduled/batch clearing transactions</h4>
+      <p>Automated Clearing System — processes scheduled or recurring transactions in batches at set times, like standing orders or cheque clearances.</p>
+      <div class="d-example">🔁 <strong>Example:</strong> A bank processes all cheque deposits from the day in a single clearing batch overnight through ACS.</div>
+    </div>
+    <div class="def-card">
+      <div class="d-name">TF 2.0</div>
+      <h4>Look up an account holder's name using their account number</h4>
+      <p>Title Fetch — before sending money, the system fetches and shows the receiver's name so the sender can confirm they're sending to the right person.</p>
+      <div class="d-example">🔍 <strong>Example:</strong> Ali enters his friend's account number. Before confirming the transfer, the app shows "Account holder: Sara Ahmed" — Ali confirms it's correct, then sends.</div>
+    </div>
+    <div class="def-card">
+      <div class="d-name">CMS</div>
+      <h4>Manage the full lifecycle of bank cards</h4>
+      <p>Card Management System — handles everything related to debit/credit cards: issuing new cards, activating them, blocking, setting limits, and handling card transactions.</p>
+      <div class="d-example">💳 <strong>Example:</strong> A customer calls the bank to block their lost debit card. The bank agent uses CMS to instantly block the card and issue a replacement.</div>
+    </div>
+  </div>
+
+  <!-- MULTINET CLIENTS -->
+  <div class="sec m"><span class="sn">02</span> Multinet Clients &amp; Their Active Services</div>
+
+  <!-- Dubai Islamic Bank -->
+  <div class="client-card">
+    <div class="cc-header">
+      <div class="cc-name">🏦 Dubai Islamic Bank</div>
+      <span class="vpn-badge vpn-m">Multinet</span>
+    </div>
+    <div class="cc-body">
+      <div class="svc-row"><span class="svc-name">RAAST Bulk Receiving</span><div class="svc-content"><div class="svc-what">Receives bulk salary/payment batches</div><div class="svc-example"><strong>Example:</strong> Corporate client sends 1,000 employee salaries — DIB receives them all in one RAAST bulk.</div></div></div>
+      <div class="svc-row"><span class="svc-name">RAAST Bulk Sending</span><div class="svc-content"><div class="svc-what">Sends bulk payment batches out</div><div class="svc-example"><strong>Example:</strong> DIB sends out vendor payments for a corporate customer to 200 suppliers at once.</div></div></div>
+      <div class="svc-row"><span class="svc-name">RAAST P2P</span><div class="svc-content"><div class="svc-what">Instant person-to-person transfers</div><div class="svc-example"><strong>Example:</strong> DIB customer sends PKR 10,000 to a friend at another bank instantly via phone number.</div></div></div>
+      <div class="svc-row"><span class="svc-name">P2M Issuance</span><div class="svc-content"><div class="svc-what">Issues QR codes to merchants</div><div class="svc-example"><strong>Example:</strong> A DIB business account holder receives a QR code to place at their shop counter.</div></div></div>
+      <div class="svc-row"><span class="svc-name">TF 2.0</span><div class="svc-content"><div class="svc-what">Fetch account holder name before transfer</div><div class="svc-example"><strong>Example:</strong> Before sending money, DIB app shows receiver's name to confirm correct account.</div></div></div>
+    </div>
+  </div>
+
+  <!-- MCB Islamic -->
+  <div class="client-card">
+    <div class="cc-header">
+      <div class="cc-name">🏦 MCB Islamic Bank</div>
+      <span class="vpn-badge vpn-m">Multinet</span>
+    </div>
+    <div class="cc-body">
+      <div class="svc-row"><span class="svc-name">RAAST Bulk Receiving</span><div class="svc-content"><div class="svc-what">Receives bulk payments</div><div class="svc-example"><strong>Example:</strong> MCB Islamic receives government disbursements for multiple account holders in one batch.</div></div></div>
+      <div class="svc-row"><span class="svc-name">RAAST P2P</span><div class="svc-content"><div class="svc-what">Instant individual transfers</div><div class="svc-example"><strong>Example:</strong> MCB Islamic customer pays rent to their landlord instantly via RAAST P2P.</div></div></div>
+      <div class="svc-row"><span class="svc-name">P2M Issuance</span><div class="svc-content"><div class="svc-what">Issues merchant QR codes</div><div class="svc-example"><strong>Example:</strong> A small shop owner with MCB Islamic account gets a QR code to accept digital payments.</div></div></div>
+      <div class="svc-row"><span class="svc-name">TF 2.0</span><div class="svc-content"><div class="svc-what">Name verification before transfer</div><div class="svc-example"><strong>Example:</strong> Customer enters IBAN, app confirms account name — reduces wrong transfers.</div></div></div>
+    </div>
+  </div>
+
+  <!-- EasyPaisa -->
+  <div class="client-card">
+    <div class="cc-header">
+      <div class="cc-name">📱 EasyPaisa Bank</div>
+      <span class="vpn-badge vpn-m">Multinet</span>
+    </div>
+    <div class="cc-body">
+      <div class="svc-row"><span class="svc-name">RAAST Bulk Receiving</span><div class="svc-content"><div class="svc-what">Bulk inward payments</div><div class="svc-example"><strong>Example:</strong> NGO sends donations to thousands of EasyPaisa wallets in one go.</div></div></div>
+      <div class="svc-row"><span class="svc-name">RAAST P2P</span><div class="svc-content"><div class="svc-what">Person to person payments</div><div class="svc-example"><strong>Example:</strong> EasyPaisa user sends money to a friend on any bank, instantly.</div></div></div>
+      <div class="svc-row"><span class="svc-name">P2M Issuance</span><div class="svc-content"><div class="svc-what">Merchant QR issuance</div><div class="svc-example"><strong>Example:</strong> Street vendor registers on EasyPaisa and gets a QR to accept payments.</div></div></div>
+      <div class="svc-row"><span class="svc-name">P2M Acquiring</span><div class="svc-content"><div class="svc-what">Collects QR payments for merchants</div><div class="svc-example"><strong>Example:</strong> Customer scans EasyPaisa QR at a shop — EasyPaisa settles the amount to the merchant.</div></div></div>
+      <div class="svc-row"><span class="svc-name">RTGS</span><div class="svc-content"><div class="svc-what">Large value real-time transfers</div><div class="svc-example"><strong>Example:</strong> Corporate client moves PKR 200 million between banks instantly via EasyPaisa's RTGS.</div></div></div>
+      <div class="svc-row"><span class="svc-name">TF 2.0</span><div class="svc-content"><div class="svc-what">Account name lookup</div><div class="svc-example"><strong>Example:</strong> Before sending money, EasyPaisa app shows receiver name for confirmation.</div></div></div>
+    </div>
+  </div>
+
+  <!-- Faysal Bank -->
+  <div class="client-card">
+    <div class="cc-header">
+      <div class="cc-name">🏦 Faysal Bank</div>
+      <span class="vpn-badge vpn-m">Multinet</span>
+    </div>
+    <div class="cc-body">
+      <div class="svc-row"><span class="svc-name">P2M Acquiring</span><div class="svc-content"><div class="svc-what">Processes QR payments at merchants</div><div class="svc-example"><strong>Example:</strong> Customer scans a QR at a Faysal Bank merchant and pays — Faysal Bank processes and settles the transaction.</div></div></div>
+    </div>
+  </div>
+
+  <!-- NBP Funds -->
+  <div class="client-card">
+    <div class="cc-header">
+      <div class="cc-name">💼 NBP FUNDS</div>
+      <span class="vpn-badge vpn-m">Multinet</span>
+    </div>
+    <div class="cc-body">
+      <div class="svc-row"><span class="svc-name">IBFT</span><div class="svc-content"><div class="svc-what">Interbank fund transfers</div><div class="svc-example"><strong>Example:</strong> Investor redeems mutual fund units and money is transferred to their account at another bank via IBFT.</div></div></div>
+      <div class="svc-row"><span class="svc-name">UBPS</span><div class="svc-content"><div class="svc-what">Utility bill payments</div><div class="svc-example"><strong>Example:</strong> NBP Funds customer pays their gas bill through the portal using UBPS.</div></div></div>
+      <div class="svc-row"><span class="svc-name">CMS</span><div class="svc-content"><div class="svc-what">Card management</div><div class="svc-example"><strong>Example:</strong> NBP Funds issues investment-linked cards and manages their activation and limits through CMS.</div></div></div>
+    </div>
+  </div>
+
+  <!-- PAYKII -->
+  <div class="client-card">
+    <div class="cc-header">
+      <div class="cc-name">💸 PAYKII</div>
+      <span class="vpn-badge vpn-m">Multinet</span>
+    </div>
+    <div class="cc-body">
+      <div class="svc-row"><span class="svc-name">UBPS</span><div class="svc-content"><div class="svc-what">Utility bill collection platform</div><div class="svc-example"><strong>Example:</strong> PAYKII customers pay electricity, gas, and water bills through the PAYKII app using UBPS.</div></div></div>
+    </div>
+  </div>
+
+  <!-- JAZZ CLIENTS -->
+  <div class="sec j"><span class="sn">03</span> Jazz Clients &amp; Their Active Services</div>
+
+  <!-- National Bank -->
+  <div class="client-card">
+    <div class="cc-header">
+      <div class="cc-name">🏛️ National Bank of Pakistan</div>
+      <span class="vpn-badge vpn-j">Jazz NBP</span>
+    </div>
+    <div class="cc-body">
+      <div class="svc-row"><span class="svc-name">RAAST Bulk Receiving</span><div class="svc-content"><div class="svc-what">Bulk inward government payments</div><div class="svc-example"><strong>Example:</strong> Government social protection program deposits Ehsaas payments to thousands of NBP accounts in one bulk.</div></div></div>
+      <div class="svc-row"><span class="svc-name">RAAST Bulk Sending</span><div class="svc-content"><div class="svc-what">Mass outward payments</div><div class="svc-example"><strong>Example:</strong> NBP sends out pension payments to tens of thousands of retired government employees in one batch.</div></div></div>
+      <div class="svc-row"><span class="svc-name">RAAST P2P</span><div class="svc-content"><div class="svc-what">Instant customer transfers</div><div class="svc-example"><strong>Example:</strong> NBP customer sends money to a friend at Meezan Bank instantly via NBP mobile app.</div></div></div>
+      <div class="svc-row"><span class="svc-name">P2M Issuance</span><div class="svc-content"><div class="svc-what">QR codes for NBP merchants</div><div class="svc-example"><strong>Example:</strong> A business customer of NBP gets a QR code to display and accept payments at their outlet.</div></div></div>
+      <div class="svc-row"><span class="svc-name">P2M Acquiring</span><div class="svc-content"><div class="svc-what">Settling QR payments</div><div class="svc-example"><strong>Example:</strong> Customer pays at an NBP merchant via QR — NBP settles the transaction to the merchant account.</div></div></div>
+      <div class="svc-row"><span class="svc-name">IBFT</span><div class="svc-content"><div class="svc-what">Standard interbank transfers</div><div class="svc-example"><strong>Example:</strong> NBP customer transfers salary to their child's HBL account through internet banking.</div></div></div>
+      <div class="svc-row"><span class="svc-name">UBPS</span><div class="svc-content"><div class="svc-what">Bill payments</div><div class="svc-example"><strong>Example:</strong> NBP customer pays SNGPL gas bill via NBP app without visiting any payment center.</div></div></div>
+      <div class="svc-row"><span class="svc-name">TF 2.0</span><div class="svc-content"><div class="svc-what">Name fetch before transfer</div><div class="svc-example"><strong>Example:</strong> NBP app shows receiver's name before confirming any IBFT or RAAST transfer.</div></div></div>
+    </div>
+  </div>
+
+  <!-- Mashreq Bank -->
+  <div class="client-card">
+    <div class="cc-header">
+      <div class="cc-name">🏦 Mashreq Bank</div>
+      <span class="vpn-badge vpn-j">Jazz PSL</span>
+    </div>
+    <div class="cc-body">
+      <div class="svc-row"><span class="svc-name">RAAST P2P</span><div class="svc-content"><div class="svc-what">Instant P2P transfers</div><div class="svc-example"><strong>Example:</strong> Mashreq customer sends money to anyone in Pakistan instantly using RAAST.</div></div></div>
+      <div class="svc-row"><span class="svc-name">IBFT</span><div class="svc-content"><div class="svc-what">Interbank transfers</div><div class="svc-example"><strong>Example:</strong> Corporate client moves funds between their Mashreq and MCB accounts.</div></div></div>
+      <div class="svc-row"><span class="svc-name">UBPS</span><div class="svc-content"><div class="svc-what">Utility bill payments</div><div class="svc-example"><strong>Example:</strong> Mashreq customer pays IESCO electricity bill via their banking portal.</div></div></div>
+      <div class="svc-row"><span class="svc-name">TF 2.0</span><div class="svc-content"><div class="svc-what">Account name verification</div><div class="svc-example"><strong>Example:</strong> Before an IBFT, Mashreq shows the account holder name to avoid wrong transfers.</div></div></div>
+    </div>
+  </div>
+
+  <!-- Cerisma -->
+  <div class="client-card">
+    <div class="cc-header">
+      <div class="cc-name">💳 Cerisma</div>
+      <span class="vpn-badge vpn-j">Jazz PSL</span>
+    </div>
+    <div class="cc-body">
+      <div class="svc-row"><span class="svc-name">RAAST P2P</span><div class="svc-content"><div class="svc-what">Instant transfers</div><div class="svc-example"><strong>Example:</strong> Cerisma wallet user sends money to another bank customer instantly.</div></div></div>
+      <div class="svc-row"><span class="svc-name">P2M Issuance</span><div class="svc-content"><div class="svc-what">Merchant QR issuance</div><div class="svc-example"><strong>Example:</strong> Cerisma issues a QR code to a merchant to accept digital payments at checkout.</div></div></div>
+      <div class="svc-row"><span class="svc-name">IBFT</span><div class="svc-content"><div class="svc-what">Interbank fund transfers</div><div class="svc-example"><strong>Example:</strong> Cerisma user transfers balance to their account at another bank.</div></div></div>
+      <div class="svc-row"><span class="svc-name">UBPS</span><div class="svc-content"><div class="svc-what">Bill payments</div><div class="svc-example"><strong>Example:</strong> Customer pays telephone or utility bill directly through Cerisma platform.</div></div></div>
+      <div class="svc-row"><span class="svc-name">TF 2.0</span><div class="svc-content"><div class="svc-what">Name lookup</div><div class="svc-example"><strong>Example:</strong> Cerisma verifies receiver name before processing any transfer.</div></div></div>
+    </div>
+  </div>
+
+  <!-- Raqami Bank -->
+  <div class="client-card">
+    <div class="cc-header">
+      <div class="cc-name">📱 Raqami Bank</div>
+      <span class="vpn-badge vpn-j">Jazz PSL</span>
+    </div>
+    <div class="cc-body">
+      <div class="svc-row"><span class="svc-name">RAAST P2P</span><div class="svc-content"><div class="svc-what">Digital P2P payments</div><div class="svc-example"><strong>Example:</strong> Raqami digital bank customer sends money to any account in Pakistan instantly.</div></div></div>
+      <div class="svc-row"><span class="svc-name">IBFT</span><div class="svc-content"><div class="svc-what">Interbank transfers</div><div class="svc-example"><strong>Example:</strong> Raqami customer moves money to their account at a traditional bank.</div></div></div>
+      <div class="svc-row"><span class="svc-name">UBPS</span><div class="svc-content"><div class="svc-what">Bill payments</div><div class="svc-example"><strong>Example:</strong> Raqami app user pays their monthly internet or electricity bill in-app.</div></div></div>
+      <div class="svc-row"><span class="svc-name">TF 2.0</span><div class="svc-content"><div class="svc-what">Receiver name confirmation</div><div class="svc-example"><strong>Example:</strong> Raqami shows account title before any transfer is completed.</div></div></div>
+    </div>
+  </div>
+
+  <!-- Allied Bank -->
+  <div class="client-card">
+    <div class="cc-header">
+      <div class="cc-name">🏦 Allied Bank</div>
+      <span class="vpn-badge vpn-j">Jazz PSL</span>
+    </div>
+    <div class="cc-body">
+      <div class="svc-row"><span class="svc-name">ACS</span><div class="svc-content"><div class="svc-what">Automated clearing / cheque processing</div><div class="svc-example"><strong>Example:</strong> Allied Bank processes all cheque deposits from the day in a single overnight clearing batch via ACS.</div></div></div>
+    </div>
+  </div>
+
+  <!-- HBL Microfinance -->
+  <div class="client-card">
+    <div class="cc-header">
+      <div class="cc-name">🏦 HBL Microfinance Bank</div>
+      <span class="vpn-badge vpn-j">Jazz PSL</span>
+    </div>
+    <div class="cc-body">
+      <div class="svc-row"><span class="svc-name">TF 2.0</span><div class="svc-content"><div class="svc-what">Account name verification</div><div class="svc-example"><strong>Example:</strong> Before a microfinance disbursement, HBL Microfinance verifies receiver's account name using TF 2.0.</div></div></div>
+    </div>
+  </div>
+
+  <!-- Halan -->
+  <div class="client-card">
+    <div class="cc-header">
+      <div class="cc-name">🚀 Halan</div>
+      <span class="vpn-badge vpn-j">Jazz PSL</span>
+    </div>
+    <div class="cc-body">
+      <div class="svc-row"><span class="svc-name">IBFT</span><div class="svc-content"><div class="svc-what">Interbank transfers</div><div class="svc-example"><strong>Example:</strong> Halan disburses a loan amount to a customer's account at another bank via IBFT.</div></div></div>
+      <div class="svc-row"><span class="svc-name">CMS</span><div class="svc-content"><div class="svc-what">Card management</div><div class="svc-example"><strong>Example:</strong> Halan issues prepaid cards to their gig economy workers and manages activation and limits through CMS.</div></div></div>
+    </div>
+  </div>
+
+  <!-- Keenu -->
+  <div class="client-card">
+    <div class="cc-header">
+      <div class="cc-name">💰 Keenu</div>
+      <span class="vpn-badge vpn-j">Jazz PSL</span>
+    </div>
+    <div class="cc-body">
+      <div class="svc-row"><span class="svc-name">P2M Acquiring</span><div class="svc-content"><div class="svc-what">Merchant payment collection</div><div class="svc-example"><strong>Example:</strong> Keenu processes QR or tap payments at retail merchants and settles the amount to their accounts.</div></div></div>
+    </div>
+  </div>
+
+  <!-- NTC/JAZZ COMBINED -->
+  <div class="sec j"><span class="sn">04</span> NTC Core / Jazz PSL Client</div>
+
+  <!-- CDNS -->
+  <div class="client-card">
+    <div class="cc-header">
+      <div class="cc-name">🏛️ CDNS</div>
+      <span class="vpn-badge vpn-n">NTC Core / Jazz PSL</span>
+    </div>
+    <div class="cc-body">
+      <div class="svc-row"><span class="svc-name">RAAST Bulk Sending</span><div class="svc-content"><div class="svc-what">Bulk outward payments</div><div class="svc-example"><strong>Example:</strong> CDNS sends profit payments to thousands of savings certificate holders in one bulk batch.</div></div></div>
+      <div class="svc-row"><span class="svc-name">RAAST P2P</span><div class="svc-content"><div class="svc-what">Individual transfers</div><div class="svc-example"><strong>Example:</strong> CDNS customer withdraws their savings and it's sent instantly to their bank account via RAAST.</div></div></div>
+      <div class="svc-row"><span class="svc-name">IBFT</span><div class="svc-content"><div class="svc-what">Interbank transfers</div><div class="svc-example"><strong>Example:</strong> CDNS disburses matured certificate amount to customer's account at any bank via IBFT.</div></div></div>
+      <div class="svc-row"><span class="svc-name">UBPS</span><div class="svc-content"><div class="svc-what">Utility bill payments</div><div class="svc-example"><strong>Example:</strong> CDNS account holders can pay their utility bills through the CDNS portal.</div></div></div>
+    </div>
+  </div>
+
+  <!-- FULL MATRIX TABLE -->
+  <div class="sec all"><span class="sn">05</span> Full Matrix — All Clients at a Glance</div>
+
+  <div class="matrix-wrap">
+    <div class="mx-header">📊 Complete SaaS Client × Service Matrix</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th>VPN</th>
+          <th>RAAST<br>Bulk Rcv</th>
+          <th>RAAST<br>Bulk Snd</th>
+          <th>P2P</th>
+          <th>P2M<br>Issue</th>
+          <th>P2M<br>Acqui</th>
+          <th>RTGS</th>
+          <th>IBFT</th>
+          <th>UBPS</th>
+          <th>ACS</th>
+          <th>TF2.0</th>
+          <th>CMS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Dubai Islamic Bank</td>
+          <td><span class="vpn-cell vpn-m">Multinet</span></td>
+          <td><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td>
+        </tr>
+        <tr>
+          <td>MCB Islamic Bank</td>
+          <td><span class="vpn-cell vpn-m">Multinet</span></td>
+          <td><span class="tick">✓</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td>
+        </tr>
+        <tr>
+          <td>EasyPaisa Bank</td>
+          <td><span class="vpn-cell vpn-m">Multinet</span></td>
+          <td><span class="tick">✓</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td>
+        </tr>
+        <tr>
+          <td>Faysal Bank</td>
+          <td><span class="vpn-cell vpn-m">Multinet</span></td>
+          <td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td>
+        </tr>
+        <tr>
+          <td>NBP FUNDS</td>
+          <td><span class="vpn-cell vpn-m">Multinet</span></td>
+          <td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td>
+        </tr>
+        <tr>
+          <td>PAYKII</td>
+          <td><span class="vpn-cell vpn-m">Multinet</span></td>
+          <td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td>
+        </tr>
+        <tr>
+          <td>National Bank</td>
+          <td><span class="vpn-cell vpn-j">Jazz NBP</span></td>
+          <td><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td>
+        </tr>
+        <tr>
+          <td>Mashreq Bank</td>
+          <td><span class="vpn-cell vpn-j">Jazz PSL</span></td>
+          <td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td>
+        </tr>
+        <tr>
+          <td>Cerisma</td>
+          <td><span class="vpn-cell vpn-j">Jazz PSL</span></td>
+          <td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td>
+        </tr>
+        <tr>
+          <td>Raqami Bank</td>
+          <td><span class="vpn-cell vpn-j">Jazz PSL</span></td>
+          <td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td>
+        </tr>
+        <tr>
+          <td>CDNS</td>
+          <td><span class="vpn-cell vpn-n">NTC/Jazz</span></td>
+          <td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td>
+        </tr>
+        <tr>
+          <td>Allied Bank</td>
+          <td><span class="vpn-cell vpn-j">Jazz PSL</span></td>
+          <td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td>
+        </tr>
+        <tr>
+          <td>HBL Microfinance</td>
+          <td><span class="vpn-cell vpn-j">Jazz PSL</span></td>
+          <td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td>
+        </tr>
+        <tr>
+          <td>Halan</td>
+          <td><span class="vpn-cell vpn-j">Jazz PSL</span></td>
+          <td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td>
+        </tr>
+        <tr>
+          <td>Keenu</td>
+          <td><span class="vpn-cell vpn-j">Jazz PSL</span></td>
+          <td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="tick">✓</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td><td><span class="cross">—</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary">
+    <h3>📌 Quick Summary for Your CEO Report</h3>
+    <div class="sum-grid">
+      <div class="sum-card s-m">
+        <div class="s-label">Multinet Clients</div>
+        <div class="s-num">6</div>
+        <div class="s-desc">DIB, MCB Islamic, EasyPaisa, Faysal Bank, NBP Funds, PAYKII</div>
+      </div>
+      <div class="sum-card s-j">
+        <div class="s-label">Jazz Clients</div>
+        <div class="s-num">9</div>
+        <div class="s-desc">NBP, Mashreq, Cerisma, Raqami, CDNS, Allied, HBL MFB, Halan, Keenu</div>
+      </div>
+      <div class="sum-card s-all">
+        <div class="s-label">Total Active Services</div>
+        <div class="s-num">11</div>
+        <div class="s-desc">RAAST BR, RAAST BS, P2P, P2M Issue, P2M Acqui, RTGS, IBFT, UBPS, ACS, TF2.0, CMS</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

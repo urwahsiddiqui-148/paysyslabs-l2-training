@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 2 · Day 3 — SQL Basics</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #f6f8ff;
+    --surface: #ffffff;
+    --surface2: #eef1fa;
+    --surface3: #e6eaf6;
+    --border: #d8ddef;
+    --ink: #151a2e;
+    --ink-dim: #5a6280;
+    --ink-faint: #a8b0cc;
+
+    --blue: #2563eb;
+    --blue-bg: #eff4ff;
+    --blue-border: #bfcffe;
+
+    --violet: #7c3aed;
+    --violet-bg: #f5f0ff;
+    --violet-border: #d4bffe;
+
+    --teal: #0d9488;
+    --teal-bg: #f0fdfa;
+    --teal-border: #99f6e4;
+
+    --rose: #e11d48;
+    --rose-bg: #fff1f4;
+    --rose-border: #fecdd3;
+
+    --amber: #d97706;
+    --amber-bg: #fffbeb;
+    --amber-border: #fde68a;
+
+    --green: #16a34a;
+    --green-bg: #f0fdf4;
+    --green-border: #bbf7d0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: 'DM Sans', sans-serif; font-size: 15px; line-height: 1.7; padding: 48px 24px 100px; }
+  .page { max-width: 940px; margin: 0 auto; }
+
+  /* TOPBAR */
+  .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:52px; padding-bottom:18px; border-bottom:2px solid var(--border); }
+  .topbar-left { font-family:'DM Mono',monospace; font-size:11px; color:var(--ink-faint); letter-spacing:1px; text-transform:uppercase; }
+  .tb-right { display:flex; gap:8px; }
+  .tb-badge { font-family:'DM Mono',monospace; font-size:10px; padding:4px 14px; border-radius:100px; letter-spacing:1px; text-transform:uppercase; }
+  .tb-week { background:var(--surface2); border:1px solid var(--border); color:var(--ink-dim); }
+  .tb-day  { background:var(--blue-bg); border:1px solid var(--blue-border); color:var(--blue); }
+
+  /* HERO */
+  .hero { margin-bottom:52px; }
+  .day-label { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:14px; }
+  .hero h1 { font-family:'DM Serif Display',serif; font-size:clamp(36px,7vw,68px); line-height:1.05; color:var(--ink); margin-bottom:18px; }
+  .hero h1 em { color:var(--blue); font-style:normal; }
+  .hero-desc { color:var(--ink-dim); font-size:16px; max-width:530px; }
+  .tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:22px; }
+  .tag { padding:5px 14px; border-radius:100px; font-family:'DM Mono',monospace; font-size:11px; background:var(--surface); border:1px solid var(--border); color:var(--ink-dim); }
+
+  /* SECTION */
+  .sec { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--ink-faint); margin-bottom:20px; margin-top:52px; display:flex; align-items:center; gap:12px; }
+  .sec .sn { font-size:12px; color:var(--blue); }
+  .sec::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* ANALOGY */
+  .analogy { background:var(--blue-bg); border:1px solid var(--blue-border); border-left:4px solid var(--blue); border-radius:12px; padding:26px 30px; margin-bottom:16px; }
+  .analogy .al { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--blue); margin-bottom:10px; }
+  .analogy p { color:var(--ink); font-size:15px; }
+  .analogy strong { color:var(--ink); font-weight:600; }
+
+  /* CARD */
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:26px 30px; margin-bottom:14px; }
+  .card h3 { font-family:'DM Serif Display',serif; font-size:19px; color:var(--ink); margin-bottom:10px; }
+  .card p { color:var(--ink-dim); margin-bottom:10px; }
+  .card p:last-child { margin-bottom:0; }
+  .card strong { color:var(--ink); }
+
+  /* SQL COMMAND BLOCK */
+  .sql-block { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:18px; }
+  .sql-header { padding:18px 28px; background:var(--surface2); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .sql-name { font-family:'DM Mono',monospace; font-size:22px; font-weight:500; color:var(--ink); }
+  .sql-tag { font-family:'DM Mono',monospace; font-size:10px; padding:4px 12px; border-radius:100px; letter-spacing:1px; text-transform:uppercase; }
+  .st-blue   { background:var(--blue-bg);   border:1px solid var(--blue-border);   color:var(--blue); }
+  .st-violet { background:var(--violet-bg); border:1px solid var(--violet-border); color:var(--violet); }
+  .st-teal   { background:var(--teal-bg);   border:1px solid var(--teal-border);   color:var(--teal); }
+  .st-amber  { background:var(--amber-bg);  border:1px solid var(--amber-border);  color:var(--amber); }
+  .sql-tagline { margin-left:auto; font-size:13px; font-style:italic; }
+  .st-blue   ~ .sql-tagline { color:var(--blue); }
+  .st-violet ~ .sql-tagline { color:var(--violet); }
+  .st-teal   ~ .sql-tagline { color:var(--teal); }
+  .st-amber  ~ .sql-tagline { color:var(--amber); }
+
+  .sql-body { padding:28px; display:flex; flex-direction:column; gap:18px; }
+  .sql-what { font-size:14px; color:var(--ink-dim); line-height:1.65; }
+  .sql-what strong { color:var(--ink); }
+
+  /* CODE BOX */
+  .code-box { background:var(--ink); border-radius:12px; overflow:hidden; }
+  .cb-bar { padding:8px 16px; background:#1e2440; display:flex; align-items:center; gap:8px; }
+  .cb-bar .dot { width:8px; height:8px; border-radius:50%; }
+  .dot-r{background:#ff5f56;} .dot-y{background:#ffbd2e;} .dot-g{background:#27c93f;}
+  .cb-bar span { font-family:'DM Mono',monospace; font-size:10px; color:#5a6a8a; margin-left:4px; letter-spacing:1px; }
+  .cb-code { padding:18px 22px; font-family:'DM Mono',monospace; font-size:13px; line-height:2.0; }
+  .kw  { color:#7dd3fc; }   /* keyword - blue */
+  .fn  { color:#c084fc; }   /* function - purple */
+  .tb  { color:#34d399; }   /* table name - green */
+  .cl  { color:#fbbf24; }   /* column - amber */
+  .st  { color:#f87171; }   /* string - red */
+  .cm  { color:#4b5a7a; }   /* comment - dim */
+  .nm  { color:#fb923c; }   /* number - orange */
+  .op  { color:#e2e8f0; }   /* operator/normal */
+
+  /* RESULT TABLE */
+  .result-wrap { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  .rw-label { padding:8px 16px; background:var(--surface2); border-bottom:1px solid var(--border); font-family:'DM Mono',monospace; font-size:10px; color:var(--ink-faint); letter-spacing:2px; text-transform:uppercase; display:flex; align-items:center; gap:6px; }
+  .rw-label .rl-dot { width:6px; height:6px; border-radius:50%; background:var(--green); }
+  table.rt { width:100%; border-collapse:collapse; }
+  table.rt th { padding:9px 16px; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--ink-faint); text-align:left; border-bottom:1px solid var(--border); font-weight:400; background:var(--surface2); }
+  table.rt td { padding:11px 16px; font-size:13px; color:var(--ink-dim); border-bottom:1px solid var(--border); font-family:'DM Mono',monospace; }
+  table.rt tr:last-child td { border-bottom:none; }
+  table.rt tr:hover td { background:var(--surface2); }
+
+  /* NOTE */
+  .note { border-radius:10px; padding:12px 16px; font-size:13px; margin-top:2px; }
+  .note-blue   { background:var(--blue-bg);   border:1px solid var(--blue-border);   color:var(--blue); }
+  .note-violet { background:var(--violet-bg); border:1px solid var(--violet-border); color:var(--violet); }
+  .note-amber  { background:var(--amber-bg);  border:1px solid var(--amber-border);  color:var(--amber); }
+  .note strong { color:var(--ink); }
+
+  /* EXAMPLE TABLE for join */
+  .two-tables { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:10px; }
+  .mini-table { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  .mt-header { padding:8px 14px; background:var(--surface2); border-bottom:1px solid var(--border); font-family:'DM Mono',monospace; font-size:11px; color:var(--ink-dim); }
+  table.mt { width:100%; border-collapse:collapse; }
+  table.mt th { padding:7px 12px; font-family:'DM Mono',monospace; font-size:10px; color:var(--ink-faint); text-align:left; border-bottom:1px solid var(--border); background:var(--surface2); font-weight:400; }
+  table.mt td { padding:8px 12px; font-size:12px; color:var(--ink-dim); border-bottom:1px solid var(--border); font-family:'DM Mono',monospace; }
+  table.mt tr:last-child td { border-bottom:none; }
+
+  /* LAB */
+  .lab-wrap { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:14px; }
+  .lab-header { padding:18px 26px; background:var(--ink); color:#fff; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  .lab-header h3 { font-family:'DM Serif Display',serif; font-size:18px; font-weight:400; }
+  .lab-note { font-family:'DM Mono',monospace; font-size:10px; color:rgba(255,255,255,0.4); background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); padding:4px 12px; border-radius:100px; }
+  .lab-body { padding:28px; display:flex; flex-direction:column; gap:22px; }
+  .lab-step { display:flex; gap:18px; align-items:flex-start; }
+  .ls-num { width:38px; height:38px; border-radius:50%; background:var(--blue-bg); border:2px solid var(--blue-border); display:flex; align-items:center; justify-content:center; font-family:'DM Mono',monospace; font-size:13px; color:var(--blue); flex-shrink:0; margin-top:2px; }
+  .ls-content { flex:1; }
+  .ls-title { font-size:15px; font-weight:600; color:var(--ink); margin-bottom:6px; }
+  .ls-desc  { font-size:13px; color:var(--ink-dim); margin-bottom:10px; }
+  .ls-finding { background:var(--green-bg); border:1px solid var(--green-border); border-radius:8px; padding:10px 14px; font-size:13px; color:var(--green); margin-top:8px; }
+  .ls-finding strong { color:var(--ink); }
+
+  /* REPORT */
+  .report-box { background:var(--ink); border-radius:16px; padding:28px; margin-bottom:14px; }
+  .report-box .rb-title { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,0.3); margin-bottom:16px; }
+  table.rep { width:100%; border-collapse:collapse; }
+  table.rep th { padding:9px 16px; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,0.3); text-align:left; border-bottom:1px solid rgba(255,255,255,0.08); font-weight:400; }
+  table.rep td { padding:12px 16px; font-size:13px; color:rgba(255,255,255,0.6); border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; }
+  table.rep td:first-child { color:rgba(255,255,255,0.9); }
+  table.rep tr:last-child td { border-bottom:none; }
+  .status-s { color:#4ade80; } .status-f { color:#f87171; } .status-p { color:#fbbf24; }
+
+  /* SCENARIOS */
+  .scen-list { display:flex; flex-direction:column; gap:12px; margin-bottom:14px; }
+  .scen-item { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 22px; display:flex; gap:16px; align-items:flex-start; }
+  .si-id { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); background:var(--blue-bg); border:1px solid var(--blue-border); border-radius:6px; padding:4px 8px; flex-shrink:0; margin-top:2px; }
+  .scen-item p { font-size:14px; color:var(--ink-dim); }
+  .scen-item p strong { color:var(--ink); }
+  code.ic { font-family:'DM Mono',monospace; font-size:12px; background:var(--surface2); border:1px solid var(--border); padding:2px 7px; border-radius:4px; color:var(--blue); }
+
+  /* CHEATSHEET */
+  .cheat { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:14px; }
+  .cheat-header { padding:16px 24px; background:var(--surface2); border-bottom:1px solid var(--border); font-family:'DM Serif Display',serif; font-size:18px; color:var(--ink); }
+  .cheat-grid { display:grid; grid-template-columns:1fr 1fr; gap:0; }
+  .cheat-item { padding:13px 22px; border-bottom:1px solid var(--border); border-right:1px solid var(--border); display:flex; gap:12px; align-items:flex-start; }
+  .cheat-item:nth-child(even) { border-right:none; }
+  .cheat-item:nth-last-child(-n+2) { border-bottom:none; }
+  .ci-cmd { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); background:var(--blue-bg); border:1px solid var(--blue-border); padding:4px 10px; border-radius:6px; white-space:nowrap; flex-shrink:0; }
+  .ci-desc { font-size:13px; color:var(--ink-dim); padding-top:2px; }
+
+  /* OUTCOME */
+  .outcome { background:var(--ink); border-radius:16px; padding:36px; margin-top:48px; }
+  .outcome h3 { font-family:'DM Serif Display',serif; font-size:24px; font-weight:400; color:#7dd3fc; margin-bottom:20px; }
+  .outcome ul { display:flex; flex-direction:column; gap:10px; list-style:none; }
+  .outcome ul li { font-size:14px; color:rgba(255,255,255,0.6); padding-left:24px; position:relative; }
+  .outcome ul li::before { content:'✓'; position:absolute; left:0; color:#7dd3fc; font-family:'DM Mono',monospace; }
+
+  @media(max-width:640px){
+    .two-tables { grid-template-columns:1fr; }
+    .cheat-grid { grid-template-columns:1fr; }
+    .cheat-item { border-right:none; }
+    .sql-header { gap:10px; }
+    .sql-tagline { margin-left:0; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 2</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-week">Week 2</span>
+      <span class="tb-badge tb-day">Day 3</span>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="day-label">Today's Topic</div>
+    <h1>SQL <em>Basics</em></h1>
+    <p class="hero-desc">The database is where every transaction is stored permanently. SQL is the language you use to ask the database questions — and as L2, you'll be asking a lot of them.</p>
+    <div class="tags">
+      <span class="tag">SELECT</span>
+      <span class="tag">JOIN</span>
+      <span class="tag">COUNT</span>
+      <span class="tag">GROUP BY</span>
+    </div>
+  </div>
+
+  <!-- ANALOGY -->
+  <div class="sec"><span class="sn">01</span> The Simple Idea First</div>
+
+  <div class="analogy">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Think of a database like a <strong>massive Excel file with multiple sheets</strong>. One sheet has all transactions. Another has all client accounts. Another has all error logs.<br><br>
+      <strong>SQL is how you ask questions to that Excel file.</strong> Instead of scrolling through 2 million rows manually, you type a question like: <em>"Show me all failed transactions from Alpha Bank today"</em> — and the database gives you exactly that in seconds.<br><br>
+      As an L2 engineer, you use SQL every time a client asks <strong>"did my transaction go through?"</strong> or your manager asks <strong>"how many transactions failed today?"</strong>
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>What is SQL and why do you need it?</h3>
+    <p>SQL stands for <strong>Structured Query Language</strong>. It's the standard way to talk to a database. You write a query (a question), the database runs it, and sends you back the data you asked for.</p>
+    <p>In fintech, the database holds everything — every transaction, every account, every status update. Without SQL you're blind. With SQL you can find any transaction, check its status, count how many failed, and generate a full report — all in seconds.</p>
+  </div>
+
+  <!-- THE TABLE SETUP -->
+  <div class="sec"><span class="sn">02</span> Understanding the Tables First</div>
+
+  <div class="card">
+    <h3>Before writing any SQL — know your tables</h3>
+    <p>A database has multiple tables. Each table is like a sheet in Excel. For today's examples we'll use two common fintech tables. Understanding these helps you follow all the queries below.</p>
+  </div>
+
+  <div class="two-tables" style="margin-bottom:14px;">
+    <div class="mini-table">
+      <div class="mt-header">📋 transactions table</div>
+      <table class="mt">
+        <thead><tr><th>txn_id</th><th>client_id</th><th>amount</th><th>status</th><th>created_at</th></tr></thead>
+        <tbody>
+          <tr><td>TXN-001</td><td>C01</td><td>5000</td><td>SUCCESS</td><td>2024-03-15</td></tr>
+          <tr><td>TXN-002</td><td>C02</td><td>2000</td><td>FAILED</td><td>2024-03-15</td></tr>
+          <tr><td>TXN-003</td><td>C01</td><td>8500</td><td>FAILED</td><td>2024-03-15</td></tr>
+          <tr><td>TXN-004</td><td>C03</td><td>1200</td><td>SUCCESS</td><td>2024-03-15</td></tr>
+          <tr><td>TXN-005</td><td>C02</td><td>3300</td><td>PENDING</td><td>2024-03-15</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="mini-table">
+      <div class="mt-header">🏦 clients table</div>
+      <table class="mt">
+        <thead><tr><th>client_id</th><th>client_name</th><th>vpn</th><th>type</th></tr></thead>
+        <tbody>
+          <tr><td>C01</td><td>Alpha Bank</td><td>Multinet</td><td>Bank</td></tr>
+          <tr><td>C02</td><td>Beta Wallet</td><td>Jazz PSL</td><td>Wallet</td></tr>
+          <tr><td>C03</td><td>Gamma Finance</td><td>Jazz PSL</td><td>MFB</td></tr>
+          <tr><td>C04</td><td>Delta Pay</td><td>Multinet</td><td>Processor</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SELECT -->
+  <div class="sec"><span class="sn">03</span> The 4 Commands — Syntax, Use & Examples</div>
+
+  <div class="sql-block">
+    <div class="sql-header">
+      <div class="sql-name">SELECT</div>
+      <span class="sql-tag st-blue">Retrieve</span>
+      <div class="sql-tagline">"Ask the database to show you data"</div>
+    </div>
+    <div class="sql-body">
+      <div class="sql-what"><strong>What it does:</strong> SELECT is the most basic SQL command. It says "go into this table and show me these columns." Every SQL query starts with SELECT. You pick which columns you want to see and which table to get them from.</div>
+
+      <div class="code-box">
+        <div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>Syntax</span></div>
+        <div class="cb-code">
+<span class="kw">SELECT</span> <span class="cl">column1</span>, <span class="cl">column2</span>  <span class="cm">-- choose which columns to show</span><br>
+<span class="kw">FROM</span>   <span class="tb">table_name</span>          <span class="cm">-- which table to look in</span><br>
+<span class="kw">WHERE</span>  <span class="cl">column</span> <span class="op">= </span><span class="st">'value'</span>;   <span class="cm">-- filter rows (optional)</span><br>
+<br>
+<span class="cm">-- Use * to select ALL columns</span><br>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tb">transactions</span>;
+        </div>
+      </div>
+
+      <div class="code-box">
+        <div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>Real examples</span></div>
+        <div class="cb-code">
+<span class="cm">-- Show all columns for every transaction</span><br>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tb">transactions</span>;<br>
+<br>
+<span class="cm">-- Show only txn_id, amount and status</span><br>
+<span class="kw">SELECT</span> <span class="cl">txn_id</span>, <span class="cl">amount</span>, <span class="cl">status</span><br>
+<span class="kw">FROM</span>   <span class="tb">transactions</span>;<br>
+<br>
+<span class="cm">-- Find a specific transaction by ID</span><br>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tb">transactions</span><br>
+<span class="kw">WHERE</span>  <span class="cl">txn_id</span> <span class="op">=</span> <span class="st">'TXN-9823'</span>;<br>
+<br>
+<span class="cm">-- Find all FAILED transactions today</span><br>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tb">transactions</span><br>
+<span class="kw">WHERE</span>  <span class="cl">status</span> <span class="op">=</span> <span class="st">'FAILED'</span><br>
+<span class="kw">AND</span>    <span class="cl">created_at</span> <span class="op">=</span> <span class="st">'2024-03-15'</span>;
+        </div>
+      </div>
+
+      <div class="result-wrap">
+        <div class="rw-label"><span class="rl-dot"></span> Result of last query</div>
+        <table class="rt">
+          <thead><tr><th>txn_id</th><th>client_id</th><th>amount</th><th>status</th><th>created_at</th></tr></thead>
+          <tbody>
+            <tr><td>TXN-002</td><td>C02</td><td>2000</td><td>FAILED</td><td>2024-03-15</td></tr>
+            <tr><td>TXN-003</td><td>C01</td><td>8500</td><td>FAILED</td><td>2024-03-15</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note note-blue">💡 <strong>L2 use case:</strong> Client says "transaction TXN-9823 is missing." You run <code class="ic">SELECT * FROM transactions WHERE txn_id = 'TXN-9823'</code> — instantly see if it exists, what its status is, and when it was created.</div>
+    </div>
+  </div>
+
+  <!-- JOIN -->
+  <div class="sql-block">
+    <div class="sql-header">
+      <div class="sql-name">JOIN</div>
+      <span class="sql-tag st-violet">Combine</span>
+      <div class="sql-tagline">"Connect two tables together like merging two Excel sheets"</div>
+    </div>
+    <div class="sql-body">
+      <div class="sql-what"><strong>What it does:</strong> JOIN combines rows from two tables based on a matching column. The transactions table has a client_id but not the client name. The clients table has the name. JOIN brings them together so you see both in one result — the transaction details AND the client name side by side.</div>
+
+      <div class="code-box">
+        <div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>Syntax</span></div>
+        <div class="cb-code">
+<span class="kw">SELECT</span> <span class="cl">columns</span><br>
+<span class="kw">FROM</span>   <span class="tb">table1</span><br>
+<span class="kw">JOIN</span>   <span class="tb">table2</span><br>
+<span class="kw">ON</span>     <span class="tb">table1</span>.<span class="cl">matching_column</span> <span class="op">=</span> <span class="tb">table2</span>.<span class="cl">matching_column</span>;
+        </div>
+      </div>
+
+      <div class="code-box">
+        <div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>Real examples</span></div>
+        <div class="cb-code">
+<span class="cm">-- Show transaction ID, amount, status AND the client name together</span><br>
+<span class="kw">SELECT</span>  <span class="tb">t</span>.<span class="cl">txn_id</span>, <span class="tb">t</span>.<span class="cl">amount</span>, <span class="tb">t</span>.<span class="cl">status</span>, <span class="tb">c</span>.<span class="cl">client_name</span><br>
+<span class="kw">FROM</span>    <span class="tb">transactions</span> <span class="tb">t</span><br>
+<span class="kw">JOIN</span>    <span class="tb">clients</span> <span class="tb">c</span><br>
+<span class="kw">ON</span>      <span class="tb">t</span>.<span class="cl">client_id</span> <span class="op">=</span> <span class="tb">c</span>.<span class="cl">client_id</span>;<br>
+<br>
+<span class="cm">-- Show only FAILED transactions with client names</span><br>
+<span class="kw">SELECT</span>  <span class="tb">t</span>.<span class="cl">txn_id</span>, <span class="tb">c</span>.<span class="cl">client_name</span>, <span class="tb">t</span>.<span class="cl">amount</span>, <span class="tb">t</span>.<span class="cl">status</span><br>
+<span class="kw">FROM</span>    <span class="tb">transactions</span> <span class="tb">t</span><br>
+<span class="kw">JOIN</span>    <span class="tb">clients</span> <span class="tb">c</span><br>
+<span class="kw">ON</span>      <span class="tb">t</span>.<span class="cl">client_id</span> <span class="op">=</span> <span class="tb">c</span>.<span class="cl">client_id</span><br>
+<span class="kw">WHERE</span>   <span class="tb">t</span>.<span class="cl">status</span> <span class="op">=</span> <span class="st">'FAILED'</span>;
+        </div>
+      </div>
+
+      <div class="result-wrap">
+        <div class="rw-label"><span class="rl-dot"></span> Result of last query</div>
+        <table class="rt">
+          <thead><tr><th>txn_id</th><th>client_name</th><th>amount</th><th>status</th></tr></thead>
+          <tbody>
+            <tr><td>TXN-002</td><td>Beta Wallet</td><td>2000</td><td>FAILED</td></tr>
+            <tr><td>TXN-003</td><td>Alpha Bank</td><td>8500</td><td>FAILED</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note note-violet">💡 <strong>L2 use case:</strong> Your manager says "show me all failed transactions with client names." Without JOIN you'd have just IDs. With JOIN you get the full picture — client name, amount, status — all in one result.</div>
+    </div>
+  </div>
+
+  <!-- COUNT -->
+  <div class="sql-block">
+    <div class="sql-header">
+      <div class="sql-name">COUNT</div>
+      <span class="sql-tag st-teal">Aggregate</span>
+      <div class="sql-tagline">"Count how many rows match your question"</div>
+    </div>
+    <div class="sql-body">
+      <div class="sql-what"><strong>What it does:</strong> COUNT counts the number of rows that match your query. Instead of returning all the rows, it just tells you the number. Used constantly in fintech reports — "how many transactions failed today?", "how many clients have PENDING transactions?"</div>
+
+      <div class="code-box">
+        <div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>Syntax</span></div>
+        <div class="cb-code">
+<span class="kw">SELECT</span> <span class="fn">COUNT</span>(<span class="op">*</span>)          <span class="cm">-- count all rows</span><br>
+<span class="kw">FROM</span>   <span class="tb">table_name</span><br>
+<span class="kw">WHERE</span>  <span class="cl">condition</span>;       <span class="cm">-- optional filter</span>
+        </div>
+      </div>
+
+      <div class="code-box">
+        <div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>Real examples</span></div>
+        <div class="cb-code">
+<span class="cm">-- How many total transactions are there?</span><br>
+<span class="kw">SELECT</span> <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="kw">FROM</span> <span class="tb">transactions</span>;<br>
+<br>
+<span class="cm">-- How many transactions FAILED today?</span><br>
+<span class="kw">SELECT</span> <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="kw">FROM</span> <span class="tb">transactions</span><br>
+<span class="kw">WHERE</span>  <span class="cl">status</span> <span class="op">=</span> <span class="st">'FAILED'</span><br>
+<span class="kw">AND</span>    <span class="cl">created_at</span> <span class="op">=</span> <span class="st">'2024-03-15'</span>;<br>
+<br>
+<span class="cm">-- How many transactions are still PENDING for client C02?</span><br>
+<span class="kw">SELECT</span> <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="kw">FROM</span> <span class="tb">transactions</span><br>
+<span class="kw">WHERE</span>  <span class="cl">status</span>    <span class="op">=</span> <span class="st">'PENDING'</span><br>
+<span class="kw">AND</span>    <span class="cl">client_id</span> <span class="op">=</span> <span class="st">'C02'</span>;
+        </div>
+      </div>
+
+      <div class="result-wrap">
+        <div class="rw-label"><span class="rl-dot"></span> Result of COUNT(*) for FAILED today</div>
+        <table class="rt">
+          <thead><tr><th>COUNT(*)</th></tr></thead>
+          <tbody><tr><td>2</td></tr></tbody>
+        </table>
+      </div>
+      <div class="note note-blue">💡 <strong>L2 use case:</strong> Manager asks "how bad was the outage? How many transactions failed between 2 PM and 3 PM?" You run COUNT with a time range filter and give a precise number instantly — no manual counting.</div>
+    </div>
+  </div>
+
+  <!-- GROUP BY -->
+  <div class="sql-block">
+    <div class="sql-header">
+      <div class="sql-name">GROUP BY</div>
+      <span class="sql-tag st-amber">Summarise</span>
+      <div class="sql-tagline">"Count or summarise data by category"</div>
+    </div>
+    <div class="sql-body">
+      <div class="sql-what"><strong>What it does:</strong> GROUP BY groups rows that share the same value in a column, then lets you COUNT or SUM each group. It's how you build summary reports — "show me how many transactions each client had" or "break down transactions by status." This is your most powerful reporting tool.</div>
+
+      <div class="code-box">
+        <div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>Syntax</span></div>
+        <div class="cb-code">
+<span class="kw">SELECT</span>   <span class="cl">group_column</span>, <span class="fn">COUNT</span>(<span class="op">*</span>)<br>
+<span class="kw">FROM</span>     <span class="tb">table_name</span><br>
+<span class="kw">GROUP BY</span> <span class="cl">group_column</span>;   <span class="cm">-- group rows by this column</span>
+        </div>
+      </div>
+
+      <div class="code-box">
+        <div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>Real examples</span></div>
+        <div class="cb-code">
+<span class="cm">-- Count transactions by status (SUCCESS / FAILED / PENDING)</span><br>
+<span class="kw">SELECT</span>   <span class="cl">status</span>, <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> <span class="cl">total</span><br>
+<span class="kw">FROM</span>     <span class="tb">transactions</span><br>
+<span class="kw">GROUP BY</span> <span class="cl">status</span>;<br>
+<br>
+<span class="cm">-- Count transactions per client — who has the most?</span><br>
+<span class="kw">SELECT</span>   <span class="tb">c</span>.<span class="cl">client_name</span>, <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> <span class="cl">txn_count</span><br>
+<span class="kw">FROM</span>     <span class="tb">transactions</span> <span class="tb">t</span><br>
+<span class="kw">JOIN</span>     <span class="tb">clients</span> <span class="tb">c</span> <span class="kw">ON</span> <span class="tb">t</span>.<span class="cl">client_id</span> <span class="op">=</span> <span class="tb">c</span>.<span class="cl">client_id</span><br>
+<span class="kw">GROUP BY</span> <span class="tb">c</span>.<span class="cl">client_name</span>;<br>
+<br>
+<span class="cm">-- Count FAILED transactions per client — the full failure report</span><br>
+<span class="kw">SELECT</span>   <span class="tb">c</span>.<span class="cl">client_name</span>, <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> <span class="cl">failed_txns</span><br>
+<span class="kw">FROM</span>     <span class="tb">transactions</span> <span class="tb">t</span><br>
+<span class="kw">JOIN</span>     <span class="tb">clients</span> <span class="tb">c</span> <span class="kw">ON</span> <span class="tb">t</span>.<span class="cl">client_id</span> <span class="op">=</span> <span class="tb">c</span>.<span class="cl">client_id</span><br>
+<span class="kw">WHERE</span>    <span class="tb">t</span>.<span class="cl">status</span> <span class="op">=</span> <span class="st">'FAILED'</span><br>
+<span class="kw">GROUP BY</span> <span class="tb">c</span>.<span class="cl">client_name</span>;
+        </div>
+      </div>
+
+      <div class="result-wrap">
+        <div class="rw-label"><span class="rl-dot"></span> Result — transactions by status</div>
+        <table class="rt">
+          <thead><tr><th>status</th><th>total</th></tr></thead>
+          <tbody>
+            <tr><td>SUCCESS</td><td>2</td></tr>
+            <tr><td>FAILED</td><td>2</td></tr>
+            <tr><td>PENDING</td><td>1</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note note-amber">💡 <strong>L2 use case:</strong> After an incident, your manager asks for a breakdown. You run GROUP BY status and instantly have a clean summary — 2 success, 2 failed, 1 pending. That's your report done in one query.</div>
+    </div>
+  </div>
+
+  <!-- LAB -->
+  <div class="sec"><span class="sn">04</span> Hands-on Lab — Extract Transaction Stats</div>
+
+  <div class="card">
+    <h3>Can you do this on your own machine?</h3>
+    <p><strong>Yes — fully performable on Kali Linux.</strong> SQLite is built into Kali Linux — no installation needed. You create a database, insert sample data, and run all 4 queries yourself. Here is every step exactly.</p>
+  </div>
+
+  <div class="lab-wrap">
+    <div class="lab-header">
+      <h3>🔬 Lab: Build a Transaction DB and Generate a Report</h3>
+      <span class="lab-note">Kali Linux · SQLite3 · No install needed</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-num">01</div>
+        <div class="ls-content">
+          <div class="ls-title">Open terminal and launch SQLite</div>
+          <div class="ls-desc">SQLite is already on Kali. This command creates a new database file and opens it.</div>
+          <div class="code-box"><div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>terminal</span></div><div class="cb-code"><span class="op">sqlite3 fintech_lab.db</span></div></div>
+          <div class="ls-finding">✅ You'll see <strong>sqlite&gt;</strong> prompt — you are now inside the database.</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-num">02</div>
+        <div class="ls-content">
+          <div class="ls-title">Create the two tables</div>
+          <div class="ls-desc">Copy and paste this to create the clients and transactions tables.</div>
+          <div class="code-box"><div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>sqlite&gt;</span></div><div class="cb-code">
+<span class="kw">CREATE TABLE</span> <span class="tb">clients</span> (<br>
+&nbsp;&nbsp;<span class="cl">client_id</span>   <span class="op">TEXT PRIMARY KEY,</span><br>
+&nbsp;&nbsp;<span class="cl">client_name</span> <span class="op">TEXT,</span><br>
+&nbsp;&nbsp;<span class="cl">vpn</span>         <span class="op">TEXT,</span><br>
+&nbsp;&nbsp;<span class="cl">type</span>        <span class="op">TEXT</span><br>
+<span class="op">);</span><br>
+<br>
+<span class="kw">CREATE TABLE</span> <span class="tb">transactions</span> (<br>
+&nbsp;&nbsp;<span class="cl">txn_id</span>     <span class="op">TEXT PRIMARY KEY,</span><br>
+&nbsp;&nbsp;<span class="cl">client_id</span>  <span class="op">TEXT,</span><br>
+&nbsp;&nbsp;<span class="cl">amount</span>     <span class="op">INTEGER,</span><br>
+&nbsp;&nbsp;<span class="cl">status</span>     <span class="op">TEXT,</span><br>
+&nbsp;&nbsp;<span class="cl">created_at</span> <span class="op">TEXT</span><br>
+<span class="op">);</span>
+          </div></div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-num">03</div>
+        <div class="ls-content">
+          <div class="ls-title">Insert sample data</div>
+          <div class="ls-desc">Paste this to populate both tables with realistic fintech data.</div>
+          <div class="code-box"><div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>sqlite&gt;</span></div><div class="cb-code">
+<span class="kw">INSERT INTO</span> <span class="tb">clients</span> <span class="kw">VALUES</span>
+<span class="op">(</span><span class="st">'C01'</span>,<span class="st">'Alpha Bank'</span>,<span class="st">'Multinet'</span>,<span class="st">'Bank'</span><span class="op">),</span>
+<span class="op">(</span><span class="st">'C02'</span>,<span class="st">'Beta Wallet'</span>,<span class="st">'Jazz PSL'</span>,<span class="st">'Wallet'</span><span class="op">),</span>
+<span class="op">(</span><span class="st">'C03'</span>,<span class="st">'Gamma Finance'</span>,<span class="st">'Jazz PSL'</span>,<span class="st">'MFB'</span><span class="op">),</span>
+<span class="op">(</span><span class="st">'C04'</span>,<span class="st">'Delta Pay'</span>,<span class="st">'Multinet'</span>,<span class="st">'Processor'</span><span class="op">);</span><br>
+<br>
+<span class="kw">INSERT INTO</span> <span class="tb">transactions</span> <span class="kw">VALUES</span>
+<span class="op">(</span><span class="st">'TXN-001'</span>,<span class="st">'C01'</span>,<span class="nm">5000</span>,<span class="st">'SUCCESS'</span>,<span class="st">'2024-03-15'</span><span class="op">),</span>
+<span class="op">(</span><span class="st">'TXN-002'</span>,<span class="st">'C02'</span>,<span class="nm">2000</span>,<span class="st">'FAILED'</span>,<span class="st">'2024-03-15'</span><span class="op">),</span>
+<span class="op">(</span><span class="st">'TXN-003'</span>,<span class="st">'C01'</span>,<span class="nm">8500</span>,<span class="st">'FAILED'</span>,<span class="st">'2024-03-15'</span><span class="op">),</span>
+<span class="op">(</span><span class="st">'TXN-004'</span>,<span class="st">'C03'</span>,<span class="nm">1200</span>,<span class="st">'SUCCESS'</span>,<span class="st">'2024-03-15'</span><span class="op">),</span>
+<span class="op">(</span><span class="st">'TXN-005'</span>,<span class="st">'C02'</span>,<span class="nm">3300</span>,<span class="st">'PENDING'</span>,<span class="st">'2024-03-15'</span><span class="op">),</span>
+<span class="op">(</span><span class="st">'TXN-006'</span>,<span class="st">'C01'</span>,<span class="nm">9900</span>,<span class="st">'SUCCESS'</span>,<span class="st">'2024-03-15'</span><span class="op">),</span>
+<span class="op">(</span><span class="st">'TXN-007'</span>,<span class="st">'C04'</span>,<span class="nm">4400</span>,<span class="st">'FAILED'</span>,<span class="st">'2024-03-15'</span><span class="op">),</span>
+<span class="op">(</span><span class="st">'TXN-008'</span>,<span class="st">'C03'</span>,<span class="nm">6600</span>,<span class="st">'SUCCESS'</span>,<span class="st">'2024-03-15'</span><span class="op">);</span>
+          </div></div>
+          <div class="ls-finding">✅ You now have 4 clients and 8 transactions in your local database.</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-num">04</div>
+        <div class="ls-content">
+          <div class="ls-title">Query 1 — Find all failed transactions</div>
+          <div class="ls-desc">Use SELECT with WHERE to pull only the failed ones.</div>
+          <div class="code-box"><div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>sqlite&gt;</span></div><div class="cb-code">
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tb">transactions</span><br>
+<span class="kw">WHERE</span> <span class="cl">status</span> <span class="op">=</span> <span class="st">'FAILED'</span>;
+          </div></div>
+          <div class="ls-finding">→ Should return <strong>3 rows:</strong> TXN-002, TXN-003, TXN-007</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-num">05</div>
+        <div class="ls-content">
+          <div class="ls-title">Query 2 — Join to see client names with failed transactions</div>
+          <div class="ls-desc">Combine transactions with clients table to get meaningful names.</div>
+          <div class="code-box"><div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>sqlite&gt;</span></div><div class="cb-code">
+<span class="kw">SELECT</span> <span class="tb">t</span>.<span class="cl">txn_id</span>, <span class="tb">c</span>.<span class="cl">client_name</span>, <span class="tb">t</span>.<span class="cl">amount</span>, <span class="tb">t</span>.<span class="cl">status</span><br>
+<span class="kw">FROM</span>   <span class="tb">transactions</span> <span class="tb">t</span><br>
+<span class="kw">JOIN</span>   <span class="tb">clients</span> <span class="tb">c</span> <span class="kw">ON</span> <span class="tb">t</span>.<span class="cl">client_id</span> <span class="op">=</span> <span class="tb">c</span>.<span class="cl">client_id</span><br>
+<span class="kw">WHERE</span>  <span class="tb">t</span>.<span class="cl">status</span> <span class="op">=</span> <span class="st">'FAILED'</span>;
+          </div></div>
+          <div class="ls-finding">→ You now see <strong>client names</strong> instead of just C01/C02 — much more readable for a report.</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-num">06</div>
+        <div class="ls-content">
+          <div class="ls-title">Query 3 — Count total transactions by status</div>
+          <div class="ls-desc">Use GROUP BY to get a full status breakdown — your summary report.</div>
+          <div class="code-box"><div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>sqlite&gt;</span></div><div class="cb-code">
+<span class="kw">SELECT</span>   <span class="cl">status</span>, <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> <span class="cl">total</span><br>
+<span class="kw">FROM</span>     <span class="tb">transactions</span><br>
+<span class="kw">GROUP BY</span> <span class="cl">status</span>;
+          </div></div>
+          <div class="ls-finding">→ Result: SUCCESS=4, FAILED=3, PENDING=1 — that's your daily transaction report.</div>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-num">07</div>
+        <div class="ls-content">
+          <div class="ls-title">Query 4 — Failed transactions per client (the full report)</div>
+          <div class="ls-desc">Combine JOIN + COUNT + GROUP BY for the most powerful report query.</div>
+          <div class="code-box"><div class="cb-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span>sqlite&gt;</span></div><div class="cb-code">
+<span class="kw">SELECT</span>   <span class="tb">c</span>.<span class="cl">client_name</span>, <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> <span class="cl">failed_txns</span><br>
+<span class="kw">FROM</span>     <span class="tb">transactions</span> <span class="tb">t</span><br>
+<span class="kw">JOIN</span>     <span class="tb">clients</span> <span class="tb">c</span> <span class="kw">ON</span> <span class="tb">t</span>.<span class="cl">client_id</span> <span class="op">=</span> <span class="tb">c</span>.<span class="cl">client_id</span><br>
+<span class="kw">WHERE</span>    <span class="tb">t</span>.<span class="cl">status</span> <span class="op">=</span> <span class="st">'FAILED'</span><br>
+<span class="kw">GROUP BY</span> <span class="tb">c</span>.<span class="cl">client_name</span>;
+          </div></div>
+          <div class="ls-finding">→ <strong>This is your DB report.</strong> Alpha Bank: 1 failure, Beta Wallet: 1 failure, Delta Pay: 1 failure. Ready to paste into Jira or send to your manager.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- GENERATED REPORT -->
+  <div class="card" style="margin-bottom:14px;">
+    <h3>📊 The Generated DB Report — What to Send Your Manager</h3>
+    <p>Based on the queries above, this is what a clean daily transaction stats report looks like:</p>
+  </div>
+
+  <div class="report-box">
+    <div class="rb-title">📊 Daily Transaction Report · 2024-03-15 · All Clients</div>
+    <table class="rep">
+      <thead><tr><th>Client</th><th>Total Txns</th><th>Success</th><th>Failed</th><th>Pending</th></tr></thead>
+      <tbody>
+        <tr><td>Alpha Bank</td><td>3</td><td class="status-s">2</td><td class="status-f">1</td><td class="status-p">0</td></tr>
+        <tr><td>Beta Wallet</td><td>2</td><td class="status-s">0</td><td class="status-f">1</td><td class="status-p">1</td></tr>
+        <tr><td>Gamma Finance</td><td>2</td><td class="status-s">2</td><td class="status-f">0</td><td class="status-p">0</td></tr>
+        <tr><td>Delta Pay</td><td>1</td><td class="status-s">0</td><td class="status-f">1</td><td class="status-p">0</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CHEATSHEET -->
+  <div class="sec"><span class="sn">05</span> Quick Cheat Sheet</div>
+
+  <div class="cheat">
+    <div class="cheat-header">All 4 Commands at a Glance</div>
+    <div class="cheat-grid">
+      <div class="cheat-item"><span class="ci-cmd">SELECT * FROM table</span><span class="ci-desc">Get all rows and columns from a table</span></div>
+      <div class="cheat-item"><span class="ci-cmd">WHERE status = 'FAILED'</span><span class="ci-desc">Filter rows by a condition</span></div>
+      <div class="cheat-item"><span class="ci-cmd">JOIN table2 ON t1.id = t2.id</span><span class="ci-desc">Combine two tables by matching column</span></div>
+      <div class="cheat-item"><span class="ci-cmd">COUNT(*)</span><span class="ci-desc">Count how many rows match</span></div>
+      <div class="cheat-item"><span class="ci-cmd">GROUP BY column</span><span class="ci-desc">Summarise data by category</span></div>
+      <div class="cheat-item"><span class="ci-cmd">SELECT col, COUNT(*) GROUP BY col</span><span class="ci-desc">The full reporting pattern</span></div>
+    </div>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn">06</span> Real L2 Scenarios</div>
+
+  <div class="scen-list">
+    <div class="scen-item">
+      <div class="si-id">01</div>
+      <p>Client calls: <strong>"Did transaction TXN-4421 go through?"</strong> You run <code class="ic">SELECT * FROM transactions WHERE txn_id = 'TXN-4421'</code> — you see status is FAILED with a timestamp. You confirm to the client in 10 seconds, no guessing.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">02</div>
+      <p>After an outage, manager asks: <strong>"How many transactions were affected?"</strong> You run <code class="ic">SELECT COUNT(*) FROM transactions WHERE status = 'FAILED' AND created_at = '2024-03-15'</code> — you have the exact number in seconds.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">03</div>
+      <p>Your lead says: <strong>"Which client had the most failures this week?"</strong> You run the GROUP BY query with a date range filter — you get a ranked list of clients by failure count. You now know which client needs priority attention.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">04</div>
+      <p>A client says <strong>"there are transactions pending for over 2 hours."</strong> You run <code class="ic">SELECT * FROM transactions WHERE status = 'PENDING' AND client_id = 'C02'</code> — you see exactly which transactions are stuck, when they came in, and how long they've been waiting.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 2 · Day 3 Outcomes — Can You Do This?</h3>
+    <ul>
+      <li>Use SELECT to retrieve specific columns and rows from a database table</li>
+      <li>Use WHERE to filter results — by status, date, client ID, or transaction ID</li>
+      <li>Use JOIN to combine two tables and show meaningful data instead of just IDs</li>
+      <li>Use COUNT to get the number of transactions matching any condition</li>
+      <li>Use GROUP BY to summarise data by category — status, client, date</li>
+      <li>Combine JOIN + COUNT + GROUP BY to generate a full client transaction report</li>
+      <li>Complete the hands-on lab on Kali Linux — create a SQLite database and run all 4 queries</li>
+      <li>Produce a clean daily transaction stats report from raw database data</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

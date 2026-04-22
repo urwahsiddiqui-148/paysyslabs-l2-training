@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 3 · Day 7 & 8 — Backup Script & Mini Project</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#07080c; --surface:#0e1018; --surface2:#13161e; --surface3:#181c26;
+    --border:#1e2330; --text:#b0bccf; --text-dim:#485565; --text-faint:#1c2230;
+    --white:#eaf0fc;
+    --teal:#00e5c0; --teal-bg:#001a14; --teal-border:#003828;
+    --violet:#a855f7; --violet-bg:#100818; --violet-border:#2c1040;
+    --amber:#ffb020; --amber-bg:#180e00; --amber-border:#3c2800;
+    --rose:#ff4070; --rose-bg:#180008; --rose-border:#3c0018;
+    --sky:#38bdf8; --sky-bg:#001828; --sky-border:#003858;
+    --lime:#84cc16; --lime-bg:#0c1400; --lime-border:#243200;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Lexend',sans-serif;font-size:15px;line-height:1.7;padding:48px 24px 100px;}
+  .page{max-width:960px;margin:0 auto;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:52px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .topbar-left{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;}
+  .tb-right{display:flex;gap:8px;}
+  .tb-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 14px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;}
+  .tb-wk{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tb-d7{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+  .tb-d8{background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);}
+
+  .hero{margin-bottom:52px;}
+  .day-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--teal);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,5.5vw,56px);font-weight:800;line-height:1.05;color:var(--white);margin-bottom:18px;}
+  .hero h1 .t{color:var(--teal);} .hero h1 .v{color:var(--violet);}
+  .hero-desc{color:var(--text-dim);font-size:15px;max-width:540px;}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;}
+  .tag{padding:5px 14px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tag-t{background:var(--teal-bg);border-color:var(--teal-border);color:var(--teal);}
+  .tag-v{background:var(--violet-bg);border-color:var(--violet-border);color:var(--violet);}
+
+  .day-div{display:flex;align-items:center;gap:16px;margin:56px 0 28px;}
+  .dd-pill{font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 20px;border-radius:100px;letter-spacing:2px;text-transform:uppercase;font-weight:600;flex-shrink:0;}
+  .dd-t{background:var(--teal-bg);border:2px solid var(--teal-border);color:var(--teal);}
+  .dd-v{background:var(--violet-bg);border:2px solid var(--violet-border);color:var(--violet);}
+  .dd-line-t{flex:1;height:1px;background:var(--teal-border);}
+  .dd-line-v{flex:1;height:1px;background:var(--violet-border);}
+  .dd-title{font-size:18px;font-weight:700;}
+  .dd-tt{color:var(--teal);} .dd-tv{color:var(--violet);}
+
+  .sec{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faint);margin-bottom:18px;margin-top:40px;display:flex;align-items:center;gap:12px;}
+  .sec .sn{font-size:12px;}
+  .sn-t{color:var(--teal);} .sn-v{color:var(--violet);}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .analogy{border-left:4px solid;border-radius:12px;padding:22px 28px;margin-bottom:16px;}
+  .an-t{background:var(--teal-bg);border-color:var(--teal);}
+  .an-v{background:var(--violet-bg);border-color:var(--violet);}
+  .analogy .al{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+  .an-t .al{color:var(--teal);} .an-v .al{color:var(--violet);}
+  .analogy p{color:var(--text);font-size:14px;}
+  .analogy strong{color:var(--white);}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 28px;margin-bottom:14px;}
+  .card h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:8px;}
+  .card p{color:var(--text-dim);margin-bottom:8px;font-size:14px;}
+  .card p:last-child{margin-bottom:0;}
+  .card strong{color:var(--text);}
+
+  /* TAR REF TABLE */
+  .tar-table{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+  .tt-head{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:15px;font-weight:700;color:var(--white);}
+  table.tr{width:100%;border-collapse:collapse;}
+  table.tr th{padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);text-align:left;border-bottom:1px solid var(--border);font-weight:400;background:var(--surface3);}
+  table.tr td{padding:12px 18px;font-size:13px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle;}
+  table.tr tr:last-child td{border-bottom:none;}
+  table.tr tr:hover td{background:rgba(255,255,255,0.02);}
+  table.tr td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--teal);}
+
+  /* CODE BOX */
+  .cbox{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px;}
+  .cbox-bar{padding:7px 14px;background:var(--surface3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+  .cbox-bar .d{width:8px;height:8px;border-radius:50%;}
+  .dr{background:#ff5f56;}.dy{background:#ffbd2e;}.dg{background:#27c93f;}
+  .cbox-bar .ct{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);margin-left:4px;letter-spacing:1px;}
+  .cbox-code{padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:2.0;overflow-x:auto;}
+  .kw{color:#ff7b72;}.fn{color:#79c0ff;}.str{color:#a5d6ff;}
+  .var{color:#ffa657;}.cm{color:#354555;}.op{color:#c9d1d9;}.gt{color:#3fb950;}
+
+  /* SCRIPT BLOCKS */
+  .sb{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px;}
+  .sb-head{padding:16px 24px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .sb-head-info .sb-fname{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:4px;}
+  .sb-head-info h3{font-size:15px;font-weight:700;color:var(--white);}
+  .sb-num{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;opacity:0.2;color:var(--white);}
+  .sb-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 12px;border-radius:100px;}
+  .sb-t{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+  .sb-v{background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);}
+  .sb-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .sb-s{background:var(--sky-bg);border:1px solid var(--sky-border);color:var(--sky);}
+
+  /* NOTE */
+  .note{border-radius:10px;padding:10px 16px;font-size:13px;margin:10px 16px 14px;}
+  .n-t{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+  .n-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .n-v{background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);}
+  .n-s{background:var(--sky-bg);border:1px solid var(--sky-border);color:var(--sky);}
+  .note strong{color:var(--white);}
+
+  /* LAB */
+  .lab{border-radius:16px;overflow:hidden;margin-bottom:14px;}
+  .lab-t{border:2px solid var(--teal-border);}
+  .lab-v{border:2px solid var(--violet-border);}
+  .lab-head{padding:18px 26px;border-bottom:1px solid;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .lab-t .lab-head{background:var(--teal-bg);border-color:var(--teal-border);}
+  .lab-v .lab-head{background:var(--violet-bg);border-color:var(--violet-border);}
+  .lab-head h3{font-size:15px;font-weight:700;color:var(--white);}
+  .lab-badge-t{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 12px;border-radius:100px;background:rgba(0,229,192,0.1);border:1px solid var(--teal-border);color:var(--teal);}
+  .lab-badge-v{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 12px;border-radius:100px;background:rgba(168,85,247,0.1);border:1px solid var(--violet-border);color:var(--violet);}
+  .lab-body{padding:26px;display:flex;flex-direction:column;gap:0;background:var(--surface);}
+  .lab-step{display:flex;gap:18px;position:relative;}
+  .lab-step:not(:last-child) .ls-left::after{content:'';position:absolute;left:19px;top:44px;bottom:0;width:2px;background:var(--border);z-index:0;}
+  .ls-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+  .ls-num{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;z-index:1;position:relative;}
+  .lab-t .ls-num{background:var(--teal-bg);border:2px solid var(--teal-border);color:var(--teal);}
+  .lab-v .ls-num{background:var(--violet-bg);border:2px solid var(--violet-border);color:var(--violet);}
+  .ls-content{flex:1;padding-bottom:24px;padding-top:4px;}
+  .ls-title{font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px;}
+  .ls-desc{font-size:13px;color:var(--text-dim);margin-bottom:8px;}
+  .ls-out-t{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+  .ls-out-v{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+
+  /* SUMMARY TABLE */
+  .summary-table{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+  .st-head{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:15px;font-weight:700;color:var(--white);}
+  table.sm{width:100%;border-collapse:collapse;}
+  table.sm th{padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);text-align:left;border-bottom:1px solid var(--border);font-weight:400;background:var(--surface3);}
+  table.sm td{padding:12px 18px;font-size:13px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;}
+  table.sm tr:last-child td{border-bottom:none;}
+  table.sm tr:hover td{background:rgba(255,255,255,0.02);}
+  table.sm td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--teal);white-space:nowrap;}
+
+  /* SCENARIOS */
+  .scen-list{display:flex;flex-direction:column;gap:12px;margin-bottom:14px;}
+  .scen-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;}
+  .si-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-border);border-radius:6px;padding:4px 8px;flex-shrink:0;margin-top:2px;}
+  .scen-item p{font-size:14px;color:var(--text-dim);}
+  .scen-item p strong{color:var(--white);}
+
+  /* OUTCOME */
+  .outcome{background:linear-gradient(135deg,var(--teal-bg) 0%,var(--surface) 50%,var(--violet-bg) 100%);border:1px solid var(--border);border-radius:16px;padding:32px;margin-top:48px;}
+  .outcome h3{font-size:20px;font-weight:700;color:var(--teal);margin-bottom:18px;}
+  .outcome ul{display:flex;flex-direction:column;gap:9px;list-style:none;}
+  .outcome ul li{font-size:14px;color:var(--text-dim);padding-left:22px;position:relative;}
+  .outcome ul li::before{content:'✓';position:absolute;left:0;color:var(--teal);font-family:'JetBrains Mono',monospace;}
+  .outcome ul li.dv::before{color:var(--violet);}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 3</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-wk">Week 3</span>
+      <span class="tb-badge tb-d7">Day 7</span>
+      <span class="tb-badge tb-d8">Day 8</span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="day-label">Week 3 · Day 7 & Day 8</div>
+    <h1>Backup <span class="t">Scripts</span> &<br>Mini <span class="v">Project</span></h1>
+    <p class="hero-desc">Day 7 teaches you to back up and restore log files using tar and gzip. Day 8 brings everything together into a fully automated L2 mini project — the script that detects and fixes problems on its own.</p>
+    <div class="tags">
+      <span class="tag tag-t">Day 7 — Backup Script</span>
+      <span class="tag tag-v">Day 8 — Mini Project</span>
+      <span class="tag">tar</span><span class="tag">gzip</span>
+      <span class="tag">Service Monitor</span><span class="tag">Full Automation</span>
+    </div>
+  </div>
+
+  <!-- ===== DAY 7 ===== -->
+  <div class="day-div">
+    <span class="dd-pill dd-t">Day 7</span>
+    <span class="dd-line-t"></span>
+    <span class="dd-title dd-tt">Backup Script — tar &amp; gzip</span>
+  </div>
+
+  <div class="sec"><span class="sn sn-t">01</span> The Simple Idea</div>
+
+  <div class="analogy an-t">
+    <div class="al">Real-life Analogy</div>
+    <p>Think of log files like <strong>important paper documents in an office</strong>. Every day new documents are created. If the office catches fire, everything is gone.<br><br>A backup is like <strong>photocopying all documents, putting them in a sealed box, and storing them in a different building</strong>. If something goes wrong — the box is safe. You unpack it and continue.<br><br><strong>tar creates the box. gzip compresses it so it takes up less storage space.</strong></p>
+  </div>
+
+  <div class="sec"><span class="sn sn-t">02</span> tar &amp; gzip — How They Work</div>
+
+  <div class="card">
+    <h3>tar — bundles files into one archive</h3>
+    <p><strong>tar</strong> takes a whole folder of files and puts them into a single file — like zipping many documents into one envelope. On its own it doesn't compress — it just bundles.</p>
+    <p><strong>gzip</strong> compresses the tar file to make it smaller — like vacuum-sealing the envelope. Combined as <code style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--teal);">.tar.gz</code>, you get a compressed archive.</p>
+  </div>
+
+  <div class="tar-table">
+    <div class="tt-head">⌨️ tar Flags — What Each One Does</div>
+    <table class="tr">
+      <thead><tr><th>Flag</th><th>Meaning</th><th>Used for</th></tr></thead>
+      <tbody>
+        <tr><td>-c</td><td>Create a new archive</td><td>Making a backup</td></tr>
+        <tr><td>-z</td><td>Compress with gzip</td><td>Making it smaller</td></tr>
+        <tr><td>-f</td><td>Filename follows next</td><td>Always needed — name your file</td></tr>
+        <tr><td>-t</td><td>List contents of archive</td><td>Peeking inside without extracting</td></tr>
+        <tr><td>-x</td><td>Extract the archive</td><td>Restoring a backup</td></tr>
+        <tr><td>-v</td><td>Verbose — show each file</td><td>See what is happening</td></tr>
+        <tr><td>-C</td><td>Change to this directory first</td><td>Controlling where files go</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="cbox">
+    <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">tar — quick reference commands</span></div>
+    <div class="cbox-code">
+<span class="cm"># Create a compressed backup</span><br>
+<span class="fn">tar</span> -czf backup.tar.gz /folder/to/backup/<br>
+<br>
+<span class="cm"># List what's inside a backup (don't extract)</span><br>
+<span class="fn">tar</span> -tzvf backup.tar.gz<br>
+<br>
+<span class="cm"># Extract a backup into a specific folder</span><br>
+<span class="fn">tar</span> -xzf backup.tar.gz -C /where/to/restore/<br>
+<br>
+<span class="cm"># Backup with a timestamp in the filename</span><br>
+<span class="var">TS</span>=<span class="op">$(</span><span class="fn">date</span> +<span class="str">"%Y-%m-%d_%H-%M-%S"</span><span class="op">)</span><br>
+<span class="fn">tar</span> -czf <span class="str">"backup-$TS.tar.gz"</span> /folder/
+    </div>
+  </div>
+
+  <!-- DAY 7 SCRIPTS -->
+  <div class="sec"><span class="sn sn-t">03</span> Day 7 Scripts</div>
+
+  <!-- Script 1 -->
+  <div class="sb">
+    <div class="sb-head">
+      <div class="sb-head-info">
+        <div class="sb-fname">01-setup-lab.sh</div>
+        <h3>Script 1 — Setup Lab Folders &amp; Sample Logs</h3>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span class="sb-num">01</span>
+        <span class="sb-badge sb-t">Run First</span>
+      </div>
+    </div>
+    <div class="cbox" style="margin:0;border-radius:0;border:none;border-top:1px solid var(--border);">
+      <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">01-setup-lab.sh</span></div>
+      <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Creates ~/logs, ~/backups, ~/scripts folders</span><br>
+<span class="cm"># and 3 sample log files for testing</span><br>
+<br>
+<span class="fn">mkdir</span> -p <span class="str">"$HOME/logs"</span> <span class="str">"$HOME/backups"</span> <span class="str">"$HOME/scripts"</span><br>
+<br>
+<span class="fn">cat</span> &gt; <span class="str">"$HOME/logs/payment-service.log"</span> &lt;&lt; <span class="str">'EOF'</span><br>
+[2024-03-15 14:02:05] [ERROR] DB_CONNECTION_TIMEOUT failed to acquire connection<br>
+[2024-03-15 14:02:05] [ERROR] TXN-9821 FAILED unable to write to database<br>
+[2024-03-15 14:02:16] [INFO ] TXN-9824 processed successfully Status: SUCCESS<br>
+EOF<br>
+<br>
+<span class="fn">cat</span> &gt; <span class="str">"$HOME/logs/api-service.log"</span> &lt;&lt; <span class="str">'EOF'</span><br>
+[2024-03-15 13:45:01] [ERROR] NullPointerException at PaymentProcessor.java:142<br>
+[2024-03-15 14:30:00] [INFO ] Scheduled job completed successfully<br>
+EOF<br>
+<br>
+<span class="fn">cat</span> &gt; <span class="str">"$HOME/logs/system.log"</span> &lt;&lt; <span class="str">'EOF'</span><br>
+[2024-03-15 16:00:00] [ERROR] Disk usage: 92% - critical level reached<br>
+[2024-03-15 08:01:00] [INFO ] All services started<br>
+EOF<br>
+<br>
+<span class="fn">echo</span> <span class="str">"Setup complete. Folders and logs created."</span>
+      </div>
+    </div>
+    <div class="note n-t">✅ <strong>How to run:</strong> chmod +x 01-setup-lab.sh &amp;&amp; ./01-setup-lab.sh</div>
+  </div>
+
+  <!-- Script 2 -->
+  <div class="sb">
+    <div class="sb-head">
+      <div class="sb-head-info">
+        <div class="sb-fname">02-backup-logs.sh</div>
+        <h3>Script 2 — Backup the Logs Folder</h3>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span class="sb-num">02</span>
+        <span class="sb-badge sb-t">Day 7 Lab</span>
+      </div>
+    </div>
+    <div class="cbox" style="margin:0;border-radius:0;border:none;border-top:1px solid var(--border);">
+      <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">02-backup-logs.sh</span></div>
+      <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Backs up ~/logs to ~/backups as a timestamped .tar.gz</span><br>
+<span class="cm"># Deletes backups older than 7 days automatically</span><br>
+<br>
+<span class="var">LOGS_DIR</span>=<span class="str">"$HOME/logs"</span><br>
+<span class="var">BACKUP_DIR</span>=<span class="str">"$HOME/backups"</span><br>
+<span class="var">TIMESTAMP</span>=<span class="op">$(</span><span class="fn">date</span> +<span class="str">"%Y-%m-%d_%H-%M-%S"</span><span class="op">)</span><br>
+<span class="var">BACKUP_FILE</span>=<span class="str">"$BACKUP_DIR/logs-backup-$TIMESTAMP.tar.gz"</span><br>
+<span class="var">KEEP_DAYS</span>=<span class="op">7</span><br>
+<br>
+<span class="fn">mkdir</span> -p <span class="str">"$BACKUP_DIR"</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"Creating backup: $BACKUP_FILE"</span><br>
+<span class="fn">tar</span> -czf <span class="str">"$BACKUP_FILE"</span> -C <span class="str">"$HOME"</span> logs/<br>
+<br>
+<span class="kw">if</span> [ <span class="op">$?</span> -eq <span class="op">0</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="var">SIZE</span>=<span class="op">$(</span><span class="fn">du</span> -sh <span class="str">"$BACKUP_FILE"</span> | <span class="fn">awk</span> <span class="str">'{print $1}'</span><span class="op">)</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"SUCCESS: Backup created ($SIZE)"</span><br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"ERROR: Backup failed!"</span>; <span class="kw">exit</span> <span class="op">1</span><br>
+<span class="kw">fi</span><br>
+<br>
+<span class="cm"># Remove backups older than KEEP_DAYS</span><br>
+<span class="fn">find</span> <span class="str">"$BACKUP_DIR"</span> -name <span class="str">"logs-backup-*.tar.gz"</span> -mtime +<span class="var">$KEEP_DAYS</span> -delete<br>
+<span class="fn">echo</span> <span class="str">"Old backups cleaned. Current backups:"</span><br>
+<span class="fn">ls</span> -lh <span class="str">"$BACKUP_DIR"</span>
+      </div>
+    </div>
+    <div class="note n-t">✅ <strong>How to run:</strong> chmod +x 02-backup-logs.sh &amp;&amp; ./02-backup-logs.sh</div>
+  </div>
+
+  <!-- Script 3 -->
+  <div class="sb">
+    <div class="sb-head">
+      <div class="sb-head-info">
+        <div class="sb-fname">03-restore-backup.sh</div>
+        <h3>Script 3 — Restore a Backup</h3>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span class="sb-num">03</span>
+        <span class="sb-badge sb-a">Restore</span>
+      </div>
+    </div>
+    <div class="cbox" style="margin:0;border-radius:0;border:none;border-top:1px solid var(--border);">
+      <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">03-restore-backup.sh</span></div>
+      <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Lists available backups and restores chosen one</span><br>
+<br>
+<span class="var">BACKUP_DIR</span>=<span class="str">"$HOME/backups"</span><br>
+<span class="var">RESTORE_DIR</span>=<span class="str">"$HOME/logs-restored"</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"Available backups:"</span><br>
+<span class="fn">ls</span> -lh <span class="str">"$BACKUP_DIR"</span>/*.tar.gz<br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"Enter the full path of backup to restore:"</span><br>
+<span class="kw">read</span> <span class="var">BACKUP_FILE</span><br>
+<br>
+<span class="kw">if</span> [ ! -f <span class="str">"$BACKUP_FILE"</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"ERROR: File not found."</span>; <span class="kw">exit</span> <span class="op">1</span><br>
+<span class="kw">fi</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"Contents of backup:"</span><br>
+<span class="fn">tar</span> -tzvf <span class="str">"$BACKUP_FILE"</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<br>
+<span class="fn">mkdir</span> -p <span class="str">"$RESTORE_DIR"</span><br>
+<span class="fn">tar</span> -xzf <span class="str">"$BACKUP_FILE"</span> -C <span class="str">"$RESTORE_DIR"</span><br>
+<span class="fn">echo</span> <span class="str">"SUCCESS: Restored to $RESTORE_DIR"</span>
+      </div>
+    </div>
+    <div class="note n-t">✅ <strong>How to run:</strong> chmod +x 03-restore-backup.sh &amp;&amp; ./03-restore-backup.sh</div>
+  </div>
+
+  <!-- DAY 7 LAB -->
+  <div class="sec"><span class="sn sn-t">04</span> Day 7 Lab — Backup Logs Folder</div>
+  <div class="lab lab-t">
+    <div class="lab-head">
+      <h3>🔬 Lab: Create, Inspect &amp; Restore a Backup</h3>
+      <span class="lab-badge-t">Kali Linux</span>
+    </div>
+    <div class="lab-body">
+      <div class="lab-step"><div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Setup and run the backup</div>
+          <div class="ls-desc">Run setup first, then backup.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">chmod +x ~/scripts/*.sh<br>./01-setup-lab.sh<br>./02-backup-logs.sh</div></div>
+          <span class="ls-out-t">→ Backup file created in ~/backups/ ✅</span>
+        </div>
+      </div>
+      <div class="lab-step"><div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Inspect the backup without extracting</div>
+          <div class="ls-desc">Use tar -tzvf to see what's inside.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">tar -tzvf ~/backups/logs-backup-*.tar.gz</div></div>
+          <span class="ls-out-t">→ Shows all files inside the archive with sizes ✅</span>
+        </div>
+      </div>
+      <div class="lab-step"><div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Delete the logs folder and restore</div>
+          <div class="ls-desc">Simulate a disaster — delete logs, then restore from backup.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">rm -rf ~/logs/<br>./03-restore-backup.sh</div></div>
+          <span class="ls-out-t">→ Logs restored to ~/logs-restored/ from backup ✅</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DAY 8 ===== -->
+  <div class="day-div" style="margin-top:60px;">
+    <span class="dd-pill dd-v">Day 8</span>
+    <span class="dd-line-v"></span>
+    <span class="dd-title dd-tv">Mini Project — Full Bash Automation</span>
+  </div>
+
+  <div class="sec"><span class="sn sn-v">05</span> The Simple Idea</div>
+
+  <div class="analogy an-v">
+    <div class="al">Real-life Analogy</div>
+    <p>Think of a <strong>self-driving car's safety system</strong>. It constantly checks everything — tire pressure, engine, fuel, road conditions. The moment something is wrong it takes action — sounds an alarm, slows down, pulls over. It doesn't wait for you to notice.<br><br><strong>Your mini project script is that safety system</strong> for your server. It runs on a loop, checks disk + memory + services + logs, and automatically restarts anything that has stopped — all without you having to do anything.</p>
+  </div>
+
+  <!-- Script 5 -->
+  <div class="sec"><span class="sn sn-v">06</span> Day 8 Scripts</div>
+
+  <div class="sb">
+    <div class="sb-head">
+      <div class="sb-head-info">
+        <div class="sb-fname">05-service-monitor.sh</div>
+        <h3>Script 5 — Auto Detect &amp; Restart Failed Service</h3>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span class="sb-num">05</span>
+        <span class="sb-badge sb-v">Mini Project</span>
+      </div>
+    </div>
+    <div class="cbox" style="margin:0;border-radius:0;border:none;border-top:1px solid var(--border);">
+      <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">05-service-monitor.sh — runs in a loop</span></div>
+      <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Monitors services in a loop.</span><br>
+<span class="cm"># Auto-restarts if a service is down.</span><br>
+<span class="cm"># Press Ctrl+C to stop.</span><br>
+<br>
+<span class="var">SERVICES</span>=(<span class="str">"ssh"</span> <span class="str">"cron"</span>)<br>
+<span class="var">CHECK_INTERVAL</span>=<span class="op">30</span><br>
+<span class="var">LOG_FILE</span>=<span class="str">"$HOME/logs/monitor.log"</span><br>
+<span class="var">MAX_RESTARTS</span>=<span class="op">3</span><br>
+<br>
+<span class="fn">log</span>() { <span class="fn">echo</span> <span class="str">"[$(date '+%Y-%m-%d %H:%M:%S')] $1"</span> | <span class="fn">tee</span> -a <span class="str">"$LOG_FILE"</span>; }<br>
+<br>
+<span class="fn">check_disk</span>() {<br>
+&nbsp;&nbsp;<span class="var">D</span>=<span class="op">$(</span><span class="fn">df</span> / | <span class="fn">awk</span> <span class="str">'NR==2{print $5}'</span> | <span class="fn">tr</span> -d <span class="str">'%'</span><span class="op">)</span><br>
+&nbsp;&nbsp;[ <span class="str">"$D"</span> -ge <span class="op">85</span> ] &amp;&amp; <span class="fn">log</span> <span class="str">"[DISK] WARNING: $D%"</span> || <span class="fn">log</span> <span class="str">"[DISK] OK: $D%"</span><br>
+}<br>
+<br>
+<span class="fn">check_memory</span>() {<br>
+&nbsp;&nbsp;<span class="var">SW</span>=<span class="op">$(</span><span class="fn">free</span> -m | <span class="fn">awk</span> <span class="str">'NR==3{print $3}'</span><span class="op">)</span><br>
+&nbsp;&nbsp;[ <span class="str">"$SW"</span> -gt <span class="op">100</span> ] &amp;&amp; <span class="fn">log</span> <span class="str">"[MEM ] WARNING: Swap ${SW}MB"</span> || <span class="fn">log</span> <span class="str">"[MEM ] OK: Swap ${SW}MB"</span><br>
+}<br>
+<br>
+<span class="fn">check_service</span>() {<br>
+&nbsp;&nbsp;<span class="var">SVC</span>=<span class="str">"$1"</span>; <span class="var">RC</span>=<span class="op">0</span><br>
+&nbsp;&nbsp;<span class="kw">if</span> <span class="fn">systemctl</span> is-active --quiet <span class="str">"$SVC"</span> <span class="op">2</span>&gt;/dev/null; <span class="kw">then</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">log</span> <span class="str">"[SVC ] OK: $SVC is RUNNING"</span><br>
+&nbsp;&nbsp;<span class="kw">else</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">log</span> <span class="str">"[SVC ] DOWN: $SVC — attempting restart..."</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">while</span> [ <span class="var">$RC</span> -lt <span class="var">$MAX_RESTARTS</span> ]; <span class="kw">do</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="var">RC</span>=<span class="op">$((RC+1))</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">sudo</span> <span class="fn">systemctl</span> restart <span class="str">"$SVC"</span> <span class="op">2</span>&gt;/dev/null; <span class="fn">sleep</span> <span class="op">3</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span> <span class="fn">systemctl</span> is-active --quiet <span class="str">"$SVC"</span> <span class="op">2</span>&gt;/dev/null; <span class="kw">then</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">log</span> <span class="str">"[SVC ] SUCCESS: $SVC restarted (attempt $RC)"</span>; <span class="kw">return</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">fi</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">done</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">log</span> <span class="str">"[SVC ] CRITICAL: $SVC failed after $MAX_RESTARTS attempts!"</span><br>
+&nbsp;&nbsp;<span class="kw">fi</span><br>
+}<br>
+<br>
+<span class="fn">mkdir</span> -p <span class="str">"$HOME/logs"</span><br>
+<span class="fn">log</span> <span class="str">"Monitor started. Services: ${SERVICES[*]}"</span><br>
+<span class="fn">echo</span> <span class="str">"Running... Press Ctrl+C to stop. Log: $LOG_FILE"</span><br>
+<br>
+<span class="var">LOOP</span>=<span class="op">1</span><br>
+<span class="kw">while</span> <span class="kw">true</span>; <span class="kw">do</span><br>
+&nbsp;&nbsp;<span class="fn">log</span> <span class="str">"--- Check #$LOOP ---"</span><br>
+&nbsp;&nbsp;<span class="fn">check_disk</span><br>
+&nbsp;&nbsp;<span class="fn">check_memory</span><br>
+&nbsp;&nbsp;<span class="kw">for</span> <span class="var">S</span> <span class="kw">in</span> <span class="str">"${SERVICES[@]}"</span>; <span class="kw">do</span> <span class="fn">check_service</span> <span class="str">"$S"</span>; <span class="kw">done</span><br>
+&nbsp;&nbsp;<span class="var">LOOP</span>=<span class="op">$((LOOP+1))</span><br>
+&nbsp;&nbsp;<span class="fn">sleep</span> <span class="str">"$CHECK_INTERVAL"</span><br>
+<span class="kw">done</span>
+      </div>
+    </div>
+    <div class="note n-v">✅ <strong>How to run:</strong> chmod +x 05-service-monitor.sh &amp;&amp; ./05-service-monitor.sh — Press Ctrl+C to stop</div>
+  </div>
+
+  <!-- Script 6 -->
+  <div class="sb">
+    <div class="sb-head">
+      <div class="sb-head-info">
+        <div class="sb-fname">06-l2-daily-runbook.sh</div>
+        <h3>Script 6 — Full L2 Daily Runbook (The Main Script)</h3>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span class="sb-num">06</span>
+        <span class="sb-badge sb-v">⭐ Main Script</span>
+      </div>
+    </div>
+    <div class="note n-v" style="margin:14px 14px 0;">⭐ <strong>This is the key script of the whole mini project.</strong> One command — runs every check, logs every result, creates a backup, and saves a full daily report. This is what runs at 8 AM every morning via crontab.</div>
+    <div class="cbox" style="margin:0;border-radius:0;border:none;border-top:1px solid var(--border);">
+      <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">06-l2-daily-runbook.sh — abbreviated for reference</span></div>
+      <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Full daily runbook — disk + RAM + services + logs + backup</span><br>
+<span class="cm"># Run every morning. Saves a dated report file.</span><br>
+<br>
+<span class="var">REPORT_FILE</span>=<span class="str">"$HOME/daily-runbook-$(date +%Y-%m-%d).txt"</span><br>
+<span class="var">SERVICES</span>=(<span class="str">"ssh"</span> <span class="str">"cron"</span>)<br>
+<span class="var">ISSUES</span>=<span class="op">0</span><br>
+<br>
+<span class="fn">plog</span>() { <span class="fn">echo</span> <span class="str">"$1"</span>; <span class="fn">echo</span> <span class="str">"$1"</span> &gt;&gt; <span class="str">"$REPORT_FILE"</span>; }<br>
+<br>
+<span class="fn">plog</span> <span class="str">"=== L2 DAILY RUNBOOK — $(date) ==="</span><br>
+<br>
+<span class="cm"># 1. Disk check</span><br>
+<span class="var">D</span>=<span class="op">$(</span><span class="fn">df</span> / | <span class="fn">awk</span> <span class="str">'NR==2{print $5}'</span> | <span class="fn">tr</span> -d <span class="str">'%'</span><span class="op">)</span><br>
+[ <span class="str">"$D"</span> -ge <span class="op">90</span> ] &amp;&amp; { <span class="fn">plog</span> <span class="str">"DISK CRITICAL: $D%"</span>; <span class="var">ISSUES</span>+=<span class="op">1</span>; } || <span class="fn">plog</span> <span class="str">"DISK OK: $D%"</span><br>
+<br>
+<span class="cm"># 2. Memory check</span><br>
+<span class="var">SW</span>=<span class="op">$(</span><span class="fn">free</span> -m | <span class="fn">awk</span> <span class="str">'NR==3{print $3}'</span><span class="op">)</span><br>
+[ <span class="str">"$SW"</span> -gt <span class="op">200</span> ] &amp;&amp; { <span class="fn">plog</span> <span class="str">"MEM WARNING: Swap ${SW}MB"</span>; <span class="var">ISSUES</span>+=<span class="op">1</span>; } || <span class="fn">plog</span> <span class="str">"MEM OK"</span><br>
+<br>
+<span class="cm"># 3. Service checks</span><br>
+<span class="kw">for</span> <span class="var">S</span> <span class="kw">in</span> <span class="str">"${SERVICES[@]}"</span>; <span class="kw">do</span><br>
+&nbsp;&nbsp;<span class="fn">systemctl</span> is-active --quiet <span class="str">"$S"</span> &amp;&amp; <span class="fn">plog</span> <span class="str">"SVC OK: $S"</span> || { <span class="fn">plog</span> <span class="str">"SVC DOWN: $S"</span>; <span class="var">ISSUES</span>+=<span class="op">1</span>; }<br>
+<span class="kw">done</span><br>
+<br>
+<span class="cm"># 4. Log errors</span><br>
+<span class="var">E</span>=<span class="op">$(</span><span class="fn">grep</span> -c <span class="str">"ERROR"</span> <span class="str">"$HOME/logs/payment-service.log"</span> <span class="op">2</span>&gt;/dev/null || <span class="fn">echo</span> <span class="op">0</span><span class="op">)</span><br>
+[ <span class="str">"$E"</span> -gt <span class="op">0</span> ] &amp;&amp; { <span class="fn">plog</span> <span class="str">"LOG WARNING: $E errors found"</span>; <span class="var">ISSUES</span>+=<span class="op">1</span>; } || <span class="fn">plog</span> <span class="str">"LOG OK"</span><br>
+<br>
+<span class="cm"># 5. Backup</span><br>
+<span class="var">TS</span>=<span class="op">$(</span><span class="fn">date</span> +<span class="str">"%Y-%m-%d_%H-%M-%S"</span><span class="op">)</span><br>
+<span class="fn">tar</span> -czf <span class="str">"$HOME/backups/logs-backup-$TS.tar.gz"</span> -C <span class="str">"$HOME"</span> logs/ &amp;&amp; <span class="fn">plog</span> <span class="str">"BACKUP OK"</span> || <span class="fn">plog</span> <span class="str">"BACKUP FAILED"</span><br>
+<br>
+<span class="fn">plog</span> <span class="str">"=== DONE — $ISSUES issue(s) found. Report: $REPORT_FILE ==="</span>
+      </div>
+    </div>
+    <div class="note n-v">✅ <strong>How to run:</strong> chmod +x 06-l2-daily-runbook.sh &amp;&amp; ./06-l2-daily-runbook.sh</div>
+  </div>
+
+  <!-- Script 7 -->
+  <div class="sb">
+    <div class="sb-head">
+      <div class="sb-head-info">
+        <div class="sb-fname">07-schedule-all.sh</div>
+        <h3>Script 7 — Schedule All Scripts with Crontab</h3>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span class="sb-num">07</span>
+        <span class="sb-badge sb-s">Run Last</span>
+      </div>
+    </div>
+    <div class="cbox" style="margin:0;border-radius:0;border:none;border-top:1px solid var(--border);">
+      <div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">07-schedule-all.sh</span></div>
+      <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Gives all scripts permission and schedules cron jobs</span><br>
+<br>
+<span class="fn">chmod</span> +x <span class="str">"$HOME/scripts"</span>/*.sh<br>
+<span class="fn">echo</span> <span class="str">"Permissions set."</span><br>
+<br>
+<span class="cm"># Daily runbook at 8 AM every weekday</span><br>
+(<span class="fn">crontab</span> -l <span class="op">2</span>&gt;/dev/null; <span class="fn">echo</span> <span class="str">"0 8 * * 1-5 $HOME/scripts/06-l2-daily-runbook.sh >> $HOME/logs/runbook.log 2>&1"</span>) | <span class="fn">crontab</span> -<br>
+<br>
+<span class="cm"># Midnight backup daily</span><br>
+(<span class="fn">crontab</span> -l <span class="op">2</span>&gt;/dev/null; <span class="fn">echo</span> <span class="str">"0 0 * * * $HOME/scripts/02-backup-logs.sh >> $HOME/backups/backup.log 2>&1"</span>) | <span class="fn">crontab</span> -<br>
+<br>
+<span class="fn">echo</span> <span class="str">"Cron jobs scheduled:"</span><br>
+<span class="fn">crontab</span> -l
+      </div>
+    </div>
+    <div class="note n-s">✅ <strong>How to run:</strong> chmod +x 07-schedule-all.sh &amp;&amp; ./07-schedule-all.sh — run this last</div>
+  </div>
+
+  <!-- DAY 8 LAB -->
+  <div class="sec"><span class="sn sn-v">07</span> Day 8 Lab — Auto Detect + Restart Failed Service</div>
+  <div class="lab lab-v">
+    <div class="lab-head">
+      <h3>🔬 Lab: Run the Full Mini Project</h3>
+      <span class="lab-badge-v">Kali Linux · Full Automation</span>
+    </div>
+    <div class="lab-body">
+      <div class="lab-step"><div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Run the service monitor</div>
+          <div class="ls-desc">Starts the loop — watches services every 30 seconds.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">./05-service-monitor.sh</div></div>
+          <span class="ls-out-v">→ Watch the output. It logs disk, memory, service status every 30s. Press Ctrl+C to stop.</span>
+        </div>
+      </div>
+      <div class="lab-step"><div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Run the full daily runbook</div>
+          <div class="ls-desc">One command — does everything and saves a report.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">./06-l2-daily-runbook.sh</div></div>
+          <span class="ls-out-v">→ Full report saved to ~/daily-runbook-DATE.txt ✅</span>
+        </div>
+      </div>
+      <div class="lab-step"><div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Read the report</div>
+          <div class="ls-desc">See what the runbook found.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">cat ~/daily-runbook-$(date +%Y-%m-%d).txt</div></div>
+          <span class="ls-out-v">→ Shows all check results and issue count for today ✅</span>
+        </div>
+      </div>
+      <div class="lab-step"><div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Schedule everything with crontab</div>
+          <div class="ls-desc">Run the final script to automate everything permanently.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">./07-schedule-all.sh<br>crontab -l</div></div>
+          <span class="ls-out-v">→ All cron jobs confirmed active ✅</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY TABLE -->
+  <div class="sec"><span class="sn sn-t">08</span> All Scripts — Summary</div>
+  <div class="summary-table">
+    <div class="st-head">📋 Complete Script Reference</div>
+    <table class="sm">
+      <thead><tr><th>Script</th><th>Day</th><th>What it does</th><th>Run order</th></tr></thead>
+      <tbody>
+        <tr><td>01-setup-lab.sh</td><td>Day 7</td><td>Creates ~/logs, ~/backups, ~/scripts + 3 sample log files</td><td>First</td></tr>
+        <tr><td>02-backup-logs.sh</td><td>Day 7</td><td>Backs up ~/logs as timestamped .tar.gz, cleans old backups</td><td>Second</td></tr>
+        <tr><td>03-restore-backup.sh</td><td>Day 7</td><td>Restores a chosen backup to ~/logs-restored/</td><td>After backup</td></tr>
+        <tr><td>04-scheduled-backup.sh</td><td>Day 7</td><td>Schedules backup with crontab at midnight</td><td>Optional</td></tr>
+        <tr><td>05-service-monitor.sh</td><td>Day 8</td><td>Monitors services in a loop, auto-restarts if down</td><td>Interactive</td></tr>
+        <tr><td>06-l2-daily-runbook.sh</td><td>Day 8</td><td>Full daily runbook — disk + RAM + services + logs + backup</td><td>Every morning</td></tr>
+        <tr><td>07-schedule-all.sh</td><td>Day 8</td><td>Sets permissions + adds all cron jobs at once</td><td>Last</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn sn-t">09</span> Real L2 Scenarios</div>
+  <div class="scen-list">
+    <div class="scen-item"><div class="si-id">01</div><p>Disk fills up at 3 AM and the payment service stops writing logs. <strong>The backup that ran at midnight has all the logs safely stored.</strong> You restore from backup, identify the issue from the archived logs, and fix it before 8 AM. No data lost.</p></div>
+    <div class="scen-item"><div class="si-id">02</div><p>A service crashes at 2 AM. The service monitor running in the background <strong>detects it within 30 seconds</strong>, tries restarting it automatically up to 3 times, logs each attempt, and alerts you if all 3 fail. You wake up to a log showing the service restarted successfully at 2:01 AM.</p></div>
+    <div class="scen-item"><div class="si-id">03</div><p>Manager asks for this morning's server health report. You open <strong>~/daily-runbook-2024-03-15.txt</strong> — the full disk, memory, service status and error count from 8 AM is already there. You paste it in the reply. Done in 10 seconds.</p></div>
+    <div class="scen-item"><div class="si-id">04</div><p>Client accidentally deletes their transaction log and asks if you can recover it. <strong>The backup from last midnight has it.</strong> You run the restore script, locate the file inside the archive, and send it to the client within 5 minutes.</p></div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 3 · Day 7 &amp; 8 Outcomes</h3>
+    <ul>
+      <li>Understand what tar and gzip do and why .tar.gz is the standard backup format</li>
+      <li>Use tar -czf to create a compressed backup and tar -xzf to restore it</li>
+      <li>Use tar -tzvf to inspect a backup without extracting it</li>
+      <li>Build a backup script with timestamps, automatic cleanup of old backups, and size reporting</li>
+      <li>Build a restore script that lists available backups and extracts the chosen one safely</li>
+      <li class="dv">Build a service monitor script that runs in a loop and auto-restarts failed services</li>
+      <li class="dv">Build the full L2 daily runbook — the one script that does all checks and saves a report</li>
+      <li class="dv">Schedule all scripts with crontab — runbook at 8 AM, backup at midnight</li>
+      <li class="dv">Understand how full bash automation makes you proactive as an L2 engineer</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

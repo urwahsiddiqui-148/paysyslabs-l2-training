@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>L2 Training Journal — PaySysLabs</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#07090d; --surface:#0d1018; --surface2:#121620; --surface3:#171c28;
+    --border:#1e2535; --text:#a8b8cc; --text-dim:#3e5268; --text-faint:#162035;
+    --white:#eaf2fc;
+    --w1:#3b82f6; --w1bg:#020e20; --w1b:#082240;
+    --w2:#8b5cf6; --w2bg:#0c0818; --w2b:#241840;
+    --w3:#22d46a; --w3bg:#001810; --w3b:#003820;
+    --w4:#f59e0b; --w4bg:#180c00; --w4b:#3c2800;
+    --w5:#ec4899; --w5bg:#180010; --w5b:#3c0028;
+    --w6:#ef4444; --w6bg:#180004; --w6b:#3c0010;
+    --w65:#14b8a6; --w65bg:#001814; --w65b:#003830;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;line-height:1.7;padding:0;}
+
+  /* HEADER */
+  .header{padding:48px 32px 36px;border-bottom:1px solid var(--border);background:var(--surface);}
+  .header-inner{max-width:1100px;margin:0 auto;}
+  .site-badge{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--text-dim);margin-bottom:14px;}
+  .header h1{font-size:clamp(28px,5vw,48px);font-weight:800;color:var(--white);margin-bottom:8px;}
+  .header h1 span{background:linear-gradient(90deg,#3b82f6,#8b5cf6,#ec4899);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .header p{color:var(--text-dim);font-size:15px;max-width:600px;margin-bottom:18px;}
+  .header-stats{display:flex;gap:24px;flex-wrap:wrap;}
+  .hs{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dim);}
+  .hs span{color:var(--white);font-weight:700;}
+
+  /* MAIN */
+  .main{max-width:1100px;margin:0 auto;padding:40px 32px 80px;}
+
+  /* WEEK SECTION */
+  .week-section{margin-bottom:44px;}
+  .week-header{display:flex;align-items:center;gap:14px;margin-bottom:20px;}
+  .week-pill{font-family:'JetBrains Mono',monospace;font-size:11px;padding:5px 18px;border-radius:100px;letter-spacing:2px;text-transform:uppercase;font-weight:700;flex-shrink:0;}
+  .week-line{flex:1;height:1px;}
+  .week-title{font-size:17px;font-weight:700;}
+
+  /* DAY GRID */
+  .day-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;}
+  .day-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;text-decoration:none;display:block;transition:transform 0.15s,border-color 0.15s;}
+  .day-card:hover{transform:translateY(-2px);}
+  .dc-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .dc-day{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 9px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;}
+  .dc-title{font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px;}
+  .dc-desc{font-size:12px;color:var(--text-dim);}
+  .dc-outcome{font-family:'JetBrains Mono',monospace;font-size:10px;margin-top:8px;padding:4px 10px;border-radius:6px;display:inline-block;}
+
+  /* WEEK COLOR THEMES */
+  .w1 .week-pill{background:var(--w1bg);border:2px solid var(--w1b);color:var(--w1);}
+  .w1 .week-line{background:var(--w1b);}
+  .w1 .week-title{color:var(--w1);}
+  .w1 .day-card:hover{border-color:var(--w1b);}
+  .w1 .dc-day{background:var(--w1bg);border:1px solid var(--w1b);color:var(--w1);}
+  .w1 .dc-outcome{background:var(--w1bg);border:1px solid var(--w1b);color:var(--w1);}
+
+  .w2 .week-pill{background:var(--w2bg);border:2px solid var(--w2b);color:var(--w2);}
+  .w2 .week-line{background:var(--w2b);}
+  .w2 .week-title{color:var(--w2);}
+  .w2 .day-card:hover{border-color:var(--w2b);}
+  .w2 .dc-day{background:var(--w2bg);border:1px solid var(--w2b);color:var(--w2);}
+  .w2 .dc-outcome{background:var(--w2bg);border:1px solid var(--w2b);color:var(--w2);}
+
+  .w3 .week-pill{background:var(--w3bg);border:2px solid var(--w3b);color:var(--w3);}
+  .w3 .week-line{background:var(--w3b);}
+  .w3 .week-title{color:var(--w3);}
+  .w3 .day-card:hover{border-color:var(--w3b);}
+  .w3 .dc-day{background:var(--w3bg);border:1px solid var(--w3b);color:var(--w3);}
+  .w3 .dc-outcome{background:var(--w3bg);border:1px solid var(--w3b);color:var(--w3);}
+
+  .w4 .week-pill{background:var(--w4bg);border:2px solid var(--w4b);color:var(--w4);}
+  .w4 .week-line{background:var(--w4b);}
+  .w4 .week-title{color:var(--w4);}
+  .w4 .day-card:hover{border-color:var(--w4b);}
+  .w4 .dc-day{background:var(--w4bg);border:1px solid var(--w4b);color:var(--w4);}
+  .w4 .dc-outcome{background:var(--w4bg);border:1px solid var(--w4b);color:var(--w4);}
+
+  .w5 .week-pill{background:var(--w5bg);border:2px solid var(--w5b);color:var(--w5);}
+  .w5 .week-line{background:var(--w5b);}
+  .w5 .week-title{color:var(--w5);}
+  .w5 .day-card:hover{border-color:var(--w5b);}
+  .w5 .dc-day{background:var(--w5bg);border:1px solid var(--w5b);color:var(--w5);}
+  .w5 .dc-outcome{background:var(--w5bg);border:1px solid var(--w5b);color:var(--w5);}
+
+  .w6 .week-pill{background:var(--w6bg);border:2px solid var(--w6b);color:var(--w6);}
+  .w6 .week-line{background:var(--w6b);}
+  .w6 .week-title{color:var(--w6);}
+  .w6 .day-card:hover{border-color:var(--w6b);}
+  .w6 .dc-day{background:var(--w6bg);border:1px solid var(--w6b);color:var(--w6);}
+  .w6 .dc-outcome{background:var(--w6bg);border:1px solid var(--w6b);color:var(--w6);}
+
+  .w65 .week-pill{background:var(--w65bg);border:2px solid var(--w65b);color:var(--w65);}
+  .w65 .week-line{background:var(--w65b);}
+  .w65 .week-title{color:var(--w65);}
+  .w65 .day-card:hover{border-color:var(--w65b);}
+  .w65 .dc-day{background:var(--w65bg);border:1px solid var(--w65b);color:var(--w65);}
+  .w65 .dc-outcome{background:var(--w65bg);border:1px solid var(--w65b);color:var(--w65);}
+
+  .footer{text-align:center;padding:24px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);border-top:1px solid var(--border);}
+
+  @media(max-width:600px){.main{padding:24px 16px 60px;}.header{padding:32px 20px 24px;}.header-stats{gap:14px;}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="site-badge">PaySysLabs · L2 Technical Support Engineer</div>
+    <h1>L2 Training <span>Journal</span></h1>
+    <p>Complete training documentation for the L2 Support Engineer onboarding program. All learning materials, lab exercises, and technical references — organised by week and day.</p>
+    <div class="header-stats">
+      <div class="hs">Weeks: <span>7</span></div>
+      <div class="hs">Topics: <span>28</span></div>
+      <div class="hs">Engineer: <span>Urwah Shafiq Siddiqui</span></div>
+      <div class="hs">Lead: <span>Aalishan Ali (402)</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- WEEK 1 -->
+  <div class="week-section w1">
+    <div class="week-header">
+      <span class="week-pill">Week 1</span>
+      <span class="week-line"></span>
+      <span class="week-title">Foundations — SaaS, Products, Jira, Monitoring</span>
+    </div>
+    <div class="day-grid">
+      <a class="day-card" href="week1/day1-saas-vs-onprem.html">
+        <div class="dc-top"><span class="dc-day">Day 1</span></div>
+        <div class="dc-title">SaaS vs On-Premises</div>
+        <div class="dc-desc">Infrastructure models, Linux foundation, boot process, partition vs file storage</div>
+        <span class="dc-outcome">Outcome: Understand infrastructure types</span>
+      </a>
+      <a class="day-card" href="week1/day2-product-portfolio.html">
+        <div class="dc-top"><span class="dc-day">Day 2</span></div>
+        <div class="dc-title">Product Portfolio</div>
+        <div class="dc-desc">Client-product mapping, modules, MPG, OpenConnect, service overview</div>
+        <span class="dc-outcome">Outcome: Know the product stack</span>
+      </a>
+      <a class="day-card" href="week1/day3-jira-sla.html">
+        <div class="dc-top"><span class="dc-day">Day 3</span></div>
+        <div class="dc-title">Jira & SLA</div>
+        <div class="dc-desc">Ticket lifecycle, P1–P4 severity, SLA times, escalation path L1→L2→L3</div>
+        <span class="dc-outcome">Outcome: Work tickets correctly</span>
+      </a>
+      <a class="day-card" href="week1/day4-monitoring-basics.html">
+        <div class="dc-top"><span class="dc-day">Day 4</span></div>
+        <div class="dc-title">Monitoring Basics</div>
+        <div class="dc-desc">Infra vs app monitoring, alert types, OK/Warning/Critical classification</div>
+        <span class="dc-outcome">Outcome: Understand alerting</span>
+      </a>
+      <a class="day-card" href="week1/day5-transaction-flow.html">
+        <div class="dc-top"><span class="dc-day">Day 5</span></div>
+        <div class="dc-title">Transaction Flow</div>
+        <div class="dc-desc">API→MQ→DB lifecycle, tracing a transaction, failure investigation points</div>
+        <span class="dc-outcome">Outcome: Trace a payment end to end</span>
+      </a>
+      <a class="day-card" href="week1/saas-client-service-matrix.html">
+        <div class="dc-top"><span class="dc-day">Reference</span></div>
+        <div class="dc-title">SaaS Client & Service Matrix</div>
+        <div class="dc-desc">Multinet and Jazz clients mapped to all active services — RAAST, CMS, IBFT, ACS</div>
+        <span class="dc-outcome">Reference: Client service mapping</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- WEEK 2 -->
+  <div class="week-section w2">
+    <div class="week-header">
+      <span class="week-pill">Week 2</span>
+      <span class="week-line"></span>
+      <span class="week-title">Linux, SQL, DB Tables, S1 Handling</span>
+    </div>
+    <div class="day-grid">
+      <a class="day-card" href="week2/day1-linux-basics.html">
+        <div class="dc-top"><span class="dc-day">Day 1</span></div>
+        <div class="dc-title">Linux Basics</div>
+        <div class="dc-desc">grep, tail -f, vi, top, df -h, free -h — core L2 commands with lab</div>
+        <span class="dc-outcome">Outcome: Navigate a Linux server</span>
+      </a>
+      <a class="day-card" href="week2/day2-log-investigation.html">
+        <div class="dc-top"><span class="dc-day">Day 2</span></div>
+        <div class="dc-title">Log Investigation</div>
+        <div class="dc-desc">Log anatomy, 4 error patterns, hands-on investigation with grep on Kali</div>
+        <span class="dc-outcome">Outcome: Read and investigate logs</span>
+      </a>
+      <a class="day-card" href="week2/day3-sql-basics.html">
+        <div class="dc-top"><span class="dc-day">Day 3</span></div>
+        <div class="dc-title">SQL Basics</div>
+        <div class="dc-desc">SELECT, JOIN, COUNT, GROUP BY — building queries on the fintech DB</div>
+        <span class="dc-outcome">Outcome: Query the database</span>
+      </a>
+      <a class="day-card" href="week2/day4-database-tables.html">
+        <div class="dc-top"><span class="dc-day">Day 4</span></div>
+        <div class="dc-title">Database Tables</div>
+        <div class="dc-desc">MPG and OpenConnect schemas — 9 tables, their purpose, and how to query them</div>
+        <span class="dc-outcome">Outcome: Know the DB schema</span>
+      </a>
+      <a class="day-card" href="week2/day5-severity1-handling.html">
+        <div class="dc-top"><span class="dc-day">Day 5</span></div>
+        <div class="dc-title">Severity 1 Handling</div>
+        <div class="dc-desc">S1 protocol, bridge rules, outage timeline, communication templates, drill</div>
+        <span class="dc-outcome">Outcome: Handle a P1 incident</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- WEEK 3 -->
+  <div class="week-section w3">
+    <div class="week-header">
+      <span class="week-pill">Week 3</span>
+      <span class="week-line"></span>
+      <span class="week-title">Bash Scripting & Automation</span>
+    </div>
+    <div class="day-grid">
+      <a class="day-card" href="week3/day1-2-bash-scripting.html">
+        <div class="dc-top"><span class="dc-day">Day 1 & 2</span></div>
+        <div class="dc-title">Bash Scripting Basics</div>
+        <div class="dc-desc">Variables, loops, if/else, echo, read — first scripts with full lab</div>
+        <span class="dc-outcome">Outcome: Write bash scripts</span>
+      </a>
+      <a class="day-card" href="week3/day3-4-log-parsing-cron.html">
+        <div class="dc-top"><span class="dc-day">Day 3 & 4</span></div>
+        <div class="dc-title">Log Parsing & Cron</div>
+        <div class="dc-desc">grep flags, awk, pipes, crontab — automated log monitoring with scheduling</div>
+        <span class="dc-outcome">Outcome: Automate log checks</span>
+      </a>
+      <a class="day-card" href="week3/day5-health-check.html">
+        <div class="dc-top"><span class="dc-day">Day 5</span></div>
+        <div class="dc-title">Health Check Script</div>
+        <div class="dc-desc">6 scripts — disk, memory, CPU, log error checks combined in one runbook</div>
+        <span class="dc-outcome">Outcome: Monitoring automation</span>
+      </a>
+      <a class="day-card" href="week3/day7-8-backup-mini-project.html">
+        <div class="dc-top"><span class="dc-day">Day 7 & 8</span></div>
+        <div class="dc-title">Backup Script & Mini Project</div>
+        <div class="dc-desc">tar, gzip, restore, service monitor, L2 daily runbook — full automation</div>
+        <span class="dc-outcome">Outcome: Backup handling & L2 readiness</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- WEEK 4 -->
+  <div class="week-section w4">
+    <div class="week-header">
+      <span class="week-pill">Week 4</span>
+      <span class="week-line"></span>
+      <span class="week-title">Payment Products — RAAST, CMS, ACS, IBFT, POS</span>
+    </div>
+    <div class="day-grid">
+      <a class="day-card" href="week4/day1-2-raast-cms.html">
+        <div class="dc-top"><span class="dc-day">Day 1 & 2</span></div>
+        <div class="dc-title">OpenConnect RAAST & CMS</div>
+        <div class="dc-desc">PACS messages, callback handling, card authorization lifecycle, decline codes</div>
+        <span class="dc-outcome">Outcome: Understand RAAST & card lifecycle</span>
+      </a>
+      <a class="day-card" href="week4/day3-4-acs-ibft.html">
+        <div class="dc-top"><span class="dc-day">Day 3 & 4</span></div>
+        <div class="dc-title">Open ACS & IBFT/BillPay</div>
+        <div class="dc-desc">3D Secure flow, OTP, IBFT lifecycle, 1LINK routing, UBPS bill payments</div>
+        <span class="dc-outcome">Outcome: Identify ACS & transfer issues</span>
+      </a>
+      <a class="day-card" href="week4/day5-acquiring-pos.html">
+        <div class="dc-top"><span class="dc-day">Day 5</span></div>
+        <div class="dc-title">Acquiring & POS</div>
+        <div class="dc-desc">POS to switch flow, 4 players, authorization vs settlement, decline codes</div>
+        <span class="dc-outcome">Outcome: Explain acquiring flow</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- WEEK 5 -->
+  <div class="week-section w5">
+    <div class="week-header">
+      <span class="week-pill">Week 5</span>
+      <span class="week-line"></span>
+      <span class="week-title">Automation, Alerts & AI</span>
+    </div>
+    <div class="day-grid">
+      <a class="day-card" href="week5/day1-2-bash-log-automation.html">
+        <div class="dc-top"><span class="dc-day">Day 1 & 2</span></div>
+        <div class="dc-title">Bash Basics & Log Automation</div>
+        <div class="dc-desc">Variables, loops, cron, grep monitoring — 7 scripts for automated log checks</div>
+        <span class="dc-outcome">Outcome: Automate log detection</span>
+      </a>
+      <a class="day-card" href="week5/day3-4-slack-whatsapp-alerts.html">
+        <div class="dc-top"><span class="dc-day">Day 3 & 4</span></div>
+        <div class="dc-title">Slack & WhatsApp Alerts</div>
+        <div class="dc-desc">Webhook integration, Twilio API, full setup guide — test alerts from terminal</div>
+        <span class="dc-outcome">Outcome: Configure real-time alerts</span>
+      </a>
+      <a class="day-card" href="week5/day5-ai-log-analysis.html">
+        <div class="dc-top"><span class="dc-day">Day 5</span></div>
+        <div class="dc-title">AI Log Analysis</div>
+        <div class="dc-desc">Log summarization, pattern detection, 3 ready prompts, RCA generation</div>
+        <span class="dc-outcome">Outcome: Generate quick RCA with AI</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- WEEK 6 -->
+  <div class="week-section w6">
+    <div class="week-header">
+      <span class="week-pill">Week 6</span>
+      <span class="week-line"></span>
+      <span class="week-title">Incident Drills & RCA</span>
+    </div>
+    <div class="day-grid">
+      <a class="day-card" href="week6/day1-2-db-failure-mq-stuck.html">
+        <div class="dc-top"><span class="dc-day">Day 1 & 2</span></div>
+        <div class="dc-title">DB Failure & MQ Stuck</div>
+        <div class="dc-desc">Database outage protocol, queue monitoring, safe restart order — full lab</div>
+        <span class="dc-outcome">Outcome: Handle DB outage & queue issues</span>
+      </a>
+      <a class="day-card" href="week6/day3-4-cpu-timeout-rca.html">
+        <div class="dc-top"><span class="dc-day">Day 3 & 4</span></div>
+        <div class="dc-title">High CPU & Timeout RCA</div>
+        <div class="dc-desc">Process analysis with top, latency chain, DB query analysis, timeout types</div>
+        <span class="dc-outcome">Outcome: Identify heavy process & delays</span>
+      </a>
+      <a class="day-card" href="week6/day5-callback-issue-rca.html">
+        <div class="dc-top"><span class="dc-day">Day 5</span></div>
+        <div class="dc-title">Callback Issue RCA</div>
+        <div class="dc-desc">Retry logic, status mismatch, dead letter queue, full investigation lab</div>
+        <span class="dc-outcome">Outcome: Resolve callback mismatch</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- WEEK 6.5 -->
+  <div class="week-section w65">
+    <div class="week-header">
+      <span class="week-pill">Week 6.5</span>
+      <span class="week-line"></span>
+      <span class="week-title">Monitoring & Observability</span>
+    </div>
+    <div class="day-grid">
+      <a class="day-card" href="week6-5/day1-monitoring-basics.html">
+        <div class="dc-top"><span class="dc-day">Day 1</span></div>
+        <div class="dc-title">Monitoring Basics</div>
+        <div class="dc-desc">Metrics vs logs vs traces, 3 pillars of observability, alert levels, dashboard reading</div>
+        <span class="dc-outcome">Outcome: Understand observability</span>
+      </a>
+      <a class="day-card" href="week6-5/day2-system-metrics.html">
+        <div class="dc-top"><span class="dc-day">Day 2</span></div>
+        <div class="dc-title">System Metrics</div>
+        <div class="dc-desc">CPU, Memory, Disk, Network — thresholds, commands, resource spike detection lab</div>
+        <span class="dc-outcome">Outcome: Resource troubleshooting</span>
+      </a>
+      <a class="day-card" href="week6-5/day3-app-monitoring.html">
+        <div class="dc-top"><span class="dc-day">Day 3</span></div>
+        <div class="dc-title">Application Monitoring</div>
+        <div class="dc-desc">API latency, error rate, throughput, health check endpoints, find slow API lab</div>
+        <span class="dc-outcome">Outcome: App health checks</span>
+      </a>
+      <a class="day-card" href="week6-5/day5-alerts-alertmanager.html">
+        <div class="dc-top"><span class="dc-day">Day 5</span></div>
+        <div class="dc-title">Alerts &amp; Alertmanager</div>
+        <div class="dc-desc">Alert rules, severity, routing, grouping, silencing, and Alertmanager flow</div>
+        <span class="dc-outcome">Outcome: Configure alerts and routing</span>
+      </a>
+      <a class="day-card" href="week6-5/day6-logs-monitoring.html">
+        <div class="dc-top"><span class="dc-day">Day 6</span></div>
+        <div class="dc-title">Logs Monitoring</div>
+        <div class="dc-desc">Central logs, search patterns, grep, and hands-on RCA from logs</div>
+        <span class="dc-outcome">Outcome: Find root cause using logs</span>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  L2 Training Journal · PaySysLabs · Urwah Shafiq Siddiqui · This will be updated with more content over time, so check back for new additions!
+</div>
+
+</body>
+</html>

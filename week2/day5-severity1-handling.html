@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 2 · Day 5 — Severity 1 Handling</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800;900&family=Barlow+Condensed:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #080608;
+    --surface: #0e0b0e;
+    --surface2: #141014;
+    --surface3: #1a151a;
+    --border: #221820;
+    --text: #c0b0bc;
+    --text-dim: #604858;
+    --text-faint: #281820;
+    --white: #f0e8f0;
+
+    --red: #ff3355;
+    --red-bg: #180308;
+    --red-border: #400818;
+
+    --orange: #ff7733;
+    --orange-bg: #180800;
+    --orange-border: #401800;
+
+    --yellow: #ffcc00;
+    --yellow-bg: #181200;
+    --yellow-border: #403000;
+
+    --green: #00dd88;
+    --green-bg: #001810;
+    --green-border: #004028;
+
+    --blue: #4488ff;
+    --blue-bg: #000818;
+    --blue-border: #001840;
+
+    --purple: #cc88ff;
+    --purple-bg: #100818;
+    --purple-border: #301840;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; font-size: 15px; line-height: 1.7; padding: 48px 24px 100px; }
+  .page { max-width: 940px; margin: 0 auto; }
+
+  /* TOPBAR */
+  .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:52px; padding-bottom:18px; border-bottom:1px solid var(--border); }
+  .topbar-left { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-faint); letter-spacing:1px; text-transform:uppercase; }
+  .tb-right { display:flex; gap:8px; }
+  .tb-badge { font-family:'JetBrains Mono',monospace; font-size:10px; padding:4px 14px; border-radius:100px; letter-spacing:1px; text-transform:uppercase; }
+  .tb-week { background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); }
+  .tb-day  { background:var(--red-bg); border:1px solid var(--red-border); color:var(--red); }
+
+  /* HERO */
+  .hero { margin-bottom:52px; }
+  .day-label { font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--red); margin-bottom:14px; }
+  .hero h1 { font-family:'Barlow Condensed',sans-serif; font-size:clamp(40px,8vw,80px); font-weight:900; line-height:1.0; color:var(--white); margin-bottom:18px; text-transform:uppercase; letter-spacing:-1px; }
+  .hero h1 span { color:var(--red); }
+  .hero-desc { color:var(--text-dim); font-size:16px; max-width:540px; }
+  .tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:22px; }
+  .tag { padding:5px 14px; border-radius:100px; font-family:'JetBrains Mono',monospace; font-size:11px; background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); }
+
+  /* EMERGENCY BANNER */
+  .emergency-banner {
+    background: var(--red-bg); border: 1px solid var(--red-border);
+    border-left: 5px solid var(--red);
+    border-radius: 12px; padding: 20px 28px; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .eb-icon { font-size: 32px; flex-shrink: 0; }
+  .eb-text .eb-title { font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:800; color:var(--red); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
+  .eb-text p { font-size:14px; color:var(--text-dim); }
+  .eb-text strong { color:var(--text); }
+
+  /* SECTION */
+  .sec { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--text-faint); margin-bottom:20px; margin-top:52px; display:flex; align-items:center; gap:12px; }
+  .sec .sn { color:var(--red); font-size:12px; }
+  .sec::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* ANALOGY */
+  .analogy { background:var(--red-bg); border:1px solid var(--red-border); border-left:4px solid var(--red); border-radius:12px; padding:26px 30px; margin-bottom:16px; }
+  .analogy .al { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--red); margin-bottom:10px; }
+  .analogy p { color:var(--text); font-size:15px; }
+  .analogy strong { color:var(--white); }
+
+  /* CARD */
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:26px 30px; margin-bottom:14px; }
+  .card h3 { font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:700; color:var(--white); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px; }
+  .card p { color:var(--text-dim); margin-bottom:10px; }
+  .card p:last-child { margin-bottom:0; }
+  .card strong { color:var(--text); }
+
+  /* TIMELINE */
+  .timeline { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:14px; }
+  .tl-header { padding:18px 28px; background:var(--red-bg); border-bottom:1px solid var(--red-border); }
+  .tl-header h3 { font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:800; color:var(--red); text-transform:uppercase; letter-spacing:1px; }
+  .tl-header p { font-size:13px; color:var(--text-dim); margin-top:4px; }
+  .tl-body { padding:28px; display:flex; flex-direction:column; gap:0; }
+  .tl-item { display:flex; gap:20px; position:relative; }
+  .tl-item:not(:last-child) .ti-left::after { content:''; position:absolute; left:19px; top:46px; bottom:0; width:2px; background:var(--border); z-index:0; }
+  .ti-left { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+  .ti-dot { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:500; z-index:1; position:relative; flex-shrink:0; }
+  .td-red    { background:var(--red-bg);    border:2px solid var(--red-border);    color:var(--red); }
+  .td-orange { background:var(--orange-bg); border:2px solid var(--orange-border); color:var(--orange); }
+  .td-yellow { background:var(--yellow-bg); border:2px solid var(--yellow-border); color:var(--yellow); }
+  .td-blue   { background:var(--blue-bg);   border:2px solid var(--blue-border);   color:var(--blue); }
+  .td-green  { background:var(--green-bg);  border:2px solid var(--green-border);  color:var(--green); }
+  .td-purple { background:var(--purple-bg); border:2px solid var(--purple-border); color:var(--purple); }
+  .ti-content { flex:1; padding-bottom:28px; padding-top:4px; }
+  .ti-time { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-dim); margin-bottom:4px; }
+  .ti-title { font-size:16px; font-weight:700; color:var(--white); margin-bottom:6px; }
+  .ti-desc  { font-size:13px; color:var(--text-dim); margin-bottom:8px; }
+  .ti-action { font-family:'JetBrains Mono',monospace; font-size:12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; display:block; color:var(--text); line-height:1.7; }
+
+  /* BRIDGE PROTOCOL */
+  .bridge { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:14px; }
+  .br-header { padding:18px 28px; background:var(--surface2); border-bottom:1px solid var(--border); }
+  .br-header h3 { font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:800; color:var(--white); text-transform:uppercase; letter-spacing:0.5px; }
+  .br-header p { font-size:13px; color:var(--text-dim); margin-top:4px; }
+  .br-grid { display:grid; grid-template-columns:1fr 1fr; gap:0; }
+  .br-item { padding:20px 24px; border-bottom:1px solid var(--border); border-right:1px solid var(--border); }
+  .br-item:nth-child(even) { border-right:none; }
+  .br-item:nth-last-child(-n+2) { border-bottom:none; }
+  .br-num { font-family:'Barlow Condensed',sans-serif; font-size:36px; font-weight:900; color:var(--red); line-height:1; margin-bottom:6px; opacity:0.4; }
+  .br-rule { font-size:15px; font-weight:600; color:var(--white); margin-bottom:4px; }
+  .br-desc { font-size:13px; color:var(--text-dim); }
+
+  /* ROLES TABLE */
+  .roles-wrap { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:14px; }
+  .rw-header { padding:16px 24px; background:var(--surface2); border-bottom:1px solid var(--border); font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:800; color:var(--white); text-transform:uppercase; }
+  table.rt { width:100%; border-collapse:collapse; }
+  table.rt th { padding:10px 20px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint); text-align:left; border-bottom:1px solid var(--border); font-weight:400; background:var(--surface2); }
+  table.rt td { padding:14px 20px; font-size:13px; color:var(--text-dim); border-bottom:1px solid rgba(255,255,255,0.03); vertical-align:top; }
+  table.rt tr:last-child td { border-bottom:none; }
+  table.rt tr:hover td { background:rgba(255,255,255,0.02); }
+  table.rt td:first-child { font-weight:600; color:var(--white); white-space:nowrap; }
+  .role-badge { font-family:'JetBrains Mono',monospace; font-size:10px; padding:3px 10px; border-radius:100px; white-space:nowrap; }
+  .rb-r { background:var(--red-bg);    border:1px solid var(--red-border);    color:var(--red); }
+  .rb-o { background:var(--orange-bg); border:1px solid var(--orange-border); color:var(--orange); }
+  .rb-y { background:var(--yellow-bg); border:1px solid var(--yellow-border); color:var(--yellow); }
+  .rb-g { background:var(--green-bg);  border:1px solid var(--green-border);  color:var(--green); }
+  .rb-b { background:var(--blue-bg);   border:1px solid var(--blue-border);   color:var(--blue); }
+
+  /* DO / DON'T */
+  .dos-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+  .dos-card { border-radius:14px; padding:22px 24px; border:1px solid; }
+  .dos-card.do   { background:var(--green-bg); border-color:var(--green-border); }
+  .dos-card.dont { background:var(--red-bg);   border-color:var(--red-border); }
+  .dos-card .dc-label { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin-bottom:14px; }
+  .do   .dc-label { color:var(--green); }
+  .dont .dc-label { color:var(--red); }
+  .dos-card ul { list-style:none; display:flex; flex-direction:column; gap:8px; }
+  .dos-card ul li { font-size:13px; color:var(--text-dim); padding-left:18px; position:relative; }
+  .dos-card ul li::before { position:absolute; left:0; font-family:'JetBrains Mono',monospace; font-size:12px; }
+  .do   ul li::before { content:'✓'; color:var(--green); }
+  .dont ul li::before { content:'✗'; color:var(--red); }
+
+  /* NOTE */
+  .note { border-radius:10px; padding:14px 18px; font-size:13px; margin-top:10px; }
+  .n-red    { background:var(--red-bg);    border:1px solid var(--red-border);    color:var(--red); }
+  .n-orange { background:var(--orange-bg); border:1px solid var(--orange-border); color:var(--orange); }
+  .n-green  { background:var(--green-bg);  border:1px solid var(--green-border);  color:var(--green); }
+  .n-yellow { background:var(--yellow-bg); border:1px solid var(--yellow-border); color:var(--yellow); }
+  .note strong { color:var(--white); }
+
+  /* LAB — SIMULATED DRILL */
+  .drill-wrap { background:var(--surface); border:2px solid var(--red-border); border-radius:16px; overflow:hidden; margin-bottom:14px; }
+  .drill-header { padding:20px 28px; background:var(--red-bg); border-bottom:1px solid var(--red-border); }
+  .drill-header .dh-top { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:6px; }
+  .drill-header h3 { font-family:'Barlow Condensed',sans-serif; font-size:24px; font-weight:900; color:var(--red); text-transform:uppercase; letter-spacing:1px; }
+  .drill-badge { font-family:'JetBrains Mono',monospace; font-size:10px; padding:4px 12px; border-radius:100px; background:rgba(255,51,85,0.2); border:1px solid var(--red-border); color:var(--red); }
+  .drill-header p { font-size:13px; color:var(--text-dim); }
+  .drill-body { padding:28px; display:flex; flex-direction:column; gap:0; }
+  .drill-step { display:flex; gap:20px; position:relative; }
+  .drill-step:not(:last-child) .ds-left::after { content:''; position:absolute; left:19px; top:46px; bottom:0; width:2px; background:var(--border); z-index:0; }
+  .ds-left { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+  .ds-num { width:40px; height:40px; border-radius:50%; background:var(--red-bg); border:2px solid var(--red-border); display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--red); z-index:1; position:relative; }
+  .ds-content { flex:1; padding-bottom:26px; padding-top:4px; }
+  .ds-title { font-size:15px; font-weight:700; color:var(--white); margin-bottom:4px; }
+  .ds-time  { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--red); margin-bottom:6px; }
+  .ds-desc  { font-size:13px; color:var(--text-dim); margin-bottom:8px; }
+  .ds-action { font-family:'JetBrains Mono',monospace; font-size:12px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px 14px; display:block; line-height:1.8; }
+  .ds-say { background:var(--surface2); border:1px solid var(--border); border-left:3px solid var(--purple); border-radius:8px; padding:10px 14px; font-size:13px; color:var(--text); margin-top:8px; font-style:italic; }
+  .ds-say .say-label { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--purple); text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:4px; font-style:normal; }
+  .ds-good { background:var(--green-bg); border:1px solid var(--green-border); border-radius:8px; padding:10px 14px; font-size:13px; color:var(--green); margin-top:8px; }
+  .ds-good strong { color:var(--white); }
+
+  /* COMMUNICATION TEMPLATES */
+  .comms-wrap { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:14px; }
+  .cw-header { padding:16px 24px; background:var(--surface2); border-bottom:1px solid var(--border); font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:800; color:var(--white); text-transform:uppercase; }
+  .comm-item { padding:20px 24px; border-bottom:1px solid var(--border); }
+  .comm-item:last-child { border-bottom:none; }
+  .comm-item .ci-label { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; }
+  .ci-initial .ci-label { color:var(--red); }
+  .ci-update  .ci-label { color:var(--orange); }
+  .ci-resolved .ci-label { color:var(--green); }
+  .comm-item .ci-msg { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:14px 18px; font-size:13px; color:var(--text-dim); line-height:1.7; font-family:'JetBrains Mono',monospace; }
+  .comm-item .ci-msg strong { color:var(--white); }
+
+  /* SCENARIOS */
+  .scen-list { display:flex; flex-direction:column; gap:12px; margin-bottom:14px; }
+  .scen-item { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 22px; display:flex; gap:16px; align-items:flex-start; }
+  .si-id { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--red); background:var(--red-bg); border:1px solid var(--red-border); border-radius:6px; padding:4px 8px; flex-shrink:0; margin-top:2px; }
+  .scen-item p { font-size:14px; color:var(--text-dim); }
+  .scen-item p strong { color:var(--white); }
+
+  /* OUTCOME */
+  .outcome { background:linear-gradient(135deg, var(--red-bg) 0%, var(--surface) 100%); border:1px solid var(--red-border); border-radius:16px; padding:36px; margin-top:48px; }
+  .outcome h3 { font-family:'Barlow Condensed',sans-serif; font-size:26px; font-weight:900; color:var(--red); margin-bottom:20px; text-transform:uppercase; letter-spacing:1px; }
+  .outcome ul { display:flex; flex-direction:column; gap:10px; list-style:none; }
+  .outcome ul li { font-size:14px; color:var(--text-dim); padding-left:24px; position:relative; }
+  .outcome ul li::before { content:'✓'; position:absolute; left:0; color:var(--red); font-family:'JetBrains Mono',monospace; }
+
+  @media(max-width:640px){
+    .dos-grid { grid-template-columns:1fr; }
+    .br-grid  { grid-template-columns:1fr; }
+    .br-item  { border-right:none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 2</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-week">Week 2</span>
+      <span class="tb-badge tb-day">Day 5</span>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="day-label">Today's Topic</div>
+    <h1>Severity 1 <span>Handling</span></h1>
+    <p class="hero-desc">An S1 is the most critical incident your team will face. Everything is down, real money is affected, and everyone is watching. Today you learn exactly how to respond — calmly, correctly, and fast.</p>
+    <div class="tags">
+      <span class="tag">S1 Protocol</span>
+      <span class="tag">Outage Bridge</span>
+      <span class="tag">Incident Management</span>
+      <span class="tag">Communication</span>
+    </div>
+  </div>
+
+  <!-- EMERGENCY BANNER -->
+  <div class="emergency-banner">
+    <div class="eb-icon">🚨</div>
+    <div class="eb-text">
+      <div class="eb-title">What is a Severity 1?</div>
+      <p>A Severity 1 (S1) means a <strong>complete system outage</strong> — core services are down, real customers are affected, real transactions are failing right now. Every minute of downtime = financial loss and SLA breach. This is the highest alert level.</p>
+    </div>
+  </div>
+
+  <!-- ANALOGY -->
+  <div class="sec"><span class="sn">01</span> The Simple Idea First</div>
+
+  <div class="analogy">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Think of an S1 like a <strong>fire alarm going off in a hospital.</strong><br><br>
+      Everyone has a specific role. Nobody panics and runs randomly. The fire team follows a drill — who evacuates patients, who calls the fire department, who checks the exits, who gives updates to management.<br><br>
+      <strong>An S1 outage is exactly like that.</strong> There is a defined protocol. Everyone knows their role. You join a bridge call, you investigate your area, you give updates on a schedule, and you don't go quiet. The worst thing you can do in an S1 is go silent.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>What is an Outage Bridge?</h3>
+    <p>An <strong>Outage Bridge</strong> is an emergency group call (Zoom, Teams, or phone) that gets opened the moment an S1 is declared. Everyone relevant joins — L2 engineers, L3 developers, the manager, the client's technical team.</p>
+    <p>The bridge stays open until the issue is resolved. It is the <strong>command center</strong> of the incident. All findings, decisions, and updates happen on the bridge. Nothing is discussed outside of it during an active S1.</p>
+  </div>
+
+  <!-- S1 TIMELINE -->
+  <div class="sec"><span class="sn">02</span> The S1 Response Timeline — Minute by Minute</div>
+
+  <div class="timeline">
+    <div class="tl-header">
+      <h3>⏱️ From Alert to Resolution — Your Exact Playbook</h3>
+      <p>This is what happens from the moment the S1 alert fires. Every step has a time target.</p>
+    </div>
+    <div class="tl-body">
+
+      <div class="tl-item">
+        <div class="ti-left"><div class="ti-dot td-red">T+0</div></div>
+        <div class="ti-content">
+          <div class="ti-time">Minute 0 — Alert Fires</div>
+          <div class="ti-title">S1 Alert Detected</div>
+          <div class="ti-desc">Monitoring tool fires a CRITICAL alert. Payment service is down. Transactions failing across all clients.</div>
+          <code class="ti-action">→ Do NOT wait. Do NOT finish what you were doing.<br>→ Open Jira immediately. Create a P1 ticket.<br>→ Note the exact time the alert fired.</code>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="ti-left"><div class="ti-dot td-red">T+5</div></div>
+        <div class="ti-content">
+          <div class="ti-time">Within 5 Minutes</div>
+          <div class="ti-title">First Response — Acknowledge & Notify</div>
+          <div class="ti-desc">You must acknowledge the incident and notify your lead within 5 minutes. Do not investigate silently.</div>
+          <code class="ti-action">→ Message your lead: "S1 detected. Payment service down since [time]. Investigating now."<br>→ Send initial client notification — do not wait for root cause first.<br>→ Open the Outage Bridge call.</code>
+          <div class="note n-red" style="margin-top:10px;">⚠️ <strong>Rule:</strong> Always notify BEFORE you have answers. A client waiting in silence is worse than a client told "we are aware and investigating."</div>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="ti-left"><div class="ti-dot td-orange">T+10</div></div>
+        <div class="ti-content">
+          <div class="ti-time">Within 10 Minutes</div>
+          <div class="ti-title">Initial Investigation — Find the Blast Radius</div>
+          <div class="ti-desc">Understand the scope. How much is affected? Which clients? Which services? Which environments?</div>
+          <code class="ti-action">→ Check monitoring dashboard — which services are red?<br>→ Run: df -h, free -h, top — check server health<br>→ Run: grep "ERROR" /logs/payment-service.log | tail -50<br>→ Check SENDER_BATCH — how many batches are stuck?<br>→ Report findings on bridge: "Payment API down. DB connection errors in logs. 3 clients affected."</code>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="ti-left"><div class="ti-dot td-yellow">T+15</div></div>
+        <div class="ti-content">
+          <div class="ti-time">Every 15 Minutes</div>
+          <div class="ti-title">Status Updates — Keep Everyone Informed</div>
+          <div class="ti-desc">Every 15 minutes you must give an update — even if you have no new findings. Silence on the bridge is not acceptable.</div>
+          <code class="ti-action">→ "Update at [time]: Still investigating DB connection issue. DBA team checking connection pool. No ETA yet."<br>→ Update the Jira ticket with latest findings.<br>→ Update the client communication channel.</code>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="ti-left"><div class="ti-dot td-blue">T+30</div></div>
+        <div class="ti-content">
+          <div class="ti-time">Within 30 Minutes</div>
+          <div class="ti-title">Root Cause Identified — Escalate if Needed</div>
+          <div class="ti-desc">You should have a working theory by now. Either you can fix it at L2 level or you escalate to L3.</div>
+          <code class="ti-action">→ If fix is available: implement it, monitor, confirm services recovering.<br>→ If needs L3: "Escalating to dev team. Root cause appears to be connection pool leak in payment service. L3 team joining bridge now."<br>→ Never attempt a fix on PROD without bridge approval.</code>
+          <div class="note n-orange" style="margin-top:10px;">💡 <strong>Key rule:</strong> On PROD during S1, <strong>nothing gets changed without the bridge lead approving it</strong>. You say what you want to do, get a verbal OK, then do it.</div>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="ti-left"><div class="ti-dot td-green">RES</div></div>
+        <div class="ti-content">
+          <div class="ti-time">Resolution</div>
+          <div class="ti-title">Service Restored — Post-Incident Actions</div>
+          <div class="ti-desc">Services are back. But the job isn't done yet. Post-incident steps are mandatory.</div>
+          <code class="ti-action">→ Confirm all services are green on monitoring dashboard.<br>→ Send resolution notification to all affected clients.<br>→ Update Jira ticket — change status to Resolved.<br>→ Document full timeline in ticket: what happened, when, what was done.<br>→ Schedule Post-Incident Review (PIR) meeting within 24 hours.</code>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BRIDGE PROTOCOL RULES -->
+  <div class="sec"><span class="sn">03</span> Outage Bridge Protocol — The Rules</div>
+
+  <div class="bridge">
+    <div class="br-header">
+      <h3>🎙️ Outage Bridge — How to Behave</h3>
+      <p>These rules exist so the bridge stays focused and productive. An S1 is not the time for confusion.</p>
+    </div>
+    <div class="br-grid">
+      <div class="br-item">
+        <div class="br-num">01</div>
+        <div class="br-rule">Join immediately, no excuses</div>
+        <div class="br-desc">When an S1 bridge is opened, you join within 2 minutes. Every second counts. No waiting to "finish something first."</div>
+      </div>
+      <div class="br-item">
+        <div class="br-num">02</div>
+        <div class="br-rule">Only speak when you have something relevant</div>
+        <div class="br-desc">No side conversations. No background noise. Speak when you have a finding, a question, or an update. Keep it short and factual.</div>
+      </div>
+      <div class="br-item">
+        <div class="br-num">03</div>
+        <div class="br-rule">Never go silent</div>
+        <div class="br-desc">If you're investigating, say so. Even "still looking, no findings yet" is better than silence. People need to know you're working.</div>
+      </div>
+      <div class="br-item">
+        <div class="br-num">04</div>
+        <div class="br-rule">Never make PROD changes alone</div>
+        <div class="br-desc">Announce what you intend to do before doing it. Get approval on the bridge. Then do it. Then confirm what you did.</div>
+      </div>
+      <div class="br-item">
+        <div class="br-num">05</div>
+        <div class="br-rule">Document everything in real time</div>
+        <div class="br-desc">While investigating, keep updating the Jira ticket. Every command you ran, every finding, every action taken — write it down as it happens.</div>
+      </div>
+      <div class="br-item">
+        <div class="br-num">06</div>
+        <div class="br-rule">Separate findings from theories</div>
+        <div class="br-desc">Say "logs show DB_CONNECTION_TIMEOUT" (fact) not "I think the database crashed" (theory). On an S1 bridge, precision matters.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHO DOES WHAT -->
+  <div class="sec"><span class="sn">04</span> Who Does What During an S1</div>
+
+  <div class="roles-wrap">
+    <div class="rw-header">🎯 Roles & Responsibilities on the Bridge</div>
+    <table class="rt">
+      <thead><tr><th>Role</th><th>Responsibility During S1</th><th>Level</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Bridge Lead / Incident Manager</td>
+          <td>Runs the bridge call. Assigns tasks, collects updates, makes decisions on PROD changes, communicates to management.</td>
+          <td><span class="role-badge rb-r">Manager</span></td>
+        </tr>
+        <tr>
+          <td>L2 Support Engineer (You)</td>
+          <td>First responder. Checks logs, monitors dashboards, checks DB tables, reports findings on bridge, creates and updates Jira ticket, sends client notifications.</td>
+          <td><span class="role-badge rb-o">L2 — You</span></td>
+        </tr>
+        <tr>
+          <td>L3 / Developer</td>
+          <td>Joins when L2 confirms a code-level or config issue. Makes approved changes to services, restarts processes, deploys hotfixes.</td>
+          <td><span class="role-badge rb-y">L3 Dev</span></td>
+        </tr>
+        <tr>
+          <td>DBA (Database Admin)</td>
+          <td>Joins when DB issues are identified. Checks connection pools, slow queries, locks, tablespace. Makes DB-level fixes.</td>
+          <td><span class="role-badge rb-b">DBA</span></td>
+        </tr>
+        <tr>
+          <td>Client Technical Team</td>
+          <td>Joins to confirm impact on their end. Checks their own systems. Confirms when service is restored from their side.</td>
+          <td><span class="role-badge rb-g">Client</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- COMMUNICATION TEMPLATES -->
+  <div class="sec"><span class="sn">05</span> What to Say — Communication Templates</div>
+
+  <div class="comms-wrap">
+    <div class="cw-header">📢 Ready-to-Use S1 Communication Messages</div>
+    <div class="comm-item ci-initial">
+      <div class="ci-label">🔴 Initial Alert — Send Within 5 Minutes</div>
+      <div class="ci-msg">
+        <strong>INCIDENT ALERT — S1</strong><br><br>
+        Dear Team / Client,<br><br>
+        We are currently experiencing an issue with <strong>[service name]</strong> affecting <strong>[client name / all clients]</strong>.<br>
+        Issue detected at: <strong>[time]</strong><br>
+        Impact: <strong>[transactions failing / service unavailable]</strong><br>
+        Status: <strong>Under investigation. Bridge call is open.</strong><br><br>
+        We will provide an update within 15 minutes.
+      </div>
+    </div>
+    <div class="comm-item ci-update">
+      <div class="ci-label">🟠 Progress Update — Every 15 Minutes</div>
+      <div class="ci-msg">
+        <strong>INCIDENT UPDATE — [Time]</strong><br><br>
+        Current Status: <strong>Still investigating</strong><br>
+        Finding so far: <strong>[e.g. DB connection pool exhausted. DBA team actively working on fix.]</strong><br>
+        ETA: <strong>[if known / "To be confirmed"]</strong><br><br>
+        Next update in 15 minutes.
+      </div>
+    </div>
+    <div class="comm-item ci-resolved">
+      <div class="ci-label">🟢 Resolution — Send When Service Restored</div>
+      <div class="ci-msg">
+        <strong>INCIDENT RESOLVED — [Time]</strong><br><br>
+        Service: <strong>[service name]</strong> has been restored.<br>
+        Resolved at: <strong>[time]</strong><br>
+        Total downtime: <strong>[X minutes]</strong><br>
+        Root cause: <strong>[brief description]</strong><br>
+        Action taken: <strong>[what was done to fix it]</strong><br><br>
+        A full Post-Incident Review will follow within 24 hours.<br>
+        Please confirm services are functioning on your end.
+      </div>
+    </div>
+  </div>
+
+  <!-- DO / DON'T -->
+  <div class="sec"><span class="sn">06</span> Do's and Don'ts During an S1</div>
+
+  <div class="dos-grid">
+    <div class="dos-card do">
+      <div class="dc-label">✅ Do This</div>
+      <ul>
+        <li>Join the bridge call immediately</li>
+        <li>Send the initial notification before you have answers</li>
+        <li>Update every 15 minutes — even with no new findings</li>
+        <li>Document every action in Jira as you do it</li>
+        <li>State facts — "logs show X" not "I think X"</li>
+        <li>Ask for approval before any PROD change</li>
+        <li>Keep calm — panicking slows everything down</li>
+        <li>Confirm service restored from monitoring before closing</li>
+      </ul>
+    </div>
+    <div class="dos-card dont">
+      <div class="dc-label">❌ Never Do This</div>
+      <ul>
+        <li>Go silent on the bridge — never acceptable</li>
+        <li>Wait until you have answers to notify the client</li>
+        <li>Make changes on PROD without bridge approval</li>
+        <li>Guess or speculate without evidence</li>
+        <li>Close the ticket before client confirms recovery</li>
+        <li>Work alone without reporting on bridge</li>
+        <li>Blame others on the client call</li>
+        <li>Skip the Post-Incident Review</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SIMULATED DRILL -->
+  <div class="sec"><span class="sn">07</span> Simulated Outage Drill — Hands-on Lab</div>
+
+  <div class="card">
+    <h3>How to Perform This Drill</h3>
+    <p>You cannot simulate a real production outage on your own machine. However you <strong>can fully simulate the investigation and response steps</strong> using your Kali Linux setup, dummy log files, and the SQLite database you built in Day 3. The drill below walks through exactly what you would do — step by step — as if it were real.</p>
+    <p><strong>The goal is to build muscle memory</strong> — so when a real S1 happens, your hands know what to do without thinking.</p>
+  </div>
+
+  <div class="drill-wrap">
+    <div class="drill-header">
+      <div class="dh-top">
+        <h3>🚨 Drill Scenario: Payment Service Outage</h3>
+        <span class="drill-badge">SIMULATED · SAFE TO PRACTICE</span>
+      </div>
+      <p>09:15 AM — Monitoring alert fires. Payment service is returning errors. Transactions from Alpha Bank and Beta Wallet are failing. You are the on-call L2 engineer.</p>
+    </div>
+    <div class="drill-body">
+
+      <div class="drill-step">
+        <div class="ds-left"><div class="ds-num">01</div></div>
+        <div class="ds-content">
+          <div class="ds-time">T+0 — 09:15 AM</div>
+          <div class="ds-title">Alert received — Create the S1 Jira ticket immediately</div>
+          <div class="ds-desc">Don't investigate first. Create the ticket first so there's a timestamp and a tracking number.</div>
+          <div class="ds-say"><span class="say-label">What to write in Jira</span>Title: "S1 — Payment Service Down — All Transactions Failing"<br>Priority: P1 | Status: Open | Assigned: You<br>Description: "Monitoring alert at 09:15 AM. Payment API returning errors. Investigation started."</div>
+        </div>
+      </div>
+
+      <div class="drill-step">
+        <div class="ds-left"><div class="ds-num">02</div></div>
+        <div class="ds-content">
+          <div class="ds-time">T+2 — 09:17 AM</div>
+          <div class="ds-title">Notify your lead — open the bridge</div>
+          <div class="ds-desc">Message before you have answers. This is a rule.</div>
+          <div class="ds-say"><span class="say-label">Message to send to lead</span>"S1 detected at 09:15 AM. Payment service down. Transactions failing. Jira ticket created: FIN-1042. Joining bridge now."</div>
+        </div>
+      </div>
+
+      <div class="drill-step">
+        <div class="ds-left"><div class="ds-num">03</div></div>
+        <div class="ds-content">
+          <div class="ds-time">T+5 — 09:20 AM</div>
+          <div class="ds-title">Check server health — open Kali terminal</div>
+          <div class="ds-desc">Run these 3 commands first before touching any logs.</div>
+          <code class="ds-action">
+# Check disk space
+df -h
+
+# Check RAM
+free -h
+
+# Check what process is eating resources
+top
+          </code>
+          <div class="ds-good">✅ <strong>Simulate result:</strong> Disk OK (60%). RAM OK (50%). But in top — Java process at 98% CPU. That's suspicious.</div>
+        </div>
+      </div>
+
+      <div class="drill-step">
+        <div class="ds-left"><div class="ds-num">04</div></div>
+        <div class="ds-content">
+          <div class="ds-time">T+8 — 09:23 AM</div>
+          <div class="ds-title">Check the payment service log for errors</div>
+          <div class="ds-desc">Create and investigate a dummy log to simulate this on your Kali machine.</div>
+          <code class="ds-action">
+# Create a simulated outage log
+cat > outage-drill.log << 'EOF'
+[09:14:50] [INFO ] Payment service started normally
+[09:14:55] [INFO ] TXN-001 received and queued
+[09:15:00] [WARN ] DB connection pool at 88%
+[09:15:01] [WARN ] DB connection pool at 95%
+[09:15:02] [ERROR] DB_CONNECTION_TIMEOUT - pool exhausted
+[09:15:02] [ERROR] TXN-001 FAILED - cannot write to DB
+[09:15:03] [ERROR] DB_CONNECTION_TIMEOUT - pool exhausted
+[09:15:03] [ERROR] TXN-002 FAILED - cannot write to DB
+[09:15:04] [ERROR] DB_CONNECTION_TIMEOUT - pool exhausted
+EOF
+
+# Now investigate it
+grep "ERROR" outage-drill.log
+grep -c "ERROR" outage-drill.log
+grep "WARN\|ERROR" outage-drill.log
+          </code>
+          <div class="ds-good">✅ <strong>Simulate finding:</strong> 5 ERROR lines. DB_CONNECTION_TIMEOUT is the pattern. WARNs appeared at 88% and 95% before crash.</div>
+        </div>
+      </div>
+
+      <div class="drill-step">
+        <div class="ds-left"><div class="ds-num">05</div></div>
+        <div class="ds-content">
+          <div class="ds-time">T+10 — 09:25 AM</div>
+          <div class="ds-title">Check the database — how many transactions are stuck?</div>
+          <div class="ds-desc">Open your SQLite DB from Day 3 and run the stuck transaction queries.</div>
+          <code class="ds-action">
+sqlite3 fintech_lab.db
+
+-- How many transactions are stuck PENDING?
+SELECT COUNT(*) FROM transactions WHERE status = 'PENDING';
+
+-- Which clients are affected?
+SELECT c.client_name, COUNT(*) as stuck
+FROM transactions t
+JOIN clients c ON t.client_id = c.client_id
+WHERE t.status = 'PENDING'
+GROUP BY c.client_name;
+          </code>
+          <div class="ds-good">✅ <strong>Bridge update to give:</strong> "Finding at 09:25: DB connection pool exhausted since 09:15. 2 transactions stuck in PENDING. Clients affected: Alpha Bank, Beta Wallet. Root cause: DB pool leak. Requesting DBA to join bridge."</div>
+        </div>
+      </div>
+
+      <div class="drill-step">
+        <div class="ds-left"><div class="ds-num">06</div></div>
+        <div class="ds-content">
+          <div class="ds-time">T+30 — 09:45 AM</div>
+          <div class="ds-title">Service restored — send resolution notification</div>
+          <div class="ds-desc">DBA fixed the connection pool. Services are back. Monitoring shows green.</div>
+          <div class="ds-say"><span class="say-label">Resolution message to send</span>"INCIDENT RESOLVED — 09:45 AM. Payment service restored. Root cause: DB connection pool exhausted due to unreleased connections. DBA cleared the pool and increased limit. Total downtime: 30 minutes. Post-Incident Review scheduled for tomorrow. Please confirm transactions processing on your end."</div>
+          <div class="ds-good">✅ <strong>Final step:</strong> Update Jira ticket status to RESOLVED. Document full timeline. Close the bridge call.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn">08</span> Real L2 Scenarios</div>
+
+  <div class="scen-list">
+    <div class="scen-item">
+      <div class="si-id">01</div>
+      <p>S1 fires at 2 AM. You are on-call. <strong>Do not wait until morning.</strong> The protocol does not change based on time of day. Join the bridge, notify, investigate. An S1 at 2 AM is treated the same as one at 2 PM.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">02</div>
+      <p>You are on the bridge and your lead asks <strong>"what do you see in the logs?"</strong> You say: <strong>"Logs show DB_CONNECTION_TIMEOUT errors starting at 09:15. WARN messages appeared at 09:14 showing pool at 88% and 95% before the crash. 5 error lines total."</strong> Facts only. No guessing.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">03</div>
+      <p>You found the root cause and know the fix — restart the payment service. <strong>Do not just do it.</strong> Say on the bridge: "I believe restarting the payment service will clear the connection pool. Requesting approval to proceed." Wait for a "go ahead" before you touch anything on PROD.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">04</div>
+      <p>It has been 20 minutes and you have found nothing. <strong>That is also useful information.</strong> Say on the bridge: "Update at [time]: No application-level errors found. Logs look clean from my side. Possible infra or network issue. Requesting infra team to check." Never stay silent just because you have nothing to report.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 2 · Day 5 Outcomes — Can You Do This?</h3>
+    <ul>
+      <li>Define what an S1 is and what makes it different from a P2 or P3 ticket</li>
+      <li>Explain what an Outage Bridge is and how to behave on one</li>
+      <li>Follow the S1 response timeline — from T+0 alert to resolution — without missing a step</li>
+      <li>Send the correct initial, progress, and resolution notifications to clients</li>
+      <li>Know your role as L2 on a bridge — what you own, what you escalate, what needs approval</li>
+      <li>Complete the simulated outage drill on Kali Linux — investigate logs, query the DB, report findings</li>
+      <li>Document a full incident timeline in a Jira ticket during a live S1</li>
+      <li>Respond to an S1 calmly, correctly, and within the required time targets</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

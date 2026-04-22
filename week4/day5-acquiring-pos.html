@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 4 · Day 5 — Acquiring & POS</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#07090d;
+    --surface:#0c0f16;
+    --surface2:#11141e;
+    --surface3:#161a26;
+    --border:#1e2333;
+    --text:#a8b8cc;
+    --text-dim:#3e4e62;
+    --text-faint:#161e2c;
+    --white:#e8f0f8;
+
+    --gold:#e8a020;
+    --gold-bg:#180e00;
+    --gold-border:#3c2800;
+
+    --blue:#3888ff;
+    --blue-bg:#020e20;
+    --blue-border:#082240;
+
+    --green:#18d870;
+    --green-bg:#001810;
+    --green-border:#003820;
+
+    --rose:#ff3860;
+    --rose-bg:#180008;
+    --rose-border:#3c0018;
+
+    --sky:#22ccee;
+    --sky-bg:#001820;
+    --sky-border:#003848;
+
+    --amber:#ffaa18;
+    --amber-bg:#180c00;
+    --amber-border:#3c2800;
+
+    --purple:#9960ff;
+    --purple-bg:#0e0818;
+    --purple-border:#281840;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;font-size:15px;line-height:1.7;padding:48px 24px 100px;}
+  .page{max-width:940px;margin:0 auto;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:52px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .topbar-left{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;}
+  .tb-right{display:flex;gap:8px;}
+  .tb-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 14px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;}
+  .tb-wk{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tb-d5{background:var(--gold-bg);border:1px solid var(--gold-border);color:var(--gold);}
+
+  .hero{margin-bottom:52px;}
+  .day-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,58px);font-weight:800;line-height:1.05;color:var(--white);margin-bottom:18px;}
+  .hero h1 span{color:var(--gold);}
+  .hero-desc{color:var(--text-dim);font-size:15px;max-width:540px;}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;}
+  .tag{padding:5px 14px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tag-g{background:var(--gold-bg);border-color:var(--gold-border);color:var(--gold);}
+
+  .sec{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faint);margin-bottom:18px;margin-top:44px;display:flex;align-items:center;gap:12px;}
+  .sec .sn{color:var(--gold);font-size:12px;}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .analogy{background:var(--gold-bg);border:1px solid var(--gold-border);border-left:4px solid var(--gold);border-radius:12px;padding:22px 28px;margin-bottom:16px;}
+  .analogy .al{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+  .analogy p{color:var(--text);font-size:14px;}
+  .analogy strong{color:var(--white);}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 28px;margin-bottom:14px;}
+  .card h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:8px;}
+  .card p{color:var(--text-dim);margin-bottom:8px;font-size:14px;}
+  .card p:last-child{margin-bottom:0;}
+  .card strong{color:var(--text);}
+
+  /* ROLES GRID */
+  .roles-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+  .role-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;}
+  .role-card .rc-icon{font-size:24px;margin-bottom:8px;}
+  .role-card .rc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:4px;}
+  .role-card h4{font-size:14px;font-weight:700;color:var(--white);margin-bottom:6px;}
+  .role-card p{font-size:13px;color:var(--text-dim);}
+
+  /* FLOW */
+  .flow-block{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:14px;}
+  .flow-block h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:24px;text-align:center;}
+  .fs-item{display:flex;gap:18px;position:relative;}
+  .fs-item:not(:last-child) .fsi-left::after{content:'';position:absolute;left:19px;top:44px;bottom:0;width:2px;background:var(--border);z-index:0;}
+  .fsi-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+  .fsi-dot{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;z-index:1;position:relative;}
+  .fd-g{background:var(--gold-bg);border:2px solid var(--gold-border);}
+  .fd-b{background:var(--blue-bg);border:2px solid var(--blue-border);}
+  .fd-s{background:var(--sky-bg);border:2px solid var(--sky-border);}
+  .fd-gr{background:var(--green-bg);border:2px solid var(--green-border);}
+  .fd-p{background:var(--purple-bg);border:2px solid var(--purple-border);}
+  .fd-r{background:var(--rose-bg);border:2px solid var(--rose-border);}
+  .fsi-content{flex:1;padding-bottom:22px;padding-top:4px;}
+  .fsi-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;}
+  .fl-g{color:var(--gold);} .fl-b{color:var(--blue);} .fl-s{color:var(--sky);}
+  .fl-gr{color:var(--green);} .fl-p{color:var(--purple);} .fl-r{color:var(--rose);}
+  .fsi-title{font-size:15px;font-weight:700;color:var(--white);margin-bottom:4px;}
+  .fsi-desc{font-size:13px;color:var(--text-dim);}
+  .fsi-code{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 12px;margin-top:6px;display:inline-block;color:var(--text-dim);}
+
+  /* NOTE */
+  .note{border-radius:10px;padding:10px 16px;font-size:13px;margin-bottom:12px;}
+  .n-g{background:var(--gold-bg);border:1px solid var(--gold-border);color:var(--gold);}
+  .n-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .n-b{background:var(--blue-bg);border:1px solid var(--blue-border);color:var(--blue);}
+  .n-gr{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .note strong{color:var(--white);}
+
+  /* TABLE */
+  .ref-table{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+  .rt-head{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:15px;font-weight:700;color:var(--white);}
+  table.rt{width:100%;border-collapse:collapse;}
+  table.rt th{padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);text-align:left;border-bottom:1px solid var(--border);font-weight:400;background:var(--surface3);}
+  table.rt td{padding:12px 18px;font-size:13px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;}
+  table.rt tr:last-child td{border-bottom:none;}
+  table.rt tr:hover td{background:rgba(255,255,255,0.02);}
+  table.rt td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold);white-space:nowrap;}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 9px;border-radius:100px;white-space:nowrap;}
+  .p-g{background:var(--gold-bg);border:1px solid var(--gold-border);color:var(--gold);}
+  .p-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .p-b{background:var(--blue-bg);border:1px solid var(--blue-border);color:var(--blue);}
+  .p-gr{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+
+  /* CODE */
+  .cbox{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px;}
+  .cbox-bar{padding:7px 14px;background:var(--surface3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+  .d{width:8px;height:8px;border-radius:50%;}.dr{background:#ff5f56;}.dy{background:#ffbd2e;}.dg{background:#27c93f;}
+  .ct{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);margin-left:4px;letter-spacing:1px;}
+  .cbox-code{padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2.0;overflow-x:auto;}
+  .kw{color:#ff7b72;}.fn{color:#79c0ff;}.str{color:#a5d6ff;}.var{color:#ffa657;}.cm{color:#354555;}.op{color:#c9d1d9;}
+
+  /* LAB */
+  .lab{border:2px solid var(--gold-border);border-radius:16px;overflow:hidden;margin-bottom:14px;}
+  .lab-head{padding:16px 26px;background:var(--gold-bg);border-bottom:1px solid var(--gold-border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .lab-head h3{font-size:15px;font-weight:700;color:var(--white);}
+  .lab-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 12px;border-radius:100px;background:rgba(232,160,32,0.1);border:1px solid var(--gold-border);color:var(--gold);}
+  .lab-body{padding:26px;display:flex;flex-direction:column;gap:0;background:var(--surface);}
+  .lab-step{display:flex;gap:18px;position:relative;}
+  .lab-step:not(:last-child) .ls-left::after{content:'';position:absolute;left:19px;top:44px;bottom:0;width:2px;background:var(--border);z-index:0;}
+  .ls-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+  .ls-num{width:40px;height:40px;border-radius:50%;background:var(--gold-bg);border:2px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold);z-index:1;position:relative;}
+  .ls-content{flex:1;padding-bottom:22px;padding-top:4px;}
+  .ls-title{font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px;}
+  .ls-desc{font-size:13px;color:var(--text-dim);margin-bottom:8px;}
+  .ls-out{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--gold-bg);border:1px solid var(--gold-border);color:var(--gold);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+
+  /* SCENARIOS */
+  .scen-list{display:flex;flex-direction:column;gap:12px;margin-bottom:14px;}
+  .scen-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;}
+  .si-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:6px;padding:4px 8px;flex-shrink:0;margin-top:2px;}
+  .scen-item p{font-size:14px;color:var(--text-dim);}
+  .scen-item p strong{color:var(--white);}
+
+  .outcome{background:linear-gradient(135deg,var(--gold-bg) 0%,var(--surface) 100%);border:1px solid var(--gold-border);border-radius:16px;padding:32px;margin-top:48px;}
+  .outcome h3{font-size:20px;font-weight:700;color:var(--gold);margin-bottom:18px;}
+  .outcome ul{display:flex;flex-direction:column;gap:9px;list-style:none;}
+  .outcome ul li{font-size:14px;color:var(--text-dim);padding-left:22px;position:relative;}
+  .outcome ul li::before{content:'✓';position:absolute;left:0;color:var(--gold);font-family:'JetBrains Mono',monospace;}
+
+  @media(max-width:640px){.roles-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 4</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-wk">Week 4</span>
+      <span class="tb-badge tb-d5">Day 5</span>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="day-label">Week 4 · Day 5</div>
+    <h1>Acquiring &<br><span>POS Flow</span></h1>
+    <p class="hero-desc">When a merchant accepts a card payment, an entire network of systems works behind the scenes in under 2 seconds. Today you learn exactly who does what — and where things can break.</p>
+    <div class="tags">
+      <span class="tag tag-g">POS to Switch Flow</span>
+      <span class="tag">Acquiring Bank</span>
+      <span class="tag">Issuing Bank</span>
+      <span class="tag">Card Network</span>
+      <span class="tag">Settlement</span>
+    </div>
+  </div>
+
+  <!-- ANALOGY -->
+  <div class="sec"><span class="sn">01</span> The Simple Idea First</div>
+
+  <div class="analogy">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Think of a card payment like a <strong>phone call between two banks</strong>.<br><br>
+      The merchant's bank (acquirer) dials the call. The card network (Visa / 1LINK) is the telephone exchange that connects the call. The customer's bank (issuer) picks up and says yes or no.<br><br>
+      <strong>The POS machine is the phone the merchant uses to start that call.</strong> The whole conversation happens in under 2 seconds. As L2, you trace what was said at each step when something goes wrong.
+    </p>
+  </div>
+
+  <!-- KEY PLAYERS -->
+  <div class="sec"><span class="sn">02</span> The 4 Key Players in Every POS Transaction</div>
+
+  <div class="roles-grid">
+    <div class="role-card">
+      <div class="rc-icon">🏪</div>
+      <div class="rc-label">Player 1</div>
+      <h4>Merchant & POS Terminal</h4>
+      <p>The shop and its card machine. The POS reads the card chip/tap and sends the payment request. It is the starting point of every acquiring transaction.</p>
+    </div>
+    <div class="role-card">
+      <div class="rc-icon">🏦</div>
+      <div class="rc-label">Player 2</div>
+      <h4>Acquiring Bank</h4>
+      <p>The merchant's bank — the bank that gave the merchant their POS machine and processes their card receipts. It receives the request from the POS and sends it into the card network.</p>
+    </div>
+    <div class="role-card">
+      <div class="rc-icon">🔀</div>
+      <div class="rc-label">Player 3</div>
+      <h4>Card Network / Switch</h4>
+      <p>The routing layer — Visa, Mastercard, or 1LINK (domestic). It receives from the acquirer, identifies which bank issued the card, and routes the authorization request to that bank.</p>
+    </div>
+    <div class="role-card">
+      <div class="rc-icon">💳</div>
+      <div class="rc-label">Player 4</div>
+      <h4>Issuing Bank & CMS</h4>
+      <p>The customer's bank — the bank that issued the card being used. Its CMS receives the authorization request, checks balance and limits, and sends back approved or declined.</p>
+    </div>
+  </div>
+
+  <div class="note n-g">💡 <strong>Simple way to remember:</strong> Acquirer = merchant's bank. Issuer = customer's bank. The card network is the highway connecting them. As L2, your company could be sitting on either side — as the acquirer, the issuer, or both.</div>
+
+  <!-- ISSUING VS ACQUIRING -->
+  <div class="card">
+    <h3>Issuing vs Acquiring — What's the Difference?</h3>
+    <p><strong>Issuing</strong> is what we covered in CMS (Day 2) — your bank issued a card to a customer. When that customer uses their card anywhere, your CMS is the issuer that approves or declines.</p>
+    <p><strong>Acquiring</strong> is the other side — your bank has merchants who use your POS machines. When those merchants accept card payments, your system is the acquirer that processes the incoming transactions and settles funds into the merchant's account.</p>
+    <p>Many banks do both — they issue cards to customers AND provide POS machines to merchants. As L2, you need to know which side a ticket is coming from before you start investigating.</p>
+  </div>
+
+  <!-- POS TO SWITCH FLOW -->
+  <div class="sec"><span class="sn">03</span> POS to Switch Flow — Full Step by Step</div>
+
+  <div class="flow-block">
+    <h3>💳 POS Transaction Flow — From Tap to Approval</h3>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-g">🏪</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-g">Step 1 — POS Terminal</div>
+        <div class="fsi-title">Customer taps or inserts card at POS</div>
+        <div class="fsi-desc">POS reads card data from chip, tap (NFC), or swipe. It creates an authorization request with: card number, amount, merchant ID, terminal ID, and transaction time. This is sent to the acquiring bank's switch.</div>
+        <span class="fsi-code">POS → Authorization Request → Acquirer Switch</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-b">🏦</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-b">Step 2 — Acquiring Bank Switch</div>
+        <div class="fsi-title">Acquirer validates and logs the request</div>
+        <div class="fsi-desc">The acquirer's switch receives the request, validates the format, checks merchant status (is the merchant active, not blacklisted), logs the transaction, and forwards it to the card network.</div>
+        <span class="fsi-code">Merchant active check → Log TXN → Forward to Network</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-s">🔀</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-s">Step 3 — Card Network (Visa / 1LINK)</div>
+        <div class="fsi-title">Network routes to the issuing bank</div>
+        <div class="fsi-desc">The card network reads the card BIN (first 6 digits) to identify which bank issued the card, and routes the authorization request to that bank's CMS. For domestic cards in Pakistan, 1LINK handles this routing.</div>
+        <span class="fsi-code">BIN lookup → Identify Issuer → Route to Issuer CMS</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-p">💳</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-p">Step 4 — Issuing Bank CMS</div>
+        <div class="fsi-title">Issuer checks card, balance, and limits</div>
+        <div class="fsi-desc">The issuer's CMS receives the request and runs all checks — Is the card active? Is it not blocked? Does the account have enough balance? Is the amount within daily limits? Is this merchant category allowed?</div>
+        <span class="fsi-code">All checks pass → APPROVED (00) | Any fail → DECLINED (code)</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-s">🔀</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-s">Step 5 — Response travels back</div>
+        <div class="fsi-title">Authorization response routed back to POS</div>
+        <div class="fsi-desc">The approval or decline response travels back the same path — Issuer → Network → Acquirer Switch → POS Terminal. The entire round trip takes under 2 seconds.</div>
+        <span class="fsi-code">Issuer → 1LINK → Acquirer Switch → POS → Shows APPROVED or DECLINED</span>
+      </div>
+    </div>
+    <div class="fs-item">
+      <div class="fsi-left"><div class="fsi-dot fd-gr">💰</div></div>
+      <div class="fsi-content">
+        <div class="fsi-label fl-gr">Step 6 — Settlement</div>
+        <div class="fsi-title">End of day settlement — funds move to merchant</div>
+        <div class="fsi-desc">At end of day, all approved authorizations are batched and settled. The issuing bank moves funds through the network to the acquiring bank, which then credits the merchant's account minus any fees.</div>
+        <span class="fsi-code">Batch settlement → Issuer debits → Network clears → Acquirer credits merchant</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTLEMENT vs AUTHORIZATION -->
+  <div class="card">
+    <h3>Authorization vs Settlement — Two Different Things</h3>
+    <p><strong>Authorization</strong> is the real-time check and reservation of funds. It happens in 2 seconds. Money is not moved yet — it is just reserved (a hold is placed on the account).</p>
+    <p><strong>Settlement</strong> is when the money actually moves. It typically happens at end of day in a batch. The hold is converted to a real debit and funds transfer from the issuer to the acquirer to the merchant.</p>
+    <p><strong>Why this matters for L2:</strong> A merchant saying "card was approved but I didn't receive funds" is a settlement issue — not an authorization issue. These are investigated completely differently.</p>
+  </div>
+
+  <!-- DECLINE CODES TABLE -->
+  <div class="ref-table">
+    <div class="rt-head">❌ POS Decline Codes — Common Ones You Will See</div>
+    <table class="rt">
+      <thead><tr><th>Code</th><th>Meaning</th><th>Issuer or Acquirer?</th><th>L2 Action</th></tr></thead>
+      <tbody>
+        <tr><td>00</td><td>Approved — transaction successful</td><td>—</td><td><span class="pill p-gr">All good</span> — no action needed</td></tr>
+        <tr><td>51</td><td>Insufficient funds</td><td>Issuer</td><td><span class="pill p-g">Client side</span> — customer's account balance too low</td></tr>
+        <tr><td>54</td><td>Expired card</td><td>Issuer</td><td>Card has expired — reissue via CMS</td></tr>
+        <tr><td>55</td><td>Incorrect PIN</td><td>Issuer</td><td>Customer entered wrong PIN — verify attempt count</td></tr>
+        <tr><td>57</td><td>Transaction not permitted to cardholder</td><td>Issuer</td><td>Card not enabled for this transaction type — update CMS settings</td></tr>
+        <tr><td>61</td><td>Exceeds withdrawal limit</td><td>Issuer</td><td>Daily limit hit — advise customer or update limit</td></tr>
+        <tr><td>62</td><td>Restricted card</td><td>Issuer</td><td>Card blocked — check who blocked it and why in CMS</td></tr>
+        <tr><td>91</td><td>Issuer unavailable</td><td>Issuer</td><td><span class="pill p-r">P1 check</span> — issuer CMS unreachable. All transactions for that bank failing.</td></tr>
+        <tr><td>96</td><td>System malfunction</td><td>Acquirer / Switch</td><td><span class="pill p-r">Escalate</span> — internal system error. Check switch logs immediately.</td></tr>
+        <tr><td>41</td><td>Lost card</td><td>Issuer</td><td>Card flagged as lost. Transaction correctly declined. Inform merchant.</td></tr>
+        <tr><td>43</td><td>Stolen card</td><td>Issuer</td><td>Card flagged as stolen. Correct security behavior. Log and inform.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ACQUIRER BREAKPOINTS -->
+  <div class="ref-table" style="margin-bottom:14px;">
+    <div class="rt-head">🔴 Acquiring Breakpoints — Where POS Transactions Fail</div>
+    <table class="rt">
+      <thead><tr><th>Breakpoint</th><th>Where it happens</th><th>How to spot it</th></tr></thead>
+      <tbody>
+        <tr><td>POS not connecting</td><td>POS → Acquirer</td><td>POS shows "connection error" or "host unavailable" — check acquirer switch service</td></tr>
+        <tr><td>Merchant not active</td><td>Acquirer validation</td><td>Response code 58 — merchant blocked or suspended in acquirer system</td></tr>
+        <tr><td>Switch routing failure</td><td>Acquirer → Network</td><td>Transactions timing out before reaching issuer — check switch logs</td></tr>
+        <tr><td>Issuer CMS down</td><td>Network → Issuer</td><td>Code 91 across all cards of one bank — only that bank's cards declining</td></tr>
+        <tr><td>Settlement mismatch</td><td>End of day batch</td><td>Merchant reports funds not received despite approvals — check settlement batch</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- LAB -->
+  <div class="sec"><span class="sn">04</span> Hands-on Lab — Trace a POS Transaction</div>
+
+  <div class="lab">
+    <div class="lab-head">
+      <h3>🔬 Lab: Investigate a POS Transaction Failure</h3>
+      <span class="lab-badge">Acquirer Investigation</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Merchant says: "Card was declined at my POS — don't know why"</div>
+          <div class="ls-desc">Start at the acquirer switch log — find the transaction and check the response code.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">SQL — Acquirer switch log</span></div><div class="cbox-code">
+<span class="kw">SELECT</span> <span class="var">TXN_ID</span>, <span class="var">CARD_NUMBER</span>, <span class="var">AMOUNT</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="var">MERCHANT_ID</span>, <span class="var">TERMINAL_ID</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="var">RESPONSE_CODE</span>, <span class="var">TXN_TIME</span><br>
+<span class="kw">FROM</span>   <span class="fn">POS_TRANSACTIONS</span><br>
+<span class="kw">WHERE</span>  <span class="var">TERMINAL_ID</span> <span class="op">=</span> <span class="str">'TERM-8801'</span><br>
+<span class="kw">ORDER BY</span> <span class="var">TXN_TIME</span> <span class="kw">DESC</span><br>
+<span class="kw">LIMIT</span> <span class="op">10</span>;
+          </div></div>
+          <span class="ls-out">→ RESPONSE_CODE = 62 means card is restricted. RESPONSE_CODE = 91 means issuer CMS is down.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Check if the merchant is active in the acquirer system</div>
+          <div class="ls-desc">If the merchant was suspended or has a configuration issue, all their POS transactions will fail.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">SQL — Merchant check</span></div><div class="cbox-code">
+<span class="kw">SELECT</span> <span class="var">MERCHANT_ID</span>, <span class="var">MERCHANT_NAME</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="var">STATUS</span>, <span class="var">MCC_CODE</span>, <span class="var">SETTLEMENT_ACCOUNT</span><br>
+<span class="kw">FROM</span>   <span class="fn">MERCHANT_MASTER</span><br>
+<span class="kw">WHERE</span>  <span class="var">MERCHANT_ID</span> <span class="op">=</span> <span class="str">'MRCH-4421'</span>;
+          </div></div>
+          <span class="ls-out">→ STATUS = SUSPENDED means all POS transactions for this merchant are being declined by the acquirer before they even reach the network.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Check the full transaction trace — every hop</div>
+          <div class="ls-desc">Trace the transaction through each layer — acquirer sent it, network received it, issuer responded.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">SQL — full transaction trace</span></div><div class="cbox-code">
+<span class="kw">SELECT</span> <span class="var">TXN_ID</span>, <span class="var">HOP</span>, <span class="var">FROM_NODE</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="var">TO_NODE</span>, <span class="var">STATUS</span>, <span class="var">RESPONSE_CODE</span>, <span class="var">HOP_TIME</span><br>
+<span class="kw">FROM</span>   <span class="fn">TXN_TRACE_LOG</span><br>
+<span class="kw">WHERE</span>  <span class="var">TXN_ID</span> <span class="op">=</span> <span class="str">'TXN-POS-9901'</span><br>
+<span class="kw">ORDER BY</span> <span class="var">HOP</span> <span class="kw">ASC</span>;
+          </div></div>
+          <span class="ls-out">→ Shows exactly where the transaction stopped — POS→Acquirer (OK), Acquirer→Network (OK), Network→Issuer (TIMEOUT = issuer unreachable)</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Merchant says: "Payments were approved but funds not in my account"</div>
+          <div class="ls-desc">This is a settlement issue — check the end-of-day settlement batch for this merchant.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">SQL — settlement check</span></div><div class="cbox-code">
+<span class="kw">SELECT</span> <span class="var">BATCH_ID</span>, <span class="var">MERCHANT_ID</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="var">TXN_COUNT</span>, <span class="var">TOTAL_AMOUNT</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="var">SETTLED_AMOUNT</span>, <span class="var">STATUS</span>, <span class="var">SETTLEMENT_DATE</span><br>
+<span class="kw">FROM</span>   <span class="fn">SETTLEMENT_BATCH</span><br>
+<span class="kw">WHERE</span>  <span class="var">MERCHANT_ID</span>   <span class="op">=</span> <span class="str">'MRCH-4421'</span><br>
+<span class="kw">AND</span>    <span class="var">SETTLEMENT_DATE</span> <span class="op">=</span> <span class="str">'2024-03-15'</span>;
+          </div></div>
+          <span class="ls-out">→ STATUS = PENDING means settlement batch ran but funds not yet transferred. Check if batch processing job completed.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">05</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Find all declines in the last hour — scope the issue</div>
+          <div class="ls-desc">Quickly check if declines are isolated to one merchant or system-wide.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">SQL</span></div><div class="cbox-code">
+<span class="kw">SELECT</span> <span class="var">RESPONSE_CODE</span>, <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> <span class="var">TOTAL</span><br>
+<span class="kw">FROM</span>   <span class="fn">POS_TRANSACTIONS</span><br>
+<span class="kw">WHERE</span>  <span class="var">STATUS</span>     <span class="op">=</span> <span class="str">'DECLINED'</span><br>
+<span class="kw">AND</span>    <span class="var">TXN_TIME</span>  <span class="op">&gt;</span> <span class="fn">NOW</span>() - <span class="fn">INTERVAL</span> <span class="str">'1 hour'</span><br>
+<span class="kw">GROUP BY</span> <span class="var">RESPONSE_CODE</span><br>
+<span class="kw">ORDER BY</span> <span class="var">TOTAL</span> <span class="kw">DESC</span>;
+          </div></div>
+          <span class="ls-out">→ Mostly code 91 = issuer CMS down (P1). Mixed codes = normal decline activity. All code 96 = acquirer switch issue (P1).</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn">05</span> Real L2 Scenarios</div>
+  <div class="scen-list">
+    <div class="scen-item"><div class="si-id">01</div>
+      <p>Merchant calls: <strong>"Every single card is being declined at my POS since 30 minutes."</strong> You run the decline count query — 100% code 91 in last 30 minutes. <strong>The issuer bank's CMS is down.</strong> This is a P1 — open bridge. Every transaction for that bank's cards is failing across all merchants.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">02</div>
+      <p>Merchant says: <strong>"A customer's card was declined but they have money in their account."</strong> You check POS_TRANSACTIONS — response code 57 (transaction not permitted). Card is not enabled for <strong>POS transactions</strong> — only ATM. Customer needs to enable POS usage in their bank app or CMS settings.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">03</div>
+      <p>Merchant says: <strong>"Yesterday's sales are approved but money not in account."</strong> You check SETTLEMENT_BATCH — STATUS = FAILED. The settlement job crashed last night. <strong>This is not an authorization issue</strong> — the transactions are all approved. The settlement processing failed. Escalate to the batch processing team to rerun the settlement.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">04</div>
+      <p>New merchant onboarded but their POS is declining all transactions with code 58. You check MERCHANT_MASTER — STATUS = PENDING_ACTIVATION. <strong>Merchant setup is incomplete.</strong> The acquiring team needs to activate the merchant account before the POS can process transactions.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 4 · Day 5 Outcomes</h3>
+    <ul>
+      <li>Explain the 4 key players in every POS transaction — merchant, acquirer, card network, issuer</li>
+      <li>Describe the full POS to switch flow — tap → acquirer → network → issuer → response → POS</li>
+      <li>Explain the difference between the acquiring side and the issuing side of a transaction</li>
+      <li>Explain the difference between authorization (real-time hold) and settlement (actual fund movement)</li>
+      <li>Map POS decline codes to their root cause and the correct L2 action</li>
+      <li>Identify acquirer breakpoints — POS connectivity, merchant status, switch routing, settlement</li>
+      <li>Trace a POS transaction through POS_TRANSACTIONS, MERCHANT_MASTER, TXN_TRACE_LOG, and SETTLEMENT_BATCH</li>
+      <li>Distinguish between a card issue (issuer side) and a merchant/system issue (acquirer side)</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

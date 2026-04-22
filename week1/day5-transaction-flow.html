@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 1 · Day 5 — Transaction Flow</title>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=Inconsolata:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #f9f6f1;
+    --surface: #ffffff;
+    --surface2: #f2ede6;
+    --border: #e4ddd3;
+    --ink: #1c1814;
+    --ink-dim: #6b6058;
+    --ink-faint: #b0a89e;
+
+    --orange: #e8610a;
+    --orange-bg: #fff4ed;
+    --orange-border: #fdd5b8;
+
+    --blue: #1a5fd4;
+    --blue-bg: #eef4ff;
+    --blue-border: #c0d4f8;
+
+    --green: #137a3e;
+    --green-bg: #edfaf3;
+    --green-border: #b4eacf;
+
+    --purple: #6b21d6;
+    --purple-bg: #f5f0ff;
+    --purple-border: #d4bff8;
+
+    --red: #c8181f;
+    --red-bg: #fff2f2;
+    --red-border: #ffc8ca;
+
+    --yellow: #a37000;
+    --yellow-bg: #fffbea;
+    --yellow-border: #f5e08a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    padding: 48px 24px 100px;
+  }
+
+  .page { max-width: 920px; margin: 0 auto; }
+
+  /* TOPBAR */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 52px; padding-bottom: 18px;
+    border-bottom: 2px solid var(--border);
+  }
+  .topbar-left { font-family:'Inconsolata',monospace; font-size:12px; color:var(--ink-faint); letter-spacing:1px; text-transform:uppercase; }
+  .tb-right { display:flex; gap:8px; }
+  .tb-badge { font-family:'Inconsolata',monospace; font-size:11px; padding:4px 14px; border-radius:100px; letter-spacing:1px; text-transform:uppercase; }
+  .tb-week { background:var(--surface2); border:1px solid var(--border); color:var(--ink-dim); }
+  .tb-day  { background:var(--orange-bg); border:1px solid var(--orange-border); color:var(--orange); }
+
+  /* HERO */
+  .hero { margin-bottom: 52px; }
+  .day-label { font-family:'Inconsolata',monospace; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--orange); margin-bottom:14px; }
+  .hero h1 { font-size:clamp(36px,7vw,66px); font-weight:700; line-height:1.0; color:var(--ink); margin-bottom:18px; font-family:'Plus Jakarta Sans',sans-serif; }
+  .hero h1 span { color:var(--orange); }
+  .hero-desc { color:var(--ink-dim); font-size:16px; max-width:530px; }
+  .tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:22px; }
+  .tag { padding:5px 14px; border-radius:100px; font-family:'Inconsolata',monospace; font-size:11px; background:var(--surface); border:1px solid var(--border); color:var(--ink-dim); }
+
+  /* SECTION */
+  .sec { font-family:'Inconsolata',monospace; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--ink-faint); margin-bottom:20px; margin-top:52px; display:flex; align-items:center; gap:12px; }
+  .sec .sn { color:var(--orange); font-size:12px; }
+  .sec::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* ANALOGY */
+  .analogy { background:var(--orange-bg); border:1px solid var(--orange-border); border-left:4px solid var(--orange); border-radius:12px; padding:26px 30px; margin-bottom:16px; }
+  .analogy .al { font-family:'Inconsolata',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--orange); margin-bottom:10px; }
+  .analogy p { color:var(--ink); font-size:15px; }
+  .analogy strong { color:var(--ink); font-weight:700; }
+
+  /* CARD */
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:26px 30px; margin-bottom:14px; }
+  .card h3 { font-size:17px; font-weight:700; color:var(--ink); margin-bottom:10px; }
+  .card p { color:var(--ink-dim); margin-bottom:10px; }
+  .card p:last-child { margin-bottom:0; }
+
+  /* THREE CONCEPTS */
+  .concept-block { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:14px; }
+  .concept-header { padding:20px 28px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:16px; }
+  .concept-header .c-icon { font-size:32px; }
+  .concept-header .c-info {}
+  .concept-header .c-label { font-family:'Inconsolata',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; margin-bottom:4px; }
+  .concept-header .c-title { font-size:20px; font-weight:700; color:var(--ink); }
+  .concept-header .c-sub { font-size:13px; font-style:italic; }
+  .concept-body { padding:24px 28px; }
+  .concept-body p { color:var(--ink-dim); font-size:14px; margin-bottom:12px; }
+  .concept-body p:last-child { margin-bottom:0; }
+  .concept-body strong { color:var(--ink); font-weight:600; }
+
+  .cb-api .concept-header .c-label { color:var(--blue); }
+  .cb-api .concept-header .c-sub   { color:var(--blue); }
+  .cb-api { border-top:3px solid var(--blue); }
+
+  .cb-mq .concept-header .c-label { color:var(--purple); }
+  .cb-mq .concept-header .c-sub   { color:var(--purple); }
+  .cb-mq { border-top:3px solid var(--purple); }
+
+  .cb-db .concept-header .c-label { color:var(--green); }
+  .cb-db .concept-header .c-sub   { color:var(--green); }
+  .cb-db { border-top:3px solid var(--green); }
+
+  /* HIGHLIGHT BOX inside concept */
+  .highlight { border-radius:10px; padding:14px 18px; margin-top:12px; font-size:13px; }
+  .hl-blue   { background:var(--blue-bg);   border:1px solid var(--blue-border);   color:var(--blue); }
+  .hl-purple { background:var(--purple-bg); border:1px solid var(--purple-border); color:var(--purple); }
+  .hl-green  { background:var(--green-bg);  border:1px solid var(--green-border);  color:var(--green); }
+
+  /* FLOW DIAGRAM */
+  .flow-wrap { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:36px; margin-bottom:14px; }
+  .flow-wrap h3 { font-size:17px; font-weight:700; color:var(--ink); margin-bottom:30px; text-align:center; }
+  .flow-main { display:flex; flex-direction:column; gap:0; }
+  .flow-step { display:flex; align-items:flex-start; gap:20px; }
+  .flow-left { display:flex; flex-direction:column; align-items:center; gap:0; }
+  .flow-circle {
+    width:48px; height:48px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px; flex-shrink:0; border:2px solid;
+  }
+  .flow-line { width:2px; flex:1; min-height:32px; }
+  .flow-content { padding-bottom:32px; padding-top:4px; flex:1; }
+  .flow-content .fc-label { font-family:'Inconsolata',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; margin-bottom:4px; }
+  .flow-content .fc-title { font-size:16px; font-weight:700; color:var(--ink); margin-bottom:6px; }
+  .flow-content .fc-desc  { font-size:13px; color:var(--ink-dim); margin-bottom:8px; }
+  .flow-content .fc-code  {
+    font-family:'Inconsolata',monospace; font-size:12px;
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:8px; padding:10px 14px; color:var(--ink-dim);
+    display:inline-block;
+  }
+
+  .fs-user   .flow-circle { background:var(--orange-bg); border-color:var(--orange-border); }
+  .fs-api    .flow-circle { background:var(--blue-bg);   border-color:var(--blue-border); }
+  .fs-mq     .flow-circle { background:var(--purple-bg); border-color:var(--purple-border); }
+  .fs-worker .flow-circle { background:var(--yellow-bg); border-color:var(--yellow-border); }
+  .fs-db     .flow-circle { background:var(--green-bg);  border-color:var(--green-border); }
+  .fs-notify .flow-circle { background:var(--orange-bg); border-color:var(--orange-border); }
+
+  .fs-user   .flow-line { background:var(--orange-border); }
+  .fs-api    .flow-line { background:var(--blue-border); }
+  .fs-mq     .flow-line { background:var(--purple-border); }
+  .fs-worker .flow-line { background:var(--yellow-border); }
+  .fs-db     .flow-line { background:var(--green-border); }
+
+  .fs-user   .fc-label { color:var(--orange); }
+  .fs-api    .fc-label { color:var(--blue); }
+  .fs-mq     .fc-label { color:var(--purple); }
+  .fs-worker .fc-label { color:var(--yellow); }
+  .fs-db     .fc-label { color:var(--green); }
+  .fs-notify .fc-label { color:var(--orange); }
+
+  /* TRACE TABLE */
+  .trace-wrap { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:14px; }
+  .trace-header { padding:18px 24px; background:var(--ink); color:#fff; font-size:15px; font-weight:700; display:flex; align-items:center; gap:10px; }
+  .trace-header span { font-family:'Inconsolata',monospace; font-size:12px; color:rgba(255,255,255,0.4); margin-left:auto; font-weight:400; }
+  table { width:100%; border-collapse:collapse; }
+  th { padding:11px 20px; font-family:'Inconsolata',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--ink-faint); text-align:left; border-bottom:1px solid var(--border); font-weight:400; background:var(--surface2); }
+  td { padding:13px 20px; font-size:13px; color:var(--ink-dim); border-bottom:1px solid var(--border); vertical-align:middle; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:var(--surface2); }
+  .step-num { font-family:'Inconsolata',monospace; font-size:12px; font-weight:600; }
+  .layer-tag { font-family:'Inconsolata',monospace; font-size:10px; padding:3px 10px; border-radius:100px; white-space:nowrap; }
+  .lt-api    { background:var(--blue-bg);   border:1px solid var(--blue-border);   color:var(--blue); }
+  .lt-mq     { background:var(--purple-bg); border:1px solid var(--purple-border); color:var(--purple); }
+  .lt-db     { background:var(--green-bg);  border:1px solid var(--green-border);  color:var(--green); }
+  .lt-app    { background:var(--yellow-bg); border:1px solid var(--yellow-border); color:var(--yellow); }
+  .lt-notif  { background:var(--orange-bg); border:1px solid var(--orange-border); color:var(--orange); }
+  .status-ok  { font-family:'Inconsolata',monospace; font-size:11px; padding:3px 10px; border-radius:100px; background:var(--green-bg); border:1px solid var(--green-border); color:var(--green); }
+  .status-err { font-family:'Inconsolata',monospace; font-size:11px; padding:3px 10px; border-radius:100px; background:var(--red-bg); border:1px solid var(--red-border); color:var(--red); }
+
+  /* WHERE TO LOOK */
+  .where-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:14px; }
+  .where-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; }
+  .where-card .w-icon { font-size:26px; margin-bottom:10px; }
+  .where-card .w-label { font-family:'Inconsolata',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; margin-bottom:6px; }
+  .where-card h4 { font-size:15px; font-weight:700; color:var(--ink); margin-bottom:8px; }
+  .where-card ul { list-style:none; display:flex; flex-direction:column; gap:6px; }
+  .where-card ul li { font-size:12px; color:var(--ink-dim); padding-left:14px; position:relative; }
+  .where-card ul li::before { content:'→'; position:absolute; left:0; font-family:'Inconsolata',monospace; font-size:10px; }
+  .wc-api .w-label { color:var(--blue); }
+  .wc-api ul li::before { color:var(--blue); }
+  .wc-mq  .w-label { color:var(--purple); }
+  .wc-mq  ul li::before { color:var(--purple); }
+  .wc-db  .w-label { color:var(--green); }
+  .wc-db  ul li::before { color:var(--green); }
+
+  /* SCENARIOS */
+  .scen-list { display:flex; flex-direction:column; gap:12px; margin-bottom:14px; }
+  .scen-item { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 22px; display:flex; gap:16px; align-items:flex-start; }
+  .si-id { font-family:'Inconsolata',monospace; font-size:11px; color:var(--orange); background:var(--orange-bg); border:1px solid var(--orange-border); border-radius:6px; padding:4px 8px; flex-shrink:0; margin-top:2px; }
+  .scen-item p { font-size:14px; color:var(--ink-dim); }
+  .scen-item p strong { color:var(--ink); font-weight:600; }
+
+  /* OUTCOME */
+  .outcome { background:var(--ink); border-radius:16px; padding:36px; margin-top:48px; }
+  .outcome h3 { font-size:22px; font-weight:700; color:var(--orange); margin-bottom:20px; }
+  .outcome ul { display:flex; flex-direction:column; gap:10px; list-style:none; }
+  .outcome ul li { font-size:14px; color:rgba(255,255,255,0.65); padding-left:24px; position:relative; }
+  .outcome ul li::before { content:'✓'; position:absolute; left:0; color:var(--orange); font-family:'Inconsolata',monospace; }
+
+  @media(max-width:640px){
+    .where-grid { grid-template-columns:1fr; }
+    .flow-content .fc-code { font-size:11px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 1</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-week">Week 1</span>
+      <span class="tb-badge tb-day">Day 5</span>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="day-label">Today's Topic</div>
+    <h1>Transaction <span>Flow</span></h1>
+    <p class="hero-desc">When a customer pays online, what actually happens in the background? Today you learn the full journey of a transaction — from the moment someone taps "Pay" to the moment money moves.</p>
+    <div class="tags">
+      <span class="tag">API</span>
+      <span class="tag">Message Queue</span>
+      <span class="tag">Database</span>
+      <span class="tag">Lifecycle</span>
+      <span class="tag">Trace a Transaction</span>
+    </div>
+  </div>
+
+  <!-- SIMPLE IDEA -->
+  <div class="sec"><span class="sn">01</span> The Simple Idea First</div>
+
+  <div class="analogy">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Think about <strong>ordering food at a restaurant.</strong><br><br>
+      You tell the waiter what you want → <strong>(API)</strong> — the waiter takes your order and passes it to the kitchen.<br><br>
+      The kitchen has a <strong>ticket board with all orders queued up</strong> → <strong>(Message Queue)</strong> — orders are handled one by one in order, so nothing gets lost or mixed up.<br><br>
+      The chef cooks it and the order is marked as done → <strong>(Database)</strong> — the final record is written: "Table 4 had a burger, paid, completed."<br><br>
+      <strong>Every payment transaction works exactly like this.</strong> API takes the request. Queue lines it up safely. Database stores the final result.
+    </p>
+  </div>
+
+  <!-- THREE CONCEPTS -->
+  <div class="sec"><span class="sn">02</span> The Three Key Concepts — Explained Simply</div>
+
+  <!-- API -->
+  <div class="concept-block cb-api">
+    <div class="concept-header">
+      <div class="c-icon">🚪</div>
+      <div class="c-info">
+        <div class="c-label">Concept 1 — API</div>
+        <div class="c-title">Application Programming Interface</div>
+        <div class="c-sub">"The front door of your system"</div>
+      </div>
+    </div>
+    <div class="concept-body">
+      <p>An <strong>API</strong> is basically a gate or a door that your system opens to the outside world. When a customer clicks "Pay Now", their app sends a message to your company's API. The API receives that message, checks if it looks correct, and then passes it inside the system.</p>
+      <p>Think of it as a <strong>receptionist at a bank</strong>. You walk in (you = the customer's request), the receptionist checks your ID and your request, and then sends you to the right department. The receptionist doesn't do the actual work — they just receive and route.</p>
+      <p>In fintech, the API checks things like: Is this a valid request? Does this account exist? Is the amount correct? If yes — it accepts it and moves it along. If no — it immediately sends back an error.</p>
+      <div class="highlight hl-blue">
+        <strong>Common API responses you'll see as L2:</strong><br/>
+        200 = Success &nbsp;|&nbsp; 400 = Bad request (wrong data sent) &nbsp;|&nbsp; 401 = Not authorized &nbsp;|&nbsp; 500 = Server crashed
+      </div>
+    </div>
+  </div>
+
+  <!-- MQ -->
+  <div class="concept-block cb-mq">
+    <div class="concept-header">
+      <div class="c-icon">📬</div>
+      <div class="c-info">
+        <div class="c-label">Concept 2 — Message Queue (MQ)</div>
+        <div class="c-title">Message Queue</div>
+        <div class="c-sub">"The waiting room that keeps everything safe and in order"</div>
+      </div>
+    </div>
+    <div class="concept-body">
+      <p>After the API accepts the request, it doesn't process the payment directly. It drops the request into a <strong>Message Queue</strong> — basically a safe waiting line. The queue holds the transaction until the system is ready to process it.</p>
+      <p>Why does this exist? Imagine 10,000 people paying at the same time. If all 10,000 hit the database directly at once, it would crash. The queue <strong>controls the flow</strong> — it feeds the database one by one at a manageable speed. Nothing gets lost even if the system is temporarily busy.</p>
+      <p>Think of it like a <strong>post office sorting room</strong>. All the letters (transactions) come in at once, get sorted into a line, and are delivered one by one in the correct order.</p>
+      <div class="highlight hl-purple">
+        <strong>Common MQ tools you'll hear about:</strong> RabbitMQ, Apache Kafka, IBM MQ, ActiveMQ. They all do the same basic job — hold messages in a queue until they're processed.
+      </div>
+    </div>
+  </div>
+
+  <!-- DB -->
+  <div class="concept-block cb-db">
+    <div class="concept-header">
+      <div class="c-icon">🗄️</div>
+      <div class="c-info">
+        <div class="c-label">Concept 3 — Database (DB)</div>
+        <div class="c-title">Database</div>
+        <div class="c-sub">"The final record keeper — where everything is written permanently"</div>
+      </div>
+    </div>
+    <div class="concept-body">
+      <p>The <strong>database</strong> is where the transaction is finally written and stored forever. Once the message comes out of the queue and gets processed, the result — success or failure — is saved in the database. This becomes the permanent record.</p>
+      <p>Think of it as the <strong>official register at a bank</strong>. Every transaction, every balance change, every account update — written in the book permanently. If someone asks "did this payment go through?", you check the database. It's the single source of truth.</p>
+      <p>As an L2 engineer, you'll often query the database to check if a transaction was recorded, what status it has, and exactly when it happened. This is how you confirm whether a payment truly went through or got stuck somewhere before reaching the DB.</p>
+      <div class="highlight hl-green">
+        <strong>Common DB tools you'll see:</strong> MySQL, PostgreSQL, Oracle DB, Microsoft SQL Server. In fintech, Oracle and PostgreSQL are very common for transaction systems.
+      </div>
+    </div>
+  </div>
+
+  <!-- FULL FLOW DIAGRAM -->
+  <div class="sec"><span class="sn">03</span> The Full Transaction Flow — Step by Step</div>
+
+  <div class="flow-wrap">
+    <h3>🔁 What happens when a customer taps "Pay Now"</h3>
+    <div class="flow-main">
+
+      <div class="flow-step fs-user">
+        <div class="flow-left">
+          <div class="flow-circle">👤</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <div class="fc-label">Step 1 — Customer</div>
+          <div class="fc-title">Customer taps "Pay Now"</div>
+          <div class="fc-desc">The customer enters their card details and hits pay. Their app or browser sends this as a request to your company's API.</div>
+          <div class="fc-code">POST /api/v1/payments → { amount: 500, card: "****1234" }</div>
+        </div>
+      </div>
+
+      <div class="flow-step fs-api">
+        <div class="flow-left">
+          <div class="flow-circle">🚪</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <div class="fc-label">Step 2 — API Layer</div>
+          <div class="fc-title">API receives and validates the request</div>
+          <div class="fc-desc">The API checks: Is the amount valid? Is the account real? Is the token correct? If everything checks out, it accepts the request and sends it forward. If not, it returns an error instantly.</div>
+          <div class="fc-code">API Response: 200 OK → Request accepted, queuing now...</div>
+        </div>
+      </div>
+
+      <div class="flow-step fs-mq">
+        <div class="flow-left">
+          <div class="flow-circle">📬</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <div class="fc-label">Step 3 — Message Queue</div>
+          <div class="fc-title">Transaction goes into the queue</div>
+          <div class="fc-desc">The request is placed into the Message Queue. It waits here safely in line. Even if 10,000 payments come in at once, none get lost — they just wait their turn in the queue.</div>
+          <div class="fc-code">Queue: [TXN-9821, TXN-9822, TXN-9823 ← your payment]</div>
+        </div>
+      </div>
+
+      <div class="flow-step fs-worker">
+        <div class="flow-left">
+          <div class="flow-circle">⚙️</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <div class="fc-label">Step 4 — Worker / Processor</div>
+          <div class="fc-title">Worker picks up the transaction and processes it</div>
+          <div class="fc-desc">A background worker pulls the transaction from the queue, talks to the bank or card network to actually move the money, and checks if the payment was approved or declined.</div>
+          <div class="fc-code">Worker: Processing TXN-9823 → Bank approved → Status: SUCCESS</div>
+        </div>
+      </div>
+
+      <div class="flow-step fs-db">
+        <div class="flow-left">
+          <div class="flow-circle">🗄️</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <div class="fc-label">Step 5 — Database</div>
+          <div class="fc-title">Result is written to the database</div>
+          <div class="fc-desc">The final result — success or failure — is saved permanently in the database. The customer's account balance is updated. A transaction record is created with timestamp, amount, and status.</div>
+          <div class="fc-code">DB Record: TXN-9823 | Amount: 500 | Status: SUCCESS | Time: 14:32:05</div>
+        </div>
+      </div>
+
+      <div class="flow-step fs-notify">
+        <div class="flow-left">
+          <div class="flow-circle">🔔</div>
+        </div>
+        <div class="flow-content">
+          <div class="fc-label">Step 6 — Notification</div>
+          <div class="fc-title">Customer gets confirmation</div>
+          <div class="fc-desc">An SMS or email is sent to the customer: "Payment of PKR 500 successful." The whole process — from tap to notification — typically takes 2 to 5 seconds.</div>
+          <div class="fc-code">SMS: "Your payment of 500 was successful. Ref: TXN-9823"</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TRACE A TRANSACTION — LAB -->
+  <div class="sec"><span class="sn">04</span> Trace a Transaction — Hands-on Lab</div>
+
+  <div class="card">
+    <h3>What does "tracing a transaction" mean?</h3>
+    <p>When a client says <strong>"a payment failed"</strong> or <strong>"I don't know if the money went through"</strong> — your job is to trace that transaction. That means following it through each layer: API → Queue → Database, and finding exactly where it got stuck or failed.</p>
+    <p>You do this by checking <strong>logs</strong> (records of everything the system did) and <strong>querying the database</strong> (looking up the transaction by its ID or reference number).</p>
+  </div>
+
+  <div class="trace-wrap">
+    <div class="trace-header">
+      🔍 Transaction Trace — TXN-9823 · Alpha Bank
+      <span>Scenario: Client says "payment didn't go through"</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Step</th>
+          <th>Layer</th>
+          <th>What You Check</th>
+          <th>What You Found</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="step-num" style="color:var(--blue)">01</td>
+          <td><span class="layer-tag lt-api">API</span></td>
+          <td>Did the API receive the request?</td>
+          <td>API log shows request received at 14:32:03. Returned 200 OK.</td>
+          <td><span class="status-ok">✓ OK</span></td>
+        </tr>
+        <tr>
+          <td class="step-num" style="color:var(--purple)">02</td>
+          <td><span class="layer-tag lt-mq">Queue</span></td>
+          <td>Did it enter the Message Queue?</td>
+          <td>Queue log shows TXN-9823 entered at 14:32:03. Picked up by worker at 14:32:04.</td>
+          <td><span class="status-ok">✓ OK</span></td>
+        </tr>
+        <tr>
+          <td class="step-num" style="color:var(--yellow)">03</td>
+          <td><span class="layer-tag lt-app">Worker</span></td>
+          <td>Did the worker process it?</td>
+          <td>Worker log shows processing started. Then: <code style="font-family:'Inconsolata',monospace;font-size:11px;background:var(--surface2);padding:2px 6px;border-radius:4px;">ERROR: Bank gateway timeout after 30s</code></td>
+          <td><span class="status-err">✗ FAILED</span></td>
+        </tr>
+        <tr>
+          <td class="step-num" style="color:var(--green)">04</td>
+          <td><span class="layer-tag lt-db">Database</span></td>
+          <td>Was anything written to the DB?</td>
+          <td>DB query shows TXN-9823 exists with Status: FAILED. No money was deducted.</td>
+          <td><span class="status-err">✗ FAILED</span></td>
+        </tr>
+        <tr>
+          <td class="step-num" style="color:var(--orange)">05</td>
+          <td><span class="layer-tag lt-notif">Notification</span></td>
+          <td>Was customer notified?</td>
+          <td>SMS sent: "Your payment of 500 could not be processed. Please try again."</td>
+          <td><span class="status-ok">✓ Sent</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>What did the trace tell us?</h3>
+    <p>The transaction made it all the way through the API and queue successfully. It failed at the <strong>Worker level</strong> — specifically when trying to connect to the bank's gateway. The bank's system timed out and didn't respond in time. This is not your system's fault — it's the bank's gateway.</p>
+    <p>Your next step: raise this with the bank's technical team, share the TXN ID and timestamp, and ask them to check their gateway logs. Update the Jira ticket with your findings.</p>
+  </div>
+
+  <!-- WHERE TO LOOK -->
+  <div class="sec"><span class="sn">05</span> Where to Look When a Transaction Fails</div>
+
+  <div class="where-grid">
+    <div class="where-card wc-api">
+      <div class="w-icon">🚪</div>
+      <div class="w-label">API Layer</div>
+      <h4>Check API Logs</h4>
+      <ul>
+        <li>Did request arrive?</li>
+        <li>What HTTP status was returned?</li>
+        <li>Any validation errors?</li>
+        <li>What time did it come in?</li>
+      </ul>
+    </div>
+    <div class="where-card wc-mq">
+      <div class="w-icon">📬</div>
+      <div class="w-label">Queue Layer</div>
+      <h4>Check Queue Logs</h4>
+      <ul>
+        <li>Did the message enter the queue?</li>
+        <li>Is the queue growing (stuck)?</li>
+        <li>Was the message picked up?</li>
+        <li>Any dead-letter queue entries?</li>
+      </ul>
+    </div>
+    <div class="where-card wc-db">
+      <div class="w-icon">🗄️</div>
+      <div class="w-label">Database Layer</div>
+      <h4>Check DB Records</h4>
+      <ul>
+        <li>Does the TXN ID exist?</li>
+        <li>What is the status field?</li>
+        <li>Was balance updated?</li>
+        <li>What timestamp was recorded?</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn">06</span> Real L2 Scenarios</div>
+
+  <div class="scen-list">
+    <div class="scen-item">
+      <div class="si-id">01</div>
+      <p>Client says: <strong>"Customer paid but money didn't reach us."</strong> You check the DB — transaction shows SUCCESS. Balance updated. This means the money did move. The issue is likely a <strong>reporting or notification problem</strong>, not a payment problem. Completely different investigation.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">02</div>
+      <p>Client says: <strong>"Payments are very slow today."</strong> You check the queue — it has 8,000 messages waiting and only 2 workers processing. The <strong>queue is backed up</strong>. Solution: scale up the number of workers or find out why they slowed down.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">03</div>
+      <p>Client says: <strong>"Payment failed but customer's account was debited."</strong> This is the worst scenario. Money left the customer but didn't arrive. You trace both sides — check your DB and ask the bank. This is called a <strong>reconciliation mismatch</strong> and gets escalated to L3 immediately.</p>
+    </div>
+    <div class="scen-item">
+      <div class="si-id">04</div>
+      <p>API is returning <strong>500 errors</strong> for all payment requests. No need to trace further — the issue is at the very first step. Check the API server logs, check if the server is overloaded or if a recent deployment broke something.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Day 5 Outcomes — Can You Do This?</h3>
+    <ul>
+      <li>Explain what an API is in simple words — the front door that receives and validates requests</li>
+      <li>Explain what a Message Queue is — the safe waiting line that controls the flow of transactions</li>
+      <li>Explain what the Database does — the permanent record keeper that stores the final result</li>
+      <li>Draw or describe the full transaction flow: Customer → API → Queue → Worker → DB → Notification</li>
+      <li>Trace a transaction through each layer using logs and identify exactly where it failed</li>
+      <li>Know which layer to check first depending on the type of complaint</li>
+      <li>Explain the difference between a payment that failed vs a payment that succeeded but wasn't recorded</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>
