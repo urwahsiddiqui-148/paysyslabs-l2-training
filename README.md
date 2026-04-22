@@ -1,6 +1,7 @@
 # 🚀 L2 Training Journal — PaySysLabs
 
 > Complete training documentation for **L2 Technical Support Engineer (Fintech)** onboarding program.
+> Visit the hosted website https://paysyslabs-l2-training.netlify.app/
 
 ---
 
