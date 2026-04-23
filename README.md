@@ -147,6 +147,9 @@ By the end of this training, you will be able to:
 * Yaml
 * Rest API 
 * RabbitMQ
+* NGINX
+* Docker 
+* Kubernetes
 * Payment systems (RAAST, IBFT, ACS)
 * Webhooks (Slack, What's app, Twilio)
 * Observability stack concepts
