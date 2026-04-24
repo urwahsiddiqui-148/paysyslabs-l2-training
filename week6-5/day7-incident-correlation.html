@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 6.5 · Day 7 — Incident Correlation</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#07090e;
+    --surface:#0d1018;
+    --surface2:#121820;
+    --surface3:#171e28;
+    --border:#1e2838;
+    --text:#a8b8cc;
+    --text-dim:#3e5268;
+    --text-faint:#162035;
+    --white:#eaf2fc;
+
+    --gold:#eab308;
+    --gold-bg:#161000;
+    --gold-border:#3c2c00;
+
+    --sky:#38bdf8;
+    --sky-bg:#001820;
+    --sky-border:#003848;
+
+    --rose:#fb7185;
+    --rose-bg:#180008;
+    --rose-border:#3c0018;
+
+    --green:#4ade80;
+    --green-bg:#001810;
+    --green-border:#003820;
+
+    --violet:#c084fc;
+    --violet-bg:#0e0818;
+    --violet-border:#281840;
+
+    --orange:#fb923c;
+    --orange-bg:#180800;
+    --orange-border:#3c2000;
+
+    --teal:#2dd4bf;
+    --teal-bg:#001818;
+    --teal-border:#003838;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;font-size:15px;line-height:1.7;padding:48px 24px 100px;}
+  .page{max-width:940px;margin:0 auto;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:52px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .topbar-left{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;}
+  .tb-right{display:flex;gap:8px;}
+  .tb-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 14px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;}
+  .tb-wk{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tb-d{background:var(--gold-bg);border:1px solid var(--gold-border);color:var(--gold);}
+
+  .hero{margin-bottom:52px;}
+  .day-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,58px);font-weight:800;line-height:1.05;color:var(--white);margin-bottom:18px;}
+  .hero h1 span{color:var(--gold);}
+  .hero-desc{color:var(--text-dim);font-size:15px;max-width:540px;}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;}
+  .tag{padding:5px 14px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tag-g{background:var(--gold-bg);border-color:var(--gold-border);color:var(--gold);}
+  .tag-s{background:var(--sky-bg);border-color:var(--sky-border);color:var(--sky);}
+
+  .sec{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faint);margin-bottom:18px;margin-top:44px;display:flex;align-items:center;gap:12px;}
+  .sec .sn{color:var(--gold);font-size:12px;}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .analogy{background:var(--gold-bg);border:1px solid var(--gold-border);border-left:4px solid var(--gold);border-radius:12px;padding:22px 28px;margin-bottom:16px;}
+  .analogy .al{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+  .analogy p{color:var(--text);font-size:14px;}
+  .analogy strong{color:var(--white);}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 28px;margin-bottom:14px;}
+  .card h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:8px;}
+  .card p{color:var(--text-dim);margin-bottom:8px;font-size:14px;}
+  .card p:last-child{margin-bottom:0;}
+  .card strong{color:var(--text);}
+
+  /* CORRELATION TIMELINE */
+  .timeline{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:14px;}
+  .tl-head{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .tl-head h3{font-size:15px;font-weight:700;color:var(--white);}
+  .tl-legend{display:flex;gap:16px;}
+  .tl-leg{font-family:'JetBrains Mono',monospace;font-size:10px;display:flex;align-items:center;gap:6px;}
+  .tl-dot{width:8px;height:8px;border-radius:50%;}
+  .td-metric{background:var(--sky);}
+  .td-log{background:var(--gold);}
+  .tl-body{padding:22px;}
+  .tl-row{display:flex;align-items:flex-start;gap:16px;margin-bottom:10px;padding:10px 14px;border-radius:10px;border:1px solid transparent;}
+  .tl-row.metric{border-color:var(--sky-border);background:rgba(56,189,248,0.04);}
+  .tl-row.log{border-color:var(--gold-border);background:rgba(234,179,8,0.04);}
+  .tl-row.critical{border-color:var(--rose-border);background:rgba(251,113,133,0.06);}
+  .tl-time{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--teal);min-width:80px;flex-shrink:0;margin-top:2px;}
+  .tl-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 8px;border-radius:4px;flex-shrink:0;margin-top:2px;}
+  .tb-m{background:var(--sky-bg);border:1px solid var(--sky-border);color:var(--sky);}
+  .tb-l{background:var(--gold-bg);border:1px solid var(--gold-border);color:var(--gold);}
+  .tb-c{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .tl-text{font-size:13px;color:var(--text-dim);}
+  .tl-text strong{color:var(--white);}
+
+  /* 2-COL SIDE BY SIDE */
+  .side-by-side{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+  .sbs-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;}
+  .sbs-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+  .sbs-card h4{font-size:14px;font-weight:700;color:var(--white);margin-bottom:8px;}
+  .sbs-card ul{list-style:none;display:flex;flex-direction:column;gap:6px;}
+  .sbs-card ul li{font-size:13px;color:var(--text-dim);padding-left:16px;position:relative;}
+  .sbs-card ul li::before{content:'→';position:absolute;left:0;font-family:'JetBrains Mono',monospace;font-size:10px;}
+  .sbs-m .sbs-label{color:var(--sky);}
+  .sbs-m ul li::before{color:var(--sky);}
+  .sbs-m{border-top:3px solid var(--sky);}
+  .sbs-l .sbs-label{color:var(--gold);}
+  .sbs-l ul li::before{color:var(--gold);}
+  .sbs-l{border-top:3px solid var(--gold);}
+
+  /* REF TABLE */
+  .ref-table{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+  .rt-head{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:15px;font-weight:700;color:var(--white);}
+  table.rt{width:100%;border-collapse:collapse;}
+  table.rt th{padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);text-align:left;border-bottom:1px solid var(--border);font-weight:400;background:var(--surface3);}
+  table.rt td{padding:12px 18px;font-size:13px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;}
+  table.rt tr:last-child td{border-bottom:none;}
+  table.rt tr:hover td{background:rgba(255,255,255,0.02);}
+  table.rt td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold);white-space:nowrap;}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 9px;border-radius:100px;white-space:nowrap;}
+  .p-g{background:var(--gold-bg);border:1px solid var(--gold-border);color:var(--gold);}
+  .p-s{background:var(--sky-bg);border:1px solid var(--sky-border);color:var(--sky);}
+  .p-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .p-gr{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .p-v{background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);}
+
+  /* CODE */
+  .cbox{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:8px 0;}
+  .cbox-bar{padding:7px 14px;background:var(--surface3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+  .d{width:8px;height:8px;border-radius:50%;}.dr{background:#ff5f56;}.dy{background:#ffbd2e;}.dg{background:#27c93f;}
+  .ct{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);margin-left:4px;letter-spacing:1px;}
+  .cbox-code{padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2.0;overflow-x:auto;}
+  .kw{color:#ff7b72;}.fn{color:#79c0ff;}.str{color:#a5d6ff;}.var{color:#ffa657;}.cm{color:#2e4050;}.op{color:#c9d1d9;}
+  .hi-g{color:var(--gold);font-weight:700;}
+  .hi-s{color:var(--sky);}
+  .hi-r{color:var(--rose);}
+
+  /* NOTE */
+  .note{border-radius:10px;padding:10px 16px;font-size:13px;margin-bottom:10px;}
+  .n-g{background:var(--gold-bg);border:1px solid var(--gold-border);color:var(--gold);}
+  .n-s{background:var(--sky-bg);border:1px solid var(--sky-border);color:var(--sky);}
+  .n-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .n-gr{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .note strong{color:var(--white);}
+
+  /* LAB */
+  .lab{border:2px solid var(--gold-border);border-radius:16px;overflow:hidden;margin-bottom:14px;}
+  .lab-head{padding:16px 26px;background:var(--gold-bg);border-bottom:1px solid var(--gold-border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .lab-head h3{font-size:15px;font-weight:700;color:var(--white);}
+  .lab-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 12px;border-radius:100px;background:rgba(234,179,8,0.1);border:1px solid var(--gold-border);color:var(--gold);}
+  .lab-body{padding:26px;display:flex;flex-direction:column;gap:0;background:var(--surface);}
+  .lab-step{display:flex;gap:18px;position:relative;}
+  .lab-step:not(:last-child) .ls-left::after{content:'';position:absolute;left:19px;top:44px;bottom:0;width:2px;background:var(--border);z-index:0;}
+  .ls-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+  .ls-num{width:40px;height:40px;border-radius:50%;background:var(--gold-bg);border:2px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold);z-index:1;position:relative;}
+  .ls-content{flex:1;padding-bottom:22px;padding-top:4px;}
+  .ls-title{font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px;}
+  .ls-desc{font-size:13px;color:var(--text-dim);margin-bottom:8px;}
+  .ls-out{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--gold-bg);border:1px solid var(--gold-border);color:var(--gold);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+  .ls-out-g{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+
+  /* SCEN */
+  .scen-list{display:flex;flex-direction:column;gap:12px;margin-bottom:14px;}
+  .scen-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;}
+  .si-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:6px;padding:4px 8px;flex-shrink:0;margin-top:2px;}
+  .scen-item p{font-size:14px;color:var(--text-dim);}
+  .scen-item p strong{color:var(--white);}
+
+  .outcome{background:linear-gradient(135deg,var(--gold-bg) 0%,var(--surface) 100%);border:1px solid var(--gold-border);border-radius:16px;padding:32px;margin-top:48px;}
+  .outcome h3{font-size:20px;font-weight:700;color:var(--gold);margin-bottom:18px;}
+  .outcome ul{display:flex;flex-direction:column;gap:9px;list-style:none;}
+  .outcome ul li{font-size:14px;color:var(--text-dim);padding-left:22px;position:relative;}
+  .outcome ul li::before{content:'✓';position:absolute;left:0;color:var(--gold);font-family:'JetBrains Mono',monospace;}
+
+  @media(max-width:640px){.side-by-side{grid-template-columns:1fr;}.tl-legend{display:none;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 6.5</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-wk">Week 6.5</span>
+      <span class="tb-badge tb-d">Day 7</span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="day-label">Week 6.5 · Day 7</div>
+    <h1>Incident <span>Correlation</span></h1>
+    <p class="hero-desc">Metrics show you the numbers. Logs show you the events. Correlation is what happens when you look at both together at the same timestamp and ask — what caused what? Today you learn to connect those two stories into one clear root cause.</p>
+    <div class="tags">
+      <span class="tag tag-g">Logs + Metrics</span>
+      <span class="tag tag-s">Correlation</span>
+      <span class="tag">Timeline Analysis</span>
+      <span class="tag">RCA Skills</span>
+      <span class="tag">Root Cause</span>
+    </div>
+  </div>
+
+  <!-- ANALOGY -->
+  <div class="sec"><span class="sn">01</span> The Simple Idea First</div>
+
+  <div class="analogy">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Think of a doctor diagnosing a patient. The heart monitor shows the pulse suddenly dropped at 3:42 PM (metric). The nurse's notes say the patient complained of chest pain at 3:40 PM (log). The medication record shows a drug was administered at 3:38 PM (another log).<br><br>
+      <strong>The doctor correlates all three.</strong> Drug at 3:38 → chest pain at 3:40 → pulse drop at 3:42. That is the root cause chain. No single data source tells the full story — only by connecting them does the cause become clear.<br><br>
+      <strong>Incident correlation in L2 is exactly this.</strong> CPU spike at 14:00 (metric) + DB timeout errors at 14:00 (log) + queue depth growing at 14:01 (another metric) = the DB caused the CPU spike which caused the queue to back up. Connected.
+    </p>
+  </div>
+
+  <!-- WHY CORRELATION -->
+  <div class="card">
+    <h3>Why correlation matters — what happens without it</h3>
+    <p><strong>Without correlation:</strong> You see a CPU spike and restart the application. CPU comes down. 10 minutes later it spikes again. You restart again. This cycle repeats because you treated the symptom, not the cause.</p>
+    <p><strong>With correlation:</strong> You see the CPU spike at 14:00 and immediately check the logs for 14:00 — you find DB timeouts. The DB is the cause of the spike, not the application itself. You fix the DB and CPU never spikes again.</p>
+    <p>The metric told you <em>something is wrong</em>. The log told you <em>what is wrong</em>. Correlating them told you <em>why it is wrong</em>. That is the full chain needed for a correct RCA.</p>
+  </div>
+
+  <!-- METRICS VS LOGS -->
+  <div class="sec"><span class="sn">02</span> What Metrics Tell You vs What Logs Tell You</div>
+
+  <div class="side-by-side">
+    <div class="sbs-card sbs-m">
+      <div class="sbs-label">Metrics — The Numbers</div>
+      <h4>What metrics show</h4>
+      <ul>
+        <li>CPU jumped to 92% at 14:00</li>
+        <li>Error rate climbed to 8% at 14:01</li>
+        <li>Response time hit 4.2 seconds at 14:02</li>
+        <li>Queue depth grew to 48 at 14:03</li>
+        <li>Transaction success rate dropped to 88%</li>
+      </ul>
+    </div>
+    <div class="sbs-card sbs-l">
+      <div class="sbs-label">Logs — The Events</div>
+      <h4>What logs show</h4>
+      <ul>
+        <li>[14:00:04] DB_CONNECTION_TIMEOUT TXN-501</li>
+        <li>[14:00:05] TXN-502 FAILED cannot write to DB</li>
+        <li>[14:00:06] Consumer paused — DB unreachable</li>
+        <li>[14:01:00] DB_CONNECTION_REFUSED port 5432</li>
+        <li>[14:01:30] Queue depth 28 — processing halted</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note n-g">💡 <strong>The correlation:</strong> Metrics show CPU spiked and error rate climbed at 14:00. Logs show DB_CONNECTION_TIMEOUT errors started at exactly 14:00:04. The timestamp match confirms — the DB failure caused the CPU spike and the error rate increase. One root cause explains all the metric changes.</div>
+
+  <!-- CORRELATION TIMELINE -->
+  <div class="sec"><span class="sn">03</span> Reading a Correlated Timeline</div>
+
+  <div class="card">
+    <h3>The correlated timeline — putting both data sources side by side</h3>
+    <p>When you line up metrics and logs by timestamp, the cause-and-effect chain becomes visible. The metric changes always follow the log events by a small lag. Find the log event that happened just before a metric started moving — that is your root cause.</p>
+  </div>
+
+  <div class="timeline">
+    <div class="tl-head">
+      <h3>📊 Incident Timeline — Metrics + Logs Together</h3>
+      <div class="tl-legend">
+        <div class="tl-leg"><div class="tl-dot td-metric"></div><span style="color:var(--sky)">Metric</span></div>
+        <div class="tl-leg"><div class="tl-dot td-log"></div><span style="color:var(--gold)">Log</span></div>
+      </div>
+    </div>
+    <div class="tl-body">
+      <div class="tl-row metric">
+        <div class="tl-time">13:58</div>
+        <div class="tl-badge tb-m">METRIC</div>
+        <div class="tl-text">CPU: 42% | Error rate: 0.3% | TXN success: 99.8% — <strong>everything normal</strong></div>
+      </div>
+      <div class="tl-row log">
+        <div class="tl-time">14:00:01</div>
+        <div class="tl-badge tb-l">LOG</div>
+        <div class="tl-text"><strong>WARN</strong> DB connection pool at 81% — first warning sign appears</div>
+      </div>
+      <div class="tl-row log">
+        <div class="tl-time">14:00:03</div>
+        <div class="tl-badge tb-l">LOG</div>
+        <div class="tl-text"><strong>WARN</strong> DB connection pool at 96% — approaching full capacity</div>
+      </div>
+      <div class="tl-row critical">
+        <div class="tl-time">14:00:04</div>
+        <div class="tl-badge tb-c">CRITICAL</div>
+        <div class="tl-text"><strong>ERROR</strong> DB_CONNECTION_TIMEOUT — pool exhausted. TXN-501 FAILED. <em>Root cause event.</em></div>
+      </div>
+      <div class="tl-row metric">
+        <div class="tl-time">14:00:15</div>
+        <div class="tl-badge tb-m">METRIC</div>
+        <div class="tl-text">CPU: 68% ↑ | Error rate: 3.2% ↑ — metrics start reacting to the DB failure</div>
+      </div>
+      <div class="tl-row log">
+        <div class="tl-time">14:01:00</div>
+        <div class="tl-badge tb-l">LOG</div>
+        <div class="tl-text"><strong>ERROR</strong> DB_CONNECTION_REFUSED port 5432 — DB process crashed</div>
+      </div>
+      <div class="tl-row metric">
+        <div class="tl-time">14:01:20</div>
+        <div class="tl-badge tb-m">METRIC</div>
+        <div class="tl-text">CPU: 89% ↑ | Error rate: 8.4% ↑ | Queue depth: 28 ↑ — full impact across all metrics</div>
+      </div>
+      <div class="tl-row log">
+        <div class="tl-time">14:15:00</div>
+        <div class="tl-badge tb-l">LOG</div>
+        <div class="tl-text"><strong>INFO</strong> DB connection restored. Pool at 12%. Processing resuming.</div>
+      </div>
+      <div class="tl-row metric">
+        <div class="tl-time">14:15:30</div>
+        <div class="tl-badge tb-m">METRIC</div>
+        <div class="tl-text">CPU: 44% ↓ | Error rate: 0.4% ↓ | Queue depth: 0 ↓ — all metrics recover together</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note n-s">💡 <strong>Read the timeline rule:</strong> The log event at 14:00:04 (DB pool exhausted) appeared <em>before</em> the metrics started moving at 14:00:15. Logs react faster than metrics. The first log event before any metric moved = your root cause.</div>
+
+  <!-- CORRELATION PATTERNS -->
+  <div class="sec"><span class="sn">04</span> Common Correlation Patterns in Fintech</div>
+
+  <div class="ref-table">
+    <div class="rt-head">🔗 Metric Change → Log Pattern → Root Cause</div>
+    <table class="rt">
+      <thead><tr><th>Metric you see</th><th>Log pattern to search</th><th>Root cause</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>CPU spike + error rate up</td>
+          <td>DB_CONNECTION_TIMEOUT in logs at same time</td>
+          <td><span class="pill p-g">DB pool exhausted</span> — app retrying DB connections drives CPU</td>
+        </tr>
+        <tr>
+          <td>Response time slow + CPU normal</td>
+          <td>QUERY_TIMEOUT or slow query log entries</td>
+          <td><span class="pill p-g">Slow DB query</span> — all requests waiting for one query</td>
+        </tr>
+        <tr>
+          <td>Error rate up + CPU normal</td>
+          <td>SOCKET_TIMEOUT to external gateway</td>
+          <td><span class="pill p-s">External API down</span> — SBP or 1LINK not responding</td>
+        </tr>
+        <tr>
+          <td>Queue depth growing + no CPU spike</td>
+          <td>Consumer crashed or Consumer paused</td>
+          <td><span class="pill p-g">MQ consumer down</span> — messages piling up, not consuming</td>
+        </tr>
+        <tr>
+          <td>RAM high + CPU high</td>
+          <td>OutOfMemoryError or GC overhead</td>
+          <td><span class="pill p-r">Memory leak</span> — app not releasing memory, causing GC pressure</td>
+        </tr>
+        <tr>
+          <td>All metrics normal but 1 endpoint slow</td>
+          <td>Slow log for /raast/transfer endpoint only</td>
+          <td><span class="pill p-v">Endpoint-specific issue</span> — not system-wide, targeted DB query</td>
+        </tr>
+        <tr>
+          <td>Disk I/O spiking + CPU up</td>
+          <td>Swap usage growing in free -h logs</td>
+          <td><span class="pill p-r">RAM exhausted</span> — OS swapping to disk, causing both spikes</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- LAB -->
+  <div class="sec"><span class="sn">05</span> Hands-on Lab — Trace a Real Issue</div>
+
+  <div class="card">
+    <h3>Lab scenario</h3>
+    <p>A payment outage occurred between 14:00 and 14:20. You have a metrics snapshot and a log file. Your job is to correlate both data sources, build a timeline, identify the root cause, and write the complete RCA.</p>
+  </div>
+
+  <div class="lab">
+    <div class="lab-head">
+      <h3>🔬 Lab: Correlate Metrics + Logs to Find Root Cause</h3>
+      <span class="lab-badge">Correlation · Timeline · RCA</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Create the metrics snapshot file</div>
+          <div class="ls-desc">This is what a monitoring dashboard would show — metric values at each timestamp during the incident.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — create metrics file</span></div><div class="cbox-code">
+<span class="fn">cat</span> &gt; ~/metrics-snapshot.txt &lt;&lt; <span class="str">'EOF'</span><br>
+TIMESTAMP           CPU%  ERROR_RATE  QUEUE_DEPTH  RESP_TIME_MS<br>
+2024-03-15 13:55    41    0.2         2            180<br>
+2024-03-15 13:58    43    0.3         2            190<br>
+2024-03-15 14:00    45    0.3         2            195<br>
+2024-03-15 14:01    72    4.8         12           1840<br>
+2024-03-15 14:02    88    9.2         28           6200<br>
+2024-03-15 14:05    91    11.4        47           9100<br>
+2024-03-15 14:10    89    10.8        52           8800<br>
+2024-03-15 14:15    48    1.2         30           410<br>
+2024-03-15 14:18    42    0.4         8            200<br>
+2024-03-15 14:20    41    0.2         0            185<br>
+EOF<br>
+<span class="fn">echo</span> <span class="str">"Metrics snapshot created."</span>
+          </div></div>
+          <span class="ls-out">→ 10 metric snapshots across a 25-minute window. Normal → spike → recovery visible in the numbers.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Create the incident log file</div>
+          <div class="ls-desc">This is what the log search returns for the same time window.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — create incident log</span></div><div class="cbox-code">
+<span class="fn">cat</span> &gt; ~/incident.log &lt;&lt; <span class="str">'EOF'</span><br>
+[2024-03-15 13:55:00] [INFO ] Service running normally. 142 TXN/min<br>
+[2024-03-15 14:00:20] [WARN ] DB connection pool at 79%<br>
+[2024-03-15 14:00:40] [WARN ] DB connection pool at 88%<br>
+[2024-03-15 14:00:55] [WARN ] DB connection pool at 97%<br>
+[2024-03-15 14:01:02] [ERROR] DB_CONNECTION_TIMEOUT TXN-601 failed after 30000ms<br>
+[2024-03-15 14:01:03] [ERROR] TXN-601 FAILED cannot acquire DB connection<br>
+[2024-03-15 14:01:10] [ERROR] DB_CONNECTION_TIMEOUT TXN-602 failed after 30000ms<br>
+[2024-03-15 14:01:11] [ERROR] TXN-602 FAILED cannot acquire DB connection<br>
+[2024-03-15 14:01:30] [ERROR] DB_CONNECTION_REFUSED connection refused port 5432<br>
+[2024-03-15 14:01:31] [ERROR] TXN-603 FAILED DB service appears down<br>
+[2024-03-15 14:02:00] [ERROR] MQ consumer paused - DB unreachable. Queue depth: 28<br>
+[2024-03-15 14:05:00] [ERROR] Queue depth critical: 47 messages pending<br>
+[2024-03-15 14:15:01] [INFO ] DB connection restored. Pool at 8%. DB process restarted by DBA.<br>
+[2024-03-15 14:15:10] [INFO ] MQ consumer resumed. Processing queued messages.<br>
+[2024-03-15 14:20:00] [INFO ] Queue cleared. All pending transactions processed.<br>
+EOF<br>
+<span class="fn">echo</span> <span class="str">"Incident log created."</span>
+          </div></div>
+          <span class="ls-out">→ Incident log created. 15 entries spanning the full 14:00–14:20 window.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 1 — Find the exact moment metrics started changing</div>
+          <div class="ls-desc">Look at the metrics file and find where numbers first moved from normal.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="cm"># Show all metric readings — spot where numbers change</span><br>
+<span class="fn">cat</span> ~/metrics-snapshot.txt<br>
+<br>
+<span class="cm"># Find first row where error rate jumped above 1%</span><br>
+<span class="fn">awk</span> <span class="str">'NR>1 && $3>1 {print "FIRST SPIKE:", $0; exit}'</span> ~/metrics-snapshot.txt<br>
+<br>
+<span class="cm"># Find peak values — worst point of the incident</span><br>
+<span class="fn">awk</span> <span class="str">'NR>1 {if($2>max_cpu){max_cpu=$2; peak=$0}} END{print "PEAK:", peak}'</span> ~/metrics-snapshot.txt
+          </div></div>
+          <span class="ls-out">→ Metrics first spiked at 14:01. CPU went from 45% to 72%, error rate from 0.3% to 4.8%. Peak was at 14:05 with CPU 91%, error rate 11.4%, queue depth 47.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 2 — Find the log event that happened just before the metrics moved</div>
+          <div class="ls-desc">Metrics moved at 14:01. Search logs for what happened just before that — 14:00:xx.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="cm"># What happened in the log between 14:00 and 14:01?</span><br>
+<span class="fn">grep</span> <span class="str">"2024-03-15 14:00"</span> ~/incident.log<br>
+<br>
+<span class="cm"># What was the first ERROR in the log?</span><br>
+<span class="fn">grep</span> -m 1 <span class="str">"ERROR"</span> ~/incident.log<br>
+<br>
+<span class="cm"># Show the build-up — 3 lines before first error</span><br>
+<span class="fn">grep</span> -B 3 -m 1 <span class="str">"ERROR"</span> ~/incident.log
+          </div></div>
+          <span class="ls-out">→ WARN messages at 14:00:20, 14:00:40, 14:00:55 show DB pool climbing. First ERROR at 14:01:02 — 38 seconds after the first WARN. Metrics started moving at 14:01 — exactly when the first DB error appeared. Correlation confirmed.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">05</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 3 — Confirm the correlation between metrics and logs</div>
+          <div class="ls-desc">Verify that the log events and metric changes happened at matching timestamps.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — build the correlation evidence</span></div><div class="cbox-code">
+<span class="fn">echo</span> <span class="str">"=== CORRELATION ANALYSIS ==="</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"--- METRICS: When did values first change? ---"</span><br>
+<span class="fn">awk</span> <span class="str">'NR>1 && $3>1 {print "  Error rate crossed 1% at:", $1, $2; exit}'</span> ~/metrics-snapshot.txt<br>
+<br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"--- LOGS: First warning before spike ---"</span><br>
+<span class="fn">grep</span> -m 1 <span class="str">"WARN"</span> ~/incident.log<br>
+<br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"--- LOGS: First error (root cause event) ---"</span><br>
+<span class="fn">grep</span> -m 1 <span class="str">"ERROR"</span> ~/incident.log<br>
+<br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"--- LOGS: When did recovery happen? ---"</span><br>
+<span class="fn">grep</span> <span class="str">"restored\|resumed\|cleared"</span> ~/incident.log<br>
+<br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"--- METRICS: When did values return to normal? ---"</span><br>
+<span class="fn">awk</span> <span class="str">'NR>1 && $3<1 && prev_high==1 {print "  Metrics recovered at:", $1, $2; prev_high=0} NR>1 && $3>1 {prev_high=1}'</span> ~/metrics-snapshot.txt
+          </div></div>
+          <span class="ls-out">→ Log WARN at 14:00:20 → Log ERROR at 14:01:02 → Metric spike at 14:01 → Log recovery at 14:15 → Metric recovery at 14:15. Perfect correlation. Root cause: DB pool exhaustion.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">06</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Step 4 — Count affected transactions</div>
+          <div class="ls-desc">How many transactions failed? What are their IDs? This goes in the RCA.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal</span></div><div class="cbox-code">
+<span class="cm"># List all failed transaction IDs</span><br>
+<span class="fn">grep</span> <span class="str">"FAILED"</span> ~/incident.log | <span class="fn">grep</span> -o <span class="str">"TXN-[0-9]*"</span><br>
+<br>
+<span class="cm"># Count total failures</span><br>
+<span class="fn">echo</span> <span class="str">"Total failed TXNs: $(grep -c 'FAILED' ~/incident.log)"</span><br>
+<br>
+<span class="cm"># Outage duration from first error to recovery</span><br>
+<span class="fn">echo</span> <span class="str">"Outage start: $(grep -m1 'ERROR' ~/incident.log | awk '{print $1, $2}')"</span><br>
+<span class="fn">echo</span> <span class="str">"Outage end  : $(grep -m1 'restored' ~/incident.log | awk '{print $1, $2}')"</span>
+          </div></div>
+          <span class="ls-out">→ 3 failed transactions: TXN-601, TXN-602, TXN-603. Outage lasted from 14:01:02 to 14:15:01 — approximately 14 minutes.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">07</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Write the complete correlated RCA</div>
+          <div class="ls-desc">Use both the metric evidence and the log evidence to write a complete, professional Jira RCA.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">Complete correlated RCA — ready for Jira</span></div><div class="cbox-code">
+<span class="cm">INCIDENT REPORT — Payment Outage 14:01–14:15</span><br>
+<br>
+<span class="cm">METRIC EVIDENCE:</span><br>
+<span class="cm">  Normal baseline: CPU 41-45%, Error rate 0.2-0.3%, Queue 2</span><br>
+<span class="cm">  14:01 — CPU jumped to 72%, Error rate 4.8%, Queue 12</span><br>
+<span class="cm">  14:05 — Peak: CPU 91%, Error rate 11.4%, Queue 47 (critical)</span><br>
+<span class="cm">  14:15 — Recovery: all metrics returned to baseline</span><br>
+<br>
+<span class="cm">LOG EVIDENCE:</span><br>
+<span class="cm">  14:00:20 — WARN DB pool 79% (first warning sign)</span><br>
+<span class="cm">  14:00:55 — WARN DB pool 97% (near exhaustion)</span><br>
+<span class="cm">  14:01:02 — ERROR DB_CONNECTION_TIMEOUT (root cause event)</span><br>
+<span class="cm">  14:01:30 — ERROR DB_CONNECTION_REFUSED (DB process crashed)</span><br>
+<span class="cm">  14:15:01 — INFO DB restored by DBA team</span><br>
+<br>
+<span class="cm">CORRELATION:</span><br>
+<span class="cm">  Log WARN at 14:00:20 preceded metric spike at 14:01 by 40s.</span><br>
+<span class="cm">  Log ERROR at 14:01:02 matches exactly with metric deterioration.</span><br>
+<span class="cm">  Log recovery at 14:15:01 matches metric recovery at 14:15.</span><br>
+<br>
+<span class="cm">ROOT CAUSE: DB connection pool exhausted at 14:01:02.</span><br>
+<span class="cm">DB process crashed at 14:01:30. 3 transactions failed</span><br>
+<span class="cm">(TXN-601, TXN-602, TXN-603). MQ consumer paused.</span><br>
+<span class="cm">DBA restarted DB at 14:15. Full recovery by 14:20.</span><br>
+<br>
+<span class="cm">NEXT STEPS: Reconcile TXN-601/602/603. DBA to</span><br>
+<span class="cm">investigate connection leak. Increase pool limit.</span>
+          </div></div>
+          <span class="ls-out-g">→ Complete correlated RCA with both metric and log evidence. Professional, timestamped, actionable. ✅</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn">06</span> Real L2 Scenarios</div>
+  <div class="scen-list">
+    <div class="scen-item"><div class="si-id">01</div>
+      <p>CPU spike alert fires. Without correlation, you restart the app and CPU drops. 20 minutes later it spikes again. <strong>You check the logs at the timestamp of the spike</strong> — DB timeouts every time. The DB is the cause. You stop restarting the app and call the DBA. Problem solved permanently.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">02</div>
+      <p>Error rate alert fires but CPU, disk, and memory are all healthy. You check logs at the alert timestamp — <strong>SOCKET_TIMEOUT to SBP gateway.</strong> No internal metric is spiking because the problem is external. You check SBP's status page, confirm they are degraded, and inform the bridge: our system is healthy, external dependency is down.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">03</div>
+      <p>Manager asks: <strong>"Why did response time spike yesterday at 11 PM?"</strong> You pull metric snapshot — response time jumped from 200ms to 6.4 seconds at 23:00. You pull logs for 22:58–23:02 — a scheduled batch job started at 23:00 and ran a full table scan. <strong>Metric + log correlation = root cause in 4 minutes.</strong> Manager gets a clear answer.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">04</div>
+      <p>Two alerts fire simultaneously — high CPU and high queue depth. Normally these look like two separate problems. You correlate the logs: consumer crashed at the same timestamp CPU started rising. <strong>One root cause, two alerts.</strong> Fix the consumer → CPU drops and queue drains. The correlation stopped you from treating them as two separate incidents.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 6.5 · Day 7 Outcomes</h3>
+    <ul>
+      <li>Explain what incident correlation is — looking at metrics and logs at the same timestamp to find cause-and-effect</li>
+      <li>Understand what metrics tell you (the numbers changed) vs what logs tell you (what event caused the change)</li>
+      <li>Know the rule — the log event just before a metric starts moving is your root cause candidate</li>
+      <li>Read a correlated timeline and identify where the root cause event sits relative to metric changes</li>
+      <li>Know 7 common correlation patterns — CPU spike + DB timeout logs, slow response + query timeout logs, error rate + external gateway logs</li>
+      <li>Complete the lab — create both a metrics snapshot and an incident log, correlate them by timestamp, find the first warning sign, confirm the root cause event, count affected transactions, and write a complete correlated RCA with both metric and log evidence</li>
+      <li>Understand why correlation prevents treating symptoms — without it you restart the app. With it you fix the actual DB.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

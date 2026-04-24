@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Week 6.5 · Day 8 — Monitoring Project</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#07080d;
+    --surface:#0d1018;
+    --surface2:#121620;
+    --surface3:#171c28;
+    --border:#1e2535;
+    --text:#a8b8cc;
+    --text-dim:#3e5268;
+    --text-faint:#162035;
+    --white:#eaf2fc;
+
+    --gold:#eab308;
+    --gold-bg:#180e00;
+    --gold-border:#3c2c00;
+
+    --emerald:#10b981;
+    --emerald-bg:#001810;
+    --emerald-border:#003830;
+
+    --sky:#38bdf8;
+    --sky-bg:#001820;
+    --sky-border:#003848;
+
+    --rose:#f43f5e;
+    --rose-bg:#180008;
+    --rose-border:#3c0018;
+
+    --violet:#a855f7;
+    --violet-bg:#0e0818;
+    --violet-border:#281840;
+
+    --amber:#f59e0b;
+    --amber-bg:#180c00;
+    --amber-border:#3c2800;
+
+    --green:#22d46a;
+    --green-bg:#001810;
+    --green-border:#003820;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;line-height:1.7;padding:48px 24px 100px;}
+  .page{max-width:940px;margin:0 auto;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:52px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .topbar-left{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;}
+  .tb-right{display:flex;gap:8px;}
+  .tb-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 14px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;}
+  .tb-wk{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tb-d{background:var(--gold-bg);border:1px solid var(--gold-border);color:var(--gold);}
+
+  .hero{margin-bottom:52px;}
+  .day-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,6vw,58px);font-weight:800;line-height:1.05;color:var(--white);margin-bottom:18px;}
+  .hero h1 span{color:var(--gold);}
+  .hero-desc{color:var(--text-dim);font-size:15px;max-width:540px;}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;}
+  .tag{padding:5px 14px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+  .tag-g{background:var(--gold-bg);border-color:var(--gold-border);color:var(--gold);}
+  .tag-e{background:var(--emerald-bg);border-color:var(--emerald-border);color:var(--emerald);}
+
+  .sec{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faint);margin-bottom:18px;margin-top:44px;display:flex;align-items:center;gap:12px;}
+  .sec .sn{color:var(--gold);font-size:12px;}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .analogy{background:var(--gold-bg);border:1px solid var(--gold-border);border-left:4px solid var(--gold);border-radius:12px;padding:22px 28px;margin-bottom:16px;}
+  .analogy .al{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+  .analogy p{color:var(--text);font-size:14px;}
+  .analogy strong{color:var(--white);}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 28px;margin-bottom:14px;}
+  .card h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:8px;}
+  .card p{color:var(--text-dim);margin-bottom:8px;font-size:14px;}
+  .card p:last-child{margin-bottom:0;}
+  .card strong{color:var(--text);}
+
+  /* CHECKLIST */
+  .checklist-block{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:14px;}
+  .cb-header{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .cb-header h3{font-size:15px;font-weight:700;color:var(--white);}
+  .cb-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 10px;border-radius:100px;}
+  .cb-gold{background:var(--gold-bg);border:1px solid var(--gold-border);color:var(--gold);}
+  .cb-em{background:var(--emerald-bg);border:1px solid var(--emerald-border);color:var(--emerald);}
+  .cb-sky{background:var(--sky-bg);border:1px solid var(--sky-border);color:var(--sky);}
+  .cb-items{padding:20px 22px;display:flex;flex-direction:column;gap:10px;}
+  .cb-item{display:flex;gap:14px;align-items:flex-start;padding:12px 16px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);}
+  .cb-check{width:20px;height:20px;border-radius:5px;border:2px solid;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:11px;}
+  .cc-g{border-color:var(--gold);color:var(--gold);}
+  .cc-e{border-color:var(--emerald);color:var(--emerald);}
+  .cc-s{border-color:var(--sky);color:var(--sky);}
+  .cb-item .ci-label{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;margin-bottom:3px;}
+  .cl-g{color:var(--gold);}
+  .cl-e{color:var(--emerald);}
+  .cl-s{color:var(--sky);}
+  .cb-item p{font-size:13px;color:var(--text-dim);}
+  .cb-item p strong{color:var(--white);}
+
+  /* PHASE BANNER */
+  .phase-banner{border-radius:12px;padding:16px 22px;margin-bottom:14px;display:flex;align-items:center;gap:14px;}
+  .pb-gold{background:var(--gold-bg);border:2px solid var(--gold-border);}
+  .pb-em{background:var(--emerald-bg);border:2px solid var(--emerald-border);}
+  .pb-sky{background:var(--sky-bg);border:2px solid var(--sky-border);}
+  .pb-num{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:800;flex-shrink:0;}
+  .pb-gold .pb-num{color:var(--gold);}
+  .pb-em .pb-num{color:var(--emerald);}
+  .pb-sky .pb-num{color:var(--sky);}
+  .pb-title{font-size:17px;font-weight:700;color:var(--white);}
+  .pb-desc{font-size:13px;color:var(--text-dim);}
+
+  /* CODE */
+  .cbox{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:8px 0;}
+  .cbox-bar{padding:7px 14px;background:var(--surface3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+  .d{width:8px;height:8px;border-radius:50%;}.dr{background:#ff5f56;}.dy{background:#ffbd2e;}.dg{background:#27c93f;}
+  .ct{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);margin-left:4px;letter-spacing:1px;}
+  .cbox-code{padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2.0;overflow-x:auto;}
+  .kw{color:#ff7b72;}.fn{color:#79c0ff;}.str{color:#a5d6ff;}.var{color:#ffa657;}.cm{color:#2e4050;}.op{color:#c9d1d9;}
+
+  /* NOTE */
+  .note{border-radius:10px;padding:10px 16px;font-size:13px;margin-bottom:10px;}
+  .n-g{background:var(--gold-bg);border:1px solid var(--gold-border);color:var(--gold);}
+  .n-e{background:var(--emerald-bg);border:1px solid var(--emerald-border);color:var(--emerald);}
+  .n-s{background:var(--sky-bg);border:1px solid var(--sky-border);color:var(--sky);}
+  .n-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .n-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .note strong{color:var(--white);}
+
+  /* LAB */
+  .lab{border:2px solid var(--gold-border);border-radius:16px;overflow:hidden;margin-bottom:14px;}
+  .lab-head{padding:16px 26px;background:var(--gold-bg);border-bottom:1px solid var(--gold-border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .lab-head h3{font-size:15px;font-weight:700;color:var(--white);}
+  .lab-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 12px;border-radius:100px;background:rgba(234,179,8,0.1);border:1px solid var(--gold-border);color:var(--gold);}
+  .lab-body{padding:26px;display:flex;flex-direction:column;gap:0;background:var(--surface);}
+  .lab-step{display:flex;gap:18px;position:relative;}
+  .lab-step:not(:last-child) .ls-left::after{content:'';position:absolute;left:19px;top:44px;bottom:0;width:2px;background:var(--border);z-index:0;}
+  .ls-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+  .ls-num{width:40px;height:40px;border-radius:50%;background:var(--gold-bg);border:2px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold);z-index:1;position:relative;}
+  .ls-content{flex:1;padding-bottom:22px;padding-top:4px;}
+  .ls-title{font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px;}
+  .ls-desc{font-size:13px;color:var(--text-dim);margin-bottom:8px;}
+  .ls-out{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--gold-bg);border:1px solid var(--gold-border);color:var(--gold);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+  .ls-out-g{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);border-radius:8px;padding:9px 14px;display:block;margin-top:8px;}
+
+  /* REF TABLE */
+  .ref-table{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+  .rt-head{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:15px;font-weight:700;color:var(--white);}
+  table.rt{width:100%;border-collapse:collapse;}
+  table.rt th{padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);text-align:left;border-bottom:1px solid var(--border);font-weight:400;background:var(--surface3);}
+  table.rt td{padding:12px 18px;font-size:13px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;}
+  table.rt tr:last-child td{border-bottom:none;}
+  table.rt tr:hover td{background:rgba(255,255,255,0.02);}
+  table.rt td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold);white-space:nowrap;}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 9px;border-radius:100px;white-space:nowrap;}
+  .p-g{background:var(--gold-bg);border:1px solid var(--gold-border);color:var(--gold);}
+  .p-e{background:var(--emerald-bg);border:1px solid var(--emerald-border);color:var(--emerald);}
+  .p-s{background:var(--sky-bg);border:1px solid var(--sky-border);color:var(--sky);}
+  .p-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+
+  /* SCEN */
+  .scen-list{display:flex;flex-direction:column;gap:12px;margin-bottom:14px;}
+  .scen-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;}
+  .si-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:6px;padding:4px 8px;flex-shrink:0;margin-top:2px;}
+  .scen-item p{font-size:14px;color:var(--text-dim);}
+  .scen-item p strong{color:var(--white);}
+
+  .outcome{background:linear-gradient(135deg,var(--gold-bg) 0%,var(--surface) 50%,var(--emerald-bg) 100%);border:1px solid var(--gold-border);border-radius:16px;padding:32px;margin-top:48px;}
+  .outcome h3{font-size:20px;font-weight:700;color:var(--gold);margin-bottom:18px;}
+  .outcome ul{display:flex;flex-direction:column;gap:9px;list-style:none;}
+  .outcome ul li{font-size:14px;color:var(--text-dim);padding-left:22px;position:relative;}
+  .outcome ul li::before{content:'✓';position:absolute;left:0;color:var(--gold);font-family:'JetBrains Mono',monospace;}
+  .outcome ul li.de::before{color:var(--emerald);}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Week 6.5</div>
+    <div class="tb-right">
+      <span class="tb-badge tb-wk">Week 6.5</span>
+      <span class="tb-badge tb-d">Day 8</span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="day-label">Week 6.5 · Day 8 — Final Project</div>
+    <h1>Monitoring <span>Project</span></h1>
+    <p class="hero-desc">This is the capstone of the monitoring track. You build a complete health checklist from scratch, run a full monitoring drill end to end, and handle a simulated incident independently — using every skill from Days 1 through 7.</p>
+    <div class="tags">
+      <span class="tag tag-g">Health Checklist</span>
+      <span class="tag tag-e">Full Drill</span>
+      <span class="tag">Independent Handling</span>
+      <span class="tag">Capstone</span>
+    </div>
+  </div>
+
+  <!-- ANALOGY -->
+  <div class="sec"><span class="sn">01</span> The Simple Idea First</div>
+
+  <div class="analogy">
+    <div class="al">Real-life Analogy</div>
+    <p>
+      Think of a pilot's final check before solo flight. They have trained on every individual instrument — altimeter, fuel gauge, flaps, throttle. The solo flight is not about learning anything new. It is about proving you can <strong>use all of them together, in the right order, without anyone telling you what to do next.</strong><br><br>
+      <strong>Today is your solo flight.</strong> You have learned system metrics, logs, alerts, app monitoring, and correlation. The monitoring project puts all of that into one drill — from opening your dashboard in the morning, through detecting an incident, to writing the final RCA. Independent, start to finish.
+    </p>
+  </div>
+
+  <!-- WHAT YOU ARE BUILDING -->
+  <div class="card">
+    <h3>What you are building today</h3>
+    <p>By the end of today you will have produced three things that you keep and use permanently:</p>
+    <p><strong>1. A Personal Health Checklist</strong> — a structured list of every check you run every morning when you arrive, in the correct order, with thresholds you have memorised.</p>
+    <p><strong>2. A Master Monitoring Script</strong> — one script that runs every check automatically and produces a full morning report. You schedule it so it runs before you arrive.</p>
+    <p><strong>3. A Full Incident RCA</strong> — a complete, correlated, evidence-based root cause analysis from a simulated incident — written as a professional Jira post-incident report.</p>
+  </div>
+
+  <!-- THE HEALTH CHECKLIST -->
+  <div class="sec"><span class="sn">02</span> Part 1 — The L2 Health Checklist</div>
+
+  <div class="card">
+    <h3>What is a health checklist and why does it matter?</h3>
+    <p>A health checklist is a <strong>fixed, ordered set of checks you run every single morning before support begins</strong>. It removes guesswork and ensures nothing is missed. The order matters — you check the most impactful things first. The thresholds are memorised — you do not consult documentation during an S1.</p>
+    <p>Pilots use checklists. Surgeons use checklists. Every safety-critical profession uses them. L2 engineers should too. Once your checklist is a habit, you will catch problems every week before any client reports them.</p>
+  </div>
+
+  <!-- SECTION 1: SYSTEM CHECKS -->
+  <div class="phase-banner pb-gold">
+    <div class="pb-num">01</div>
+    <div>
+      <div class="pb-title">System Resource Checks</div>
+      <div class="pb-desc">First 2 minutes of every shift — before checking emails or tickets</div>
+    </div>
+  </div>
+
+  <div class="checklist-block">
+    <div class="cb-header">
+      <h3>System Resources — Run in This Order</h3>
+      <span class="cb-badge cb-gold">Phase 1 of 3</span>
+    </div>
+    <div class="cb-items">
+      <div class="cb-item">
+        <div class="cb-check cc-g">1</div>
+        <div>
+          <div class="ci-label cl-g">Disk Space — Check First</div>
+          <p>Run <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);">df -h</code> on all servers. <strong>Below 80% = OK. 80–90% = Warning. Above 90% = Critical — act before anything else.</strong> Disk full stops everything. It is always the first check.</p>
+        </div>
+      </div>
+      <div class="cb-item">
+        <div class="cb-check cc-g">2</div>
+        <div>
+          <div class="ci-label cl-g">Memory & Swap</div>
+          <p>Run <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);">free -h</code>. <strong>RAM free above 30% = OK. Swap above 100MB = Warning.</strong> High swap means RAM is exhausted — everything slows down.</p>
+        </div>
+      </div>
+      <div class="cb-item">
+        <div class="cb-check cc-g">3</div>
+        <div>
+          <div class="ci-label cl-g">CPU & Load Average</div>
+          <p>Run <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);">ps aux --sort=-%cpu | head -5</code> and <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);">cat /proc/loadavg</code>. <strong>CPU below 70% = OK. Above 90% = find the process immediately.</strong></p>
+        </div>
+      </div>
+      <div class="cb-item">
+        <div class="cb-check cc-g">4</div>
+        <div>
+          <div class="ci-label cl-g">Network Connectivity</div>
+          <p>Run <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);">ping -c 3 8.8.8.8</code>. <strong>Under 20ms and 0% loss = OK. Any packet loss = investigate.</strong> Failures here explain external timeouts.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: APPLICATION CHECKS -->
+  <div class="phase-banner pb-em">
+    <div class="pb-num">02</div>
+    <div>
+      <div class="pb-title">Application Health Checks</div>
+      <div class="pb-desc">Minutes 3–5 — check the software layer after confirming server health</div>
+    </div>
+  </div>
+
+  <div class="checklist-block">
+    <div class="cb-header">
+      <h3>Application Layer — API & Log Checks</h3>
+      <span class="cb-badge cb-em">Phase 2 of 3</span>
+    </div>
+    <div class="cb-items">
+      <div class="cb-item">
+        <div class="cb-check cc-e">5</div>
+        <div>
+          <div class="ci-label cl-e">Log Error Count</div>
+          <p>Run <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--emerald);">grep -c "ERROR" ~/payment-service.log</code>. <strong>0 errors = OK. 1–5 = Warning, investigate. Above 5 = escalate.</strong> Compare to yesterday's baseline.</p>
+        </div>
+      </div>
+      <div class="cb-item">
+        <div class="cb-check cc-e">6</div>
+        <div>
+          <div class="ci-label cl-e">Error Type Breakdown</div>
+          <p>If errors found: run <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--emerald);">grep "ERROR" log | awk '{print $4}' | sort | uniq -c</code>. <strong>Identify the most common error type.</strong> DB timeout = DB issue. Socket timeout = external issue.</p>
+        </div>
+      </div>
+      <div class="cb-item">
+        <div class="cb-check cc-e">7</div>
+        <div>
+          <div class="ci-label cl-e">PENDING Transaction Check</div>
+          <p>Search for transactions stuck PENDING for more than 30 minutes. <strong>Any found = investigate the callback chain.</strong> Money may have moved but the system does not know.</p>
+        </div>
+      </div>
+      <div class="cb-item">
+        <div class="cb-check cc-e">8</div>
+        <div>
+          <div class="ci-label cl-e">Queue Depth</div>
+          <p>Check MQ queue depth. <strong>At or near 0 = OK. Growing steadily = consumer may be down.</strong> A growing queue with no processing is always an incident in the making.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: ALERT & INCIDENT CHECKS -->
+  <div class="phase-banner pb-sky">
+    <div class="pb-num">03</div>
+    <div>
+      <div class="pb-title">Alerts & Incident Review</div>
+      <div class="pb-desc">Minutes 5–10 — check what happened overnight and what needs follow-up</div>
+    </div>
+  </div>
+
+  <div class="checklist-block">
+    <div class="cb-header">
+      <h3>Alerts & Overnight Activity</h3>
+      <span class="cb-badge cb-sky">Phase 3 of 3</span>
+    </div>
+    <div class="cb-items">
+      <div class="cb-item">
+        <div class="cb-check cc-s">9</div>
+        <div>
+          <div class="ci-label cl-s">Check Alert Log</div>
+          <p>Open <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--sky);">cat ~/alert-log.txt</code>. <strong>Any CRITICAL alerts fired overnight?</strong> If yes — investigate and update the open Jira ticket before clients call.</p>
+        </div>
+      </div>
+      <div class="cb-item">
+        <div class="cb-check cc-s">10</div>
+        <div>
+          <div class="ci-label cl-s">Dead Letter Queue</div>
+          <p>Check if any messages are in the dead letter queue. <strong>Any messages there = something failed all retries overnight.</strong> Requires manual intervention — reprocess or escalate.</p>
+        </div>
+      </div>
+      <div class="cb-item">
+        <div class="cb-check cc-s">11</div>
+        <div>
+          <div class="ci-label cl-s">Open Jira Tickets</div>
+          <p>Review all P1/P2 tickets opened in the last 24 hours. <strong>Are any still open with no update?</strong> Every open P1 needs an update every 30 minutes during business hours.</p>
+        </div>
+      </div>
+      <div class="cb-item">
+        <div class="cb-check cc-s">12</div>
+        <div>
+          <div class="ci-label cl-s">Morning Handover Report</div>
+          <p>Write a 3-line handover in the team Slack: system status, any overnight alerts, and one action for the morning. <strong>30 seconds to write, saves 10 minutes of "what happened last night" questions.</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MASTER SCRIPT -->
+  <div class="sec"><span class="sn">03</span> Part 2 — The Master Monitoring Script</div>
+
+  <div class="lab">
+    <div class="lab-head">
+      <h3>🔬 Lab: Build the Master Monitoring Script</h3>
+      <span class="lab-badge">Full Drill · Kali Linux</span>
+    </div>
+    <div class="lab-body">
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">01</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Build the complete master script — all 12 checks in one run</div>
+          <div class="ls-desc">This is the script that runs every morning at 07:45 — 15 minutes before your shift starts. By the time you sit down, the report is waiting for you.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">l2-morning-drill.sh — full master script</span></div><div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># ============================================</span><br>
+<span class="cm"># l2-morning-drill.sh</span><br>
+<span class="cm"># L2 Daily Health Check — All 12 checks</span><br>
+<span class="cm"># Runs every morning at 07:45 via crontab</span><br>
+<span class="cm"># chmod +x l2-morning-drill.sh && ./l2-morning-drill.sh</span><br>
+<span class="cm"># ============================================</span><br>
+<br>
+<span class="var">REPORT</span>=<span class="str">"$HOME/morning-report-$(date +%Y-%m-%d).txt"</span><br>
+<span class="var">LOG</span>=<span class="str">"$HOME/payment-service.log"</span><br>
+<span class="var">ISSUES</span>=<span class="op">0</span><br>
+<br>
+<span class="fn">plog</span>() { <span class="fn">echo</span> <span class="str">"$1"</span> | <span class="fn">tee</span> -a <span class="str">"$REPORT"</span>; }<br>
+<br>
+<span class="fn">plog</span> <span class="str">"============================================"</span><br>
+<span class="fn">plog</span> <span class="str">" L2 Morning Health Check — $(date)"</span><br>
+<span class="fn">plog</span> <span class="str">"============================================"</span><br>
+<span class="fn">plog</span> <span class="str">""</span><br>
+<span class="fn">plog</span> <span class="str">"=== PHASE 1: SYSTEM RESOURCES ==="</span><br>
+<br>
+<span class="cm"># Check 1 — Disk</span><br>
+<span class="var">DISK</span>=<span class="op">$(</span><span class="fn">df</span> / | <span class="fn">awk</span> <span class="str">'NR==2{print $5}'</span> | <span class="fn">tr</span> -d <span class="str">'%'</span><span class="op">)</span><br>
+[ <span class="str">"$DISK"</span> -ge <span class="op">90</span> ] &amp;&amp; { <span class="fn">plog</span> <span class="str">"[CRITICAL] Disk at $DISK%"</span>; <span class="var">ISSUES</span>+=<span class="op">1</span>; } \<br>
+|| { [ <span class="str">"$DISK"</span> -ge <span class="op">80</span> ] &amp;&amp; { <span class="fn">plog</span> <span class="str">"[WARNING ] Disk at $DISK%"</span>; <span class="var">ISSUES</span>+=<span class="op">1</span>; } \<br>
+|| <span class="fn">plog</span> <span class="str">"[  OK   ] Disk at $DISK%"; }</span><br>
+<br>
+<span class="cm"># Check 2 — Memory</span><br>
+<span class="var">SWAP</span>=<span class="op">$(</span><span class="fn">free</span> -m | <span class="fn">awk</span> <span class="str">'NR==3{print $3}'</span><span class="op">)</span><br>
+<span class="var">MEMF</span>=<span class="op">$(</span><span class="fn">free</span> -h | <span class="fn">awk</span> <span class="str">'NR==2{print $7}'</span><span class="op">)</span><br>
+[ <span class="str">"$SWAP"</span> -gt <span class="op">100</span> ] &amp;&amp; { <span class="fn">plog</span> <span class="str">"[WARNING ] Swap ${SWAP}MB — RAM may be low. Free: $MEMF"</span>; <span class="var">ISSUES</span>+=<span class="op">1</span>; } \<br>
+|| <span class="fn">plog</span> <span class="str">"[  OK   ] RAM free: $MEMF | Swap: ${SWAP}MB"</span><br>
+<br>
+<span class="cm"># Check 3 — CPU Load</span><br>
+<span class="var">LOAD</span>=<span class="op">$(</span><span class="fn">cat</span> /proc/loadavg | <span class="fn">awk</span> <span class="str">'{print $1}'</span><span class="op">)</span><br>
+<span class="var">TOP_PROC</span>=<span class="op">$(</span><span class="fn">ps</span> aux --sort=-%cpu | <span class="fn">awk</span> <span class="str">'NR==2{print $11, $3"%"}'</span><span class="op">)</span><br>
+<span class="fn">plog</span> <span class="str">"[  OK   ] Load avg: $LOAD | Top: $TOP_PROC"</span><br>
+<br>
+<span class="cm"># Check 4 — Network</span><br>
+<span class="fn">ping</span> -c 2 -W 2 8.8.8.8 &gt;/dev/null 2&gt;&amp;1 \<br>
+&amp;&amp; <span class="fn">plog</span> <span class="str">"[  OK   ] Network: external connectivity confirmed"</span> \<br>
+|| { <span class="fn">plog</span> <span class="str">"[WARNING ] Network: cannot reach 8.8.8.8"</span>; <span class="var">ISSUES</span>+=<span class="op">1</span>; }<br>
+<br>
+<span class="fn">plog</span> <span class="str">""</span><br>
+<span class="fn">plog</span> <span class="str">"=== PHASE 2: APPLICATION HEALTH ==="</span><br>
+<br>
+<span class="cm"># Check 5 — Log errors</span><br>
+<span class="var">ERRS</span>=<span class="op">$(</span><span class="fn">grep</span> -c <span class="str">"ERROR"</span> <span class="str">"$LOG"</span> 2&gt;/dev/null || <span class="fn">echo</span> <span class="str">"0"</span><span class="op">)</span><br>
+[ <span class="str">"$ERRS"</span> -gt <span class="op">5</span> ] &amp;&amp; { <span class="fn">plog</span> <span class="str">"[CRITICAL] $ERRS errors in log"</span>; <span class="var">ISSUES</span>+=<span class="op">1</span>; } \<br>
+|| { [ <span class="str">"$ERRS"</span> -gt <span class="op">0</span> ] &amp;&amp; { <span class="fn">plog</span> <span class="str">"[WARNING ] $ERRS errors in log"</span>; <span class="var">ISSUES</span>+=<span class="op">1</span>; } \<br>
+|| <span class="fn">plog</span> <span class="str">"[  OK   ] Log errors: 0"; }</span><br>
+<br>
+<span class="cm"># Check 6 — Error types</span><br>
+[ <span class="str">"$ERRS"</span> -gt <span class="op">0</span> ] &amp;&amp; {<br>
+&nbsp;&nbsp;<span class="fn">plog</span> <span class="str">"  Error breakdown:"</span><br>
+&nbsp;&nbsp;<span class="fn">grep</span> <span class="str">"ERROR"</span> <span class="str">"$LOG"</span> 2&gt;/dev/null | <span class="fn">awk</span> <span class="str">'{print $4}'</span> | <span class="fn">sort</span> | <span class="fn">uniq</span> -c | \<br>
+&nbsp;&nbsp;<span class="fn">while</span> <span class="kw">read</span> <span class="var">line</span>; <span class="kw">do</span> <span class="fn">plog</span> <span class="str">"    $line"</span>; <span class="kw">done</span><br>
+}<br>
+<br>
+<span class="cm"># Check 7 — PENDING transactions</span><br>
+<span class="var">PEND</span>=<span class="op">$(</span><span class="fn">grep</span> -c <span class="str">"PENDING"</span> <span class="str">"$LOG"</span> 2&gt;/dev/null || <span class="fn">echo</span> <span class="str">"0"</span><span class="op">)</span><br>
+[ <span class="str">"$PEND"</span> -gt <span class="op">0</span> ] &amp;&amp; { <span class="fn">plog</span> <span class="str">"[WARNING ] $PEND PENDING entries in log"</span>; <span class="var">ISSUES</span>+=<span class="op">1</span>; } \<br>
+|| <span class="fn">plog</span> <span class="str">"[  OK   ] No stuck PENDING entries"</span><br>
+<br>
+<span class="fn">plog</span> <span class="str">""</span><br>
+<span class="fn">plog</span> <span class="str">"=== PHASE 3: ALERTS & OVERNIGHT ==="</span><br>
+<br>
+<span class="cm"># Check 8 — Overnight alerts</span><br>
+<span class="var">CRIT_ALERTS</span>=<span class="op">$(</span><span class="fn">grep</span> -c <span class="str">"CRITICAL"</span> ~/alert-log.txt 2&gt;/dev/null || <span class="fn">echo</span> <span class="str">"0"</span><span class="op">)</span><br>
+[ <span class="str">"$CRIT_ALERTS"</span> -gt <span class="op">0</span> ] &amp;&amp; { <span class="fn">plog</span> <span class="str">"[CRITICAL] $CRIT_ALERTS critical alerts fired overnight!"</span>; <span class="var">ISSUES</span>+=<span class="op">1</span>; } \<br>
+|| <span class="fn">plog</span> <span class="str">"[  OK   ] No critical alerts overnight"</span><br>
+<br>
+<span class="cm"># Summary</span><br>
+<span class="fn">plog</span> <span class="str">""</span><br>
+<span class="fn">plog</span> <span class="str">"============================================"</span><br>
+<span class="fn">plog</span> <span class="str">" MORNING SUMMARY: $ISSUES issue(s) found"</span><br>
+[ <span class="str">"$ISSUES"</span> -eq <span class="op">0</span> ] &amp;&amp; <span class="fn">plog</span> <span class="str">" Status: ALL SYSTEMS HEALTHY"</span> \<br>
+|| <span class="fn">plog</span> <span class="str">" Status: ACTION REQUIRED — review above"</span><br>
+<span class="fn">plog</span> <span class="str">" Report: $REPORT"</span><br>
+<span class="fn">plog</span> <span class="str">"============================================"</span>
+          </div></div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — save, run, and schedule</span></div><div class="cbox-code">
+<span class="fn">chmod</span> +x ~/l2-morning-drill.sh<br>
+<span class="fn">./</span>l2-morning-drill.sh<br>
+<br>
+<span class="cm"># Schedule — runs at 07:45 every weekday</span><br>
+(<span class="fn">crontab</span> -l 2&gt;/dev/null; <span class="fn">echo</span> <span class="str">"45 7 * * 1-5 $HOME/l2-morning-drill.sh"</span>) | <span class="fn">crontab</span> -<br>
+<span class="fn">crontab</span> -l
+          </div></div>
+          <span class="ls-out">→ Master script runs all 12 checks, prints CRITICAL/WARNING/OK for each, counts total issues, and saves a dated report. Scheduled to run at 07:45 every weekday.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">02</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Run the full monitoring drill — simulate an incident</div>
+          <div class="ls-desc">Create a simulated incident log and metrics file, then work through the full drill independently using the health checklist and correlation skills.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — create the drill scenario</span></div><div class="cbox-code">
+<span class="cm"># Create the drill incident log</span><br>
+<span class="fn">cat</span> &gt; ~/payment-service.log &lt;&lt; <span class="str">'EOF'</span><br>
+[08:00:00] [INFO ] Service started. TXN rate normal at 140/sec.<br>
+[08:45:10] [WARN ] DB connection pool at 79%<br>
+[08:45:25] [WARN ] DB connection pool at 91%<br>
+[08:45:30] [WARN ] DB connection pool at 97%<br>
+[08:45:35] [ERROR] DB_CONNECTION_TIMEOUT TXN-901 FAILED<br>
+[08:45:35] [ERROR] DB_CONNECTION_TIMEOUT TXN-902 FAILED<br>
+[08:45:36] [ERROR] DB_CONNECTION_TIMEOUT TXN-903 FAILED<br>
+[08:45:37] [ERROR] DB_CONNECTION_REFUSED port 5432 not responding<br>
+[08:45:37] [ERROR] TXN-904 FAILED DB process appears down<br>
+[08:46:00] [ERROR] MAX_RETRY_EXCEEDED TXN-901 moved to dead letter<br>
+[09:00:00] [INFO ] DB connection restored. Pool at 10%.<br>
+[09:00:02] [INFO ] TXN-905 processed successfully. Recovery confirmed.<br>
+EOF<br>
+<br>
+<span class="cm"># Run the master drill script</span><br>
+<span class="fn">./</span>l2-morning-drill.sh
+          </div></div>
+          <span class="ls-out">→ Script detects errors in the log. Report shows CRITICAL for log errors and WARNING for PENDING. Issues found: 2. This is your trigger to investigate.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">03</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Independently investigate — apply correlation</div>
+          <div class="ls-desc">Using the skills from Days 1–7, trace the incident without guidance. Find: first warning, first error, affected transactions, root cause, recovery time.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">terminal — independent investigation</span></div><div class="cbox-code">
+<span class="cm"># 1. How many errors and what type?</span><br>
+<span class="fn">grep</span> <span class="str">"ERROR"</span> ~/payment-service.log | <span class="fn">awk</span> <span class="str">'{print $4}'</span> | <span class="fn">sort</span> | <span class="fn">uniq</span> -c<br>
+<br>
+<span class="cm"># 2. What warned us before the crash?</span><br>
+<span class="fn">grep</span> -B 3 -m 1 <span class="str">"ERROR"</span> ~/payment-service.log<br>
+<br>
+<span class="cm"># 3. Which transactions were affected?</span><br>
+<span class="fn">grep</span> <span class="str">"FAILED\|dead letter"</span> ~/payment-service.log | <span class="fn">grep</span> -o <span class="str">"TXN-[0-9]*"</span><br>
+<br>
+<span class="cm"># 4. When did it start and when did it recover?</span><br>
+<span class="fn">grep</span> -m 1 <span class="str">"ERROR"</span> ~/payment-service.log | <span class="fn">awk</span> <span class="str">'{print "First error:", $1, $2}'</span><br>
+<span class="fn">grep</span> <span class="str">"restored"</span> ~/payment-service.log | <span class="fn">awk</span> <span class="str">'{print "Recovery  :", $1, $2}'</span>
+          </div></div>
+          <span class="ls-out">→ DB_CONNECTION_TIMEOUT x3 + DB_CONNECTION_REFUSED x1. Build-up: pool 79→91→97% in 20 seconds. First error 08:45:35. Recovery 09:00:00. TXN-901 in dead letter.</span>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="ls-left"><div class="ls-num">04</div></div>
+        <div class="ls-content">
+          <div class="ls-title">Write the complete post-incident RCA</div>
+          <div class="ls-desc">Write the full Jira post-incident report — timeline, root cause, impact, actions, next steps. This is the final deliverable of the monitoring project.</div>
+          <div class="cbox"><div class="cbox-bar"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">Final RCA — Post-Incident Report</span></div><div class="cbox-code">
+<span class="cm">POST-INCIDENT REPORT</span><br>
+<span class="cm">Engineer    : Urwah Shafiq (L2)</span><br>
+<span class="cm">Date        : $(date)</span><br>
+<span class="cm">Severity    : P1 — Payment service down</span><br>
+<span class="cm">======================================</span><br>
+<br>
+<span class="cm">TIMELINE:</span><br>
+<span class="cm">  08:00:00 — Service running normally, 140 TXN/sec</span><br>
+<span class="cm">  08:45:10 — WARN: DB pool 79% (first warning sign)</span><br>
+<span class="cm">  08:45:30 — WARN: DB pool 97% (critical threshold)</span><br>
+<span class="cm">  08:45:35 — ERROR: DB_CONNECTION_TIMEOUT — pool exhausted</span><br>
+<span class="cm">  08:45:37 — ERROR: DB_CONNECTION_REFUSED — DB process down</span><br>
+<span class="cm">  08:46:00 — TXN-901 moved to dead letter queue</span><br>
+<span class="cm">  09:00:00 — DB restored. Recovery confirmed in logs.</span><br>
+<br>
+<span class="cm">ROOT CAUSE:</span><br>
+<span class="cm">  DB connection pool exhausted at 08:45:35.</span><br>
+<span class="cm">  Pool filled from 79% to 97% in 20 seconds —</span><br>
+<span class="cm">  suspected connection leak in application code.</span><br>
+<span class="cm">  DB process subsequently crashed at 08:45:37.</span><br>
+<br>
+<span class="cm">IMPACT:</span><br>
+<span class="cm">  Transactions failed: TXN-901, 902, 903, 904</span><br>
+<span class="cm">  Dead letter: TXN-901 (needs reprocessing)</span><br>
+<span class="cm">  Duration: 08:45:35 — 09:00:00 (14 min 25 sec)</span><br>
+<br>
+<span class="cm">ACTIONS TAKEN:</span><br>
+<span class="cm">  DBA restarted DB service at 08:55</span><br>
+<span class="cm">  DB recovered at 09:00</span><br>
+<span class="cm">  TXN-901 reprocessed from dead letter</span><br>
+<br>
+<span class="cm">NEXT STEPS:</span><br>
+<span class="cm">  L3 to investigate connection leak in payment service</span><br>
+<span class="cm">  DBA to increase connection pool limit as short-term fix</span><br>
+<span class="cm">  Add pool % alert at 80% threshold for earlier warning</span>
+          </div></div>
+          <span class="ls-out-g">→ Complete professional post-incident report. Every event has a timestamp. Root cause is evidence-based. Actions and next steps are clear. ✅</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- WHAT YOU NOW OWN -->
+  <div class="sec"><span class="sn">04</span> What You Now Own Permanently</div>
+
+  <div class="ref-table">
+    <div class="rt-head">🏆 Your Monitoring Toolkit — Built Across Week 6.5</div>
+    <table class="rt">
+      <thead><tr><th>Deliverable</th><th>What it does</th><th>When you use it</th></tr></thead>
+      <tbody>
+        <tr><td>l2-morning-drill.sh</td><td>12-check morning script covering all resources, logs, and alerts</td><td>Every morning at 07:45 — auto-runs, report waiting when you arrive</td></tr>
+        <tr><td>alert-evaluator.sh</td><td>Evaluates real metrics against alert rules every 5 minutes</td><td>Continuous — runs via crontab, alerts you when thresholds cross</td></tr>
+        <tr><td>app-health-check.sh</td><td>Reads API log, reports latency, error rate, throughput per endpoint</td><td>When a client reports API issues — run for instant health picture</td></tr>
+        <tr><td>resource-check.sh</td><td>All 4 resources checked with OK/WARNING/CRITICAL verdicts</td><td>During any incident — first thing you run to rule out resource cause</td></tr>
+        <tr><td>Health Checklist (12 items)</td><td>Structured morning check across 3 phases — system, app, alerts</td><td>Every shift start — 10 minutes, nothing missed</td></tr>
+        <tr><td>Correlation Method (5 steps)</td><td>Define window → metrics → logs → align → write RCA</td><td>Every incident investigation — consistent, defensible root cause</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn">05</span> Real L2 Scenarios</div>
+  <div class="scen-list">
+    <div class="scen-item"><div class="si-id">01</div>
+      <p>You arrive at work. The morning report is already in ~/morning-report-today.txt. <strong>It shows: 1 issue — disk at 83%.</strong> Before your first coffee, you know exactly what to do. You archive old logs, disk drops to 66%, and you document it in Jira. Day started proactively, not reactively.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">02</div>
+      <p>Alert fires at 09:00. You run the health checklist in sequence — disk OK, memory OK, CPU at 91%. You check ps aux — Java payment service at 89% CPU. You check logs — DB_CONNECTION_TIMEOUT errors 30 seconds before CPU spike. <strong>You diagnose DB failure, not CPU overload, in under 2 minutes.</strong> Correct diagnosis, correct escalation.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">03</div>
+      <p>Your lead is on leave. A P1 fires at 14:00. You handle it independently — <strong>health checklist, correlation, RCA, bridge communication, Jira documentation, client notification.</strong> When your lead returns they read the post-incident report and say "this is exactly what I would have done." That is what independent handling looks like.</p>
+    </div>
+    <div class="scen-item"><div class="si-id">04</div>
+      <p>Bi-weekly review meeting. Manager asks about the 09:00 incident last Tuesday. You open the morning report from that day and the post-incident RCA you wrote. <strong>Full timeline, root cause, impact, actions — all documented with timestamps.</strong> The meeting takes 5 minutes instead of 30. The records speak for themselves.</p>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Week 6.5 · Day 8 — Monitoring Project Outcomes</h3>
+    <ul>
+      <li>Build and memorise a 12-item health checklist covering system resources, application health, and overnight alerts — in the correct phase order</li>
+      <li>Understand why the checklist order matters — disk first, then memory, then CPU, then application, then alerts</li>
+      <li>Build the master l2-morning-drill.sh script that runs all 12 checks, classifies each as OK/WARNING/CRITICAL, and saves a dated report</li>
+      <li>Schedule the master script to run at 07:45 every weekday so the report is ready before your shift starts</li>
+      <li class="de">Complete the full monitoring drill — detect an incident from the report, investigate using correlation, identify root cause from log timestamps and metric sequence</li>
+      <li class="de">Write a complete professional post-incident report — timeline with timestamps, evidence-based root cause, impact count, actions taken, and next steps</li>
+      <li class="de">Demonstrate independent handling — running the full investigation and RCA without guidance, start to finish</li>
+      <li class="de">Own your complete monitoring toolkit: morning drill script, alert evaluator, app health checker, resource checker, health checklist, and correlation method</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>
