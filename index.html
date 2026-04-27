@@ -104,6 +104,11 @@
 
   .footer{text-align:center;padding:24px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);border-top:1px solid var(--border);}
 
+  /* Extras section - center header and single card only */
+  .extras-section .week-header{display:flex;align-items:center;justify-content:center;gap:14px;}
+  .extras-section .day-grid{display:flex;justify-content:center;gap:12px;padding:8px 0 18px;}
+  .extras-section .day-card{max-width:420px;width:100%;}
+
   @media(max-width:600px){.main{padding:24px 16px 60px;}.header{padding:32px 20px 24px;}.header-stats{gap:14px;}}
 </style>
 </head>
@@ -278,7 +283,7 @@
   </div>
 
   <!-- WEEK 5 -->
-  <div class="week-section w5">
+  <div class="week-section w5 extras-section">
     <div class="week-header">
       <span class="week-pill">Week 5</span>
       <span class="week-line"></span>
@@ -389,6 +394,23 @@
   </div>
 
 </div>
+
+  <!-- EXTRA TRAINING -->
+  <div class="week-section w5">
+    <div class="week-header">
+      <span class="week-pill">Extras</span>
+      <span class="week-line"></span>
+      <span class="week-title">Additional Resources</span>
+    </div>
+    <div class="day-grid">
+      <a class="day-card" href="extra-training-material.html">
+        <div class="dc-top"><span class="dc-day">Reference</span></div>
+        <div class="dc-title">Troubleshooting Scenarios</div>
+        <div class="dc-desc">Collection of real-world troubleshooting scenarios and guided RCA exercises</div>
+        <span class="dc-outcome">Reference: Troubleshooting Scenarios</span>
+      </a>
+    </div>
+  </div>
 
 <div class="footer">
   L2 Training Journal · PaySysLabs · Urwah Shafiq Siddiqui · This will be updated with more content over time, so check back for new additions!

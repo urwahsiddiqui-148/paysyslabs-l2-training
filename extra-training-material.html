@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Extra Learning — Troubleshooting Scenarios</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#07080d;
+    --surface:#0d1018;
+    --surface2:#121620;
+    --surface3:#171c28;
+    --border:#1e2535;
+    --text:#a8b8cc;
+    --text-dim:#3e5268;
+    --text-faint:#162035;
+    --white:#eaf2fc;
+
+    --cyan:#22d3ee;
+    --cyan-bg:#001820;
+    --cyan-border:#003848;
+
+    --rose:#f43f5e;
+    --rose-bg:#180008;
+    --rose-border:#3c0018;
+
+    --amber:#f59e0b;
+    --amber-bg:#180c00;
+    --amber-border:#3c2800;
+
+    --green:#22d46a;
+    --green-bg:#001810;
+    --green-border:#003820;
+
+    --violet:#a855f7;
+    --violet-bg:#0e0818;
+    --violet-border:#281840;
+
+    --blue:#3b82f6;
+    --blue-bg:#020e20;
+    --blue-border:#082240;
+
+    --orange:#f97316;
+    --orange-bg:#180800;
+    --orange-border:#3c2000;
+
+    --teal:#14b8a6;
+    --teal-bg:#001814;
+    --teal-border:#003830;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;line-height:1.7;padding:48px 24px 100px;}
+  .page{max-width:960px;margin:0 auto;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:52px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .topbar-left{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;}
+  .tb-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 16px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;background:var(--cyan-bg);border:1px solid var(--cyan-border);color:var(--cyan);}
+
+  .hero{margin-bottom:52px;}
+  .day-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--cyan);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,5.5vw,54px);font-weight:800;line-height:1.05;color:var(--white);margin-bottom:14px;}
+  .hero h1 span{color:var(--cyan);}
+  .hero-desc{color:var(--text-dim);font-size:15px;max-width:560px;}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;}
+  .tag{padding:5px 14px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+
+  .sec{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faint);margin-bottom:18px;margin-top:44px;display:flex;align-items:center;gap:12px;}
+  .sec .sn{color:var(--cyan);font-size:12px;}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .intro-card{background:var(--cyan-bg);border:1px solid var(--cyan-border);border-left:4px solid var(--cyan);border-radius:12px;padding:22px 28px;margin-bottom:14px;}
+  .intro-card .al{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);margin-bottom:8px;}
+  .intro-card p{color:var(--text);font-size:14px;}
+  .intro-card strong{color:var(--white);}
+
+  /* SCENARIO CARDS */
+  .scenarios-grid{display:flex;flex-direction:column;gap:16px;margin-bottom:14px;}
+
+  .sc-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+  .sc-head{padding:16px 22px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .sc-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .sc-problem{font-size:17px;font-weight:700;color:var(--white);flex:1;}
+  .sc-tag{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 10px;border-radius:100px;white-space:nowrap;}
+
+  .sc-body{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;}
+  .sc-col{padding:18px 20px;border-right:1px solid var(--border);}
+  .sc-col:last-child{border-right:none;}
+  .sc-col-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+  .sc-col p{font-size:13px;color:var(--text-dim);}
+  .sc-col p strong{color:var(--white);}
+  .sc-col ul{list-style:none;display:flex;flex-direction:column;gap:5px;}
+  .sc-col ul li{font-size:13px;color:var(--text-dim);padding-left:16px;position:relative;}
+  .sc-col ul li::before{content:'→';position:absolute;left:0;font-family:'JetBrains Mono',monospace;font-size:10px;}
+
+  /* colour palette per scenario */
+  /* 1 API Down - rose */
+  .s1 .sc-num{background:var(--rose-bg);border:2px solid var(--rose-border);color:var(--rose);}
+  .s1 .sc-tag{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .s1 .sc-col-label{color:var(--rose);}
+  .s1 .sc-col ul li::before{color:var(--rose);}
+  /* 2 Disk Full - amber */
+  .s2 .sc-num{background:var(--amber-bg);border:2px solid var(--amber-border);color:var(--amber);}
+  .s2 .sc-tag{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .s2 .sc-col-label{color:var(--amber);}
+  .s2 .sc-col ul li::before{color:var(--amber);}
+  /* 3 High CPU - orange */
+  .s3 .sc-num{background:var(--orange-bg);border:2px solid var(--orange-border);color:var(--orange);}
+  .s3 .sc-tag{background:var(--orange-bg);border:1px solid var(--orange-border);color:var(--orange);}
+  .s3 .sc-col-label{color:var(--orange);}
+  .s3 .sc-col ul li::before{color:var(--orange);}
+  /* 4 Queue Backlog - violet */
+  .s4 .sc-num{background:var(--violet-bg);border:2px solid var(--violet-border);color:var(--violet);}
+  .s4 .sc-tag{background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);}
+  .s4 .sc-col-label{color:var(--violet);}
+  .s4 .sc-col ul li::before{color:var(--violet);}
+  /* 5 Missing TXN - blue */
+  .s5 .sc-num{background:var(--blue-bg);border:2px solid var(--blue-border);color:var(--blue);}
+  .s5 .sc-tag{background:var(--blue-bg);border:1px solid var(--blue-border);color:var(--blue);}
+  .s5 .sc-col-label{color:var(--blue);}
+  .s5 .sc-col ul li::before{color:var(--blue);}
+  /* 6 Timeout - cyan */
+  .s6 .sc-num{background:var(--cyan-bg);border:2px solid var(--cyan-border);color:var(--cyan);}
+  .s6 .sc-tag{background:var(--cyan-bg);border:1px solid var(--cyan-border);color:var(--cyan);}
+  .s6 .sc-col-label{color:var(--cyan);}
+  .s6 .sc-col ul li::before{color:var(--cyan);}
+  /* 7 Cert expired - teal */
+  .s7 .sc-num{background:var(--teal-bg);border:2px solid var(--teal-border);color:var(--teal);}
+  .s7 .sc-tag{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+  .s7 .sc-col-label{color:var(--teal);}
+  .s7 .sc-col ul li::before{color:var(--teal);}
+  /* 8 DB Slow - green */
+  .s8 .sc-num{background:var(--green-bg);border:2px solid var(--green-border);color:var(--green);}
+  .s8 .sc-tag{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .s8 .sc-col-label{color:var(--green);}
+  .s8 .sc-col ul li::before{color:var(--green);}
+
+  /* QUICK REF TABLE */
+  .ref-table{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+  .rt-head{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:15px;font-weight:700;color:var(--white);}
+  table.rt{width:100%;border-collapse:collapse;}
+  table.rt th{padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);text-align:left;border-bottom:1px solid var(--border);font-weight:400;background:var(--surface3);}
+  table.rt td{padding:11px 18px;font-size:13px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle;}
+  table.rt tr:last-child td{border-bottom:none;}
+  table.rt tr:hover td{background:rgba(255,255,255,0.02);}
+  table.rt td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--white);white-space:nowrap;}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 9px;border-radius:100px;white-space:nowrap;}
+  .p-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .p-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .p-o{background:var(--orange-bg);border:1px solid var(--orange-border);color:var(--orange);}
+  .p-v{background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);}
+  .p-b{background:var(--blue-bg);border:1px solid var(--blue-border);color:var(--blue);}
+  .p-c{background:var(--cyan-bg);border:1px solid var(--cyan-border);color:var(--cyan);}
+  .p-t{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+  .p-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+
+  /* NOTE */
+  .note{border-radius:10px;padding:10px 16px;font-size:13px;margin-bottom:12px;}
+  .n-c{background:var(--cyan-bg);border:1px solid var(--cyan-border);color:var(--cyan);}
+  .note strong{color:var(--white);}
+
+  .outcome{background:linear-gradient(135deg,var(--cyan-bg) 0%,var(--surface) 100%);border:1px solid var(--cyan-border);border-radius:16px;padding:32px;margin-top:48px;}
+  .outcome h3{font-size:20px;font-weight:700;color:var(--cyan);margin-bottom:18px;}
+  .outcome ul{display:flex;flex-direction:column;gap:9px;list-style:none;}
+  .outcome ul li{font-size:14px;color:var(--text-dim);padding-left:22px;position:relative;}
+  .outcome ul li::before{content:'✓';position:absolute;left:0;color:var(--cyan);font-family:'JetBrains Mono',monospace;}
+
+  @media(max-width:680px){.sc-body{grid-template-columns:1fr;}.sc-col{border-right:none;border-bottom:1px solid var(--border);}.sc-col:last-child{border-bottom:none;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Extra Learning</div>
+    <span class="tb-badge">Troubleshooting Scenarios</span>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="day-label">Extra Learning · Reference Guide</div>
+    <h1>Troubleshooting <span>Scenarios</span></h1>
+    <p class="hero-desc">Eight real-world problems you will face as an L2 engineer — each one mapped to its symptoms, the action you take, and the exact fix you apply. Memorise this table and you can handle the most common incidents without looking anything up.</p>
+    <div class="tags">
+      <span class="tag">API Down</span>
+      <span class="tag">Disk Full</span>
+      <span class="tag">High CPU</span>
+      <span class="tag">Queue Backlog</span>
+      <span class="tag">Missing TXN</span>
+      <span class="tag">Timeout</span>
+      <span class="tag">Cert Expired</span>
+      <span class="tag">DB Slow</span>
+    </div>
+  </div>
+
+  <!-- INTRO -->
+  <div class="sec"><span class="sn">01</span> How to Use This Reference</div>
+
+  <div class="intro-card">
+    <div class="al">Purpose</div>
+    <p>
+      Every scenario follows the same three-column logic used in real incident handling:<br><br>
+      <strong>Symptoms</strong> — what you or the client observes. This is the entry point.<br>
+      <strong>Action</strong> — what you check or do first to confirm the root cause.<br>
+      <strong>Fix</strong> — the resolution that closes the incident.<br><br>
+      Start with the symptom. Match it to a scenario. Follow the action and fix. That is L2 troubleshooting in its cleanest form.
+    </p>
+  </div>
+
+  <!-- SCENARIOS -->
+  <div class="sec"><span class="sn">02</span> The 8 Troubleshooting Scenarios</div>
+
+  <div class="scenarios-grid">
+
+    <!-- SCENARIO 1: API DOWN -->
+    <div class="sc-card s1">
+      <div class="sc-head">
+        <div class="sc-num">01</div>
+        <div class="sc-problem">API Down</div>
+        <span class="sc-tag">Service Failure</span>
+      </div>
+      <div class="sc-body">
+        <div class="sc-col">
+          <div class="sc-col-label">Symptoms</div>
+          <ul>
+            <li>503 errors returned to client</li>
+            <li>All requests to the endpoint fail</li>
+            <li>Health check endpoint not responding</li>
+            <li>Error rate metric spikes to 100%</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Action</div>
+          <ul>
+            <li>Call the /health endpoint first</li>
+            <li>Check application logs for startup errors</li>
+            <li>Check if the service process is running</li>
+            <li>Check disk and memory — may have caused crash</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Fix</div>
+          <p><strong>Restart the service.</strong> If it crashes again immediately — check logs for the crash reason before restarting again. Escalate to L3 if restart does not hold.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 2: DISK FULL -->
+    <div class="sc-card s2">
+      <div class="sc-head">
+        <div class="sc-num">02</div>
+        <div class="sc-problem">Disk Full</div>
+        <span class="sc-tag">Resource Failure</span>
+      </div>
+      <div class="sc-body">
+        <div class="sc-col">
+          <div class="sc-col-label">Symptoms</div>
+          <ul>
+            <li>Writes failing across all services</li>
+            <li>DB transactions returning write errors</li>
+            <li>Log files stopped growing</li>
+            <li>Applications crashing on file writes</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Action</div>
+          <ul>
+            <li>Run <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber);">df -h</code> to confirm disk at 100%</li>
+            <li>Run <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber);">du -sh /var/log/* | sort -rh | head</code></li>
+            <li>Identify the biggest folder consuming space</li>
+            <li>Check if old logs are the culprit (most common)</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Fix</div>
+          <p><strong>Clean logs.</strong> Archive or delete old log files to free space. Monitor disk after cleanup. If it fills quickly again — a rogue log is being written continuously. Find and fix the source.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 3: HIGH CPU -->
+    <div class="sc-card s3">
+      <div class="sc-head">
+        <div class="sc-num">03</div>
+        <div class="sc-problem">High CPU</div>
+        <span class="sc-tag">Resource Spike</span>
+      </div>
+      <div class="sc-body">
+        <div class="sc-col">
+          <div class="sc-col-label">Symptoms</div>
+          <ul>
+            <li>Slow application response times</li>
+            <li>Requests timing out across all endpoints</li>
+            <li>CPU metric above 90% on dashboard</li>
+            <li>Load average growing over time</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Action</div>
+          <ul>
+            <li>Run <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--orange);">top</code> — press P to sort by CPU</li>
+            <li>Run <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--orange);">ps aux --sort=-%cpu | head -6</code></li>
+            <li>Identify the process using the most CPU</li>
+            <li>Check how long it has been running</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Fix</div>
+          <p><strong>Kill the process</strong> — <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--orange);">kill -15 PID</code> for graceful stop. Get bridge approval before killing on PROD. Confirm CPU recovers after kill. Never use kill -9 on a DB process.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 4: QUEUE BACKLOG -->
+    <div class="sc-card s4">
+      <div class="sc-head">
+        <div class="sc-num">04</div>
+        <div class="sc-problem">Queue Backlog</div>
+        <span class="sc-tag">MQ Stuck</span>
+      </div>
+      <div class="sc-body">
+        <div class="sc-col">
+          <div class="sc-col-label">Symptoms</div>
+          <ul>
+            <li>Transactions stuck in PENDING state</li>
+            <li>Delay reported by clients</li>
+            <li>MQ queue depth growing, not decreasing</li>
+            <li>Consumer not picking up messages</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Action</div>
+          <ul>
+            <li>Check MQ queue depth — is it growing?</li>
+            <li>Check consumer service — is it running?</li>
+            <li>Check consumer logs for crash errors</li>
+            <li>Note the queue depth before touching anything</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Fix</div>
+          <p><strong>Restart consumer</strong> in safe order: stop consumer → get bridge approval → restart MQ if needed → restart consumer → monitor queue depth decreasing. Messages are not lost — they wait safely in the queue.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 5: MISSING TXN -->
+    <div class="sc-card s5">
+      <div class="sc-head">
+        <div class="sc-num">05</div>
+        <div class="sc-problem">Missing Transaction</div>
+        <span class="sc-tag">Investigation</span>
+      </div>
+      <div class="sc-body">
+        <div class="sc-col">
+          <div class="sc-col-label">Symptoms</div>
+          <ul>
+            <li>Customer complaint — payment not received</li>
+            <li>Transaction ID shows no result in client app</li>
+            <li>Money debited but destination not credited</li>
+            <li>Status unknown — client has no update</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Action</div>
+          <ul>
+            <li>Search DB for the TXN reference ID</li>
+            <li>Check TRANSACTIONS_LOG for current status</li>
+            <li>Check MX_MESSAGE for SBP/external response</li>
+            <li>Grep logs for TXN ID — full history</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Fix</div>
+          <p><strong>Trace status.</strong> If DB shows SUCCESS but client not notified — trigger notification. If PENDING and SBP confirmed — manually update (L3 approval). If FAILED — check reconciliation and refund eligibility.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 6: TIMEOUT -->
+    <div class="sc-card s6">
+      <div class="sc-head">
+        <div class="sc-num">06</div>
+        <div class="sc-problem">Timeout</div>
+        <span class="sc-tag">Latency Issue</span>
+      </div>
+      <div class="sc-body">
+        <div class="sc-col">
+          <div class="sc-col-label">Symptoms</div>
+          <ul>
+            <li>Slow API responses — taking seconds not ms</li>
+            <li>TIMEOUT errors in logs</li>
+            <li>Transactions failing after 30 seconds</li>
+            <li>Client reports "request timed out"</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Action</div>
+          <ul>
+            <li>Identify timeout type from the log message</li>
+            <li>QUERY_TIMEOUT → DB query too slow</li>
+            <li>SOCKET_TIMEOUT → external API not responding</li>
+            <li>Check network if SOCKET_TIMEOUT</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Fix</div>
+          <p><strong>Restart gateway</strong> if external timeout. If DB query timeout — check for slow queries and add index (do not restart DB). If network — check connectivity to the external endpoint.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 7: CERT EXPIRED -->
+    <div class="sc-card s7">
+      <div class="sc-head">
+        <div class="sc-num">07</div>
+        <div class="sc-problem">Certificate Expired</div>
+        <span class="sc-tag">SSL / TLS</span>
+      </div>
+      <div class="sc-body">
+        <div class="sc-col">
+          <div class="sc-col-label">Symptoms</div>
+          <ul>
+            <li>TLS error in logs or client response</li>
+            <li>SSL handshake failure messages</li>
+            <li>All HTTPS connections to endpoint failing</li>
+            <li>Browser shows "certificate not trusted"</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Action</div>
+          <ul>
+            <li>Check the certificate expiry date</li>
+            <li>Run: <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--teal);">openssl s_client -connect host:443</code></li>
+            <li>Confirm it is the cert and not the config</li>
+            <li>Identify who issued and manages the cert</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Fix</div>
+          <p><strong>Renew the certificate.</strong> Contact the certificate authority or use the internal cert management tool. After renewing — restart the web server or load balancer to apply the new cert. Verify with openssl after.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO 8: DB SLOW -->
+    <div class="sc-card s8">
+      <div class="sc-head">
+        <div class="sc-num">08</div>
+        <div class="sc-problem">DB Slow</div>
+        <span class="sc-tag">Database</span>
+      </div>
+      <div class="sc-body">
+        <div class="sc-col">
+          <div class="sc-col-label">Symptoms</div>
+          <ul>
+            <li>Transaction response times very high</li>
+            <li>QUERY_TIMEOUT errors in logs</li>
+            <li>All services depending on DB are slow</li>
+            <li>DB CPU spiking on the server</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Action</div>
+          <ul>
+            <li>Check pg_stat_activity for long-running queries</li>
+            <li>Identify which query is taking the most time</li>
+            <li>Check if a lock is being held on a table</li>
+            <li>Do NOT restart DB — diagnose first</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Fix</div>
+          <p><strong>Optimise query — add index.</strong> Never restart the DB for a slow query — that wastes time and risks data integrity. Ask DBA to add the missing index. Response time drops immediately after the index is created.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- QUICK REFERENCE TABLE -->
+  <div class="sec"><span class="sn">03</span> Quick Reference — All 8 Scenarios at a Glance</div>
+
+  <div class="note n-c">💡 <strong>Keep this table memorised.</strong> When a ticket arrives and a client describes a symptom — you should immediately know which scenario it maps to and what to do first.</div>
+
+  <div class="ref-table">
+    <div class="rt-head">🔖 Troubleshooting Cheat Sheet</div>
+    <table class="rt">
+      <thead><tr><th>Problem</th><th>Symptom</th><th>First Action</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>API Down</td>
+          <td>503 errors from endpoint</td>
+          <td>Check service logs + health endpoint</td>
+          <td><span class="pill p-r">Restart service</span></td>
+        </tr>
+        <tr>
+          <td>Disk Full</td>
+          <td>Writes fail everywhere</td>
+          <td><code style="font-family:'JetBrains Mono',monospace;font-size:11px;">df -h</code> → find biggest folder</td>
+          <td><span class="pill p-a">Clean logs</span></td>
+        </tr>
+        <tr>
+          <td>High CPU</td>
+          <td>Slow app, all endpoints</td>
+          <td><code style="font-family:'JetBrains Mono',monospace;font-size:11px;">top</code> → identify heavy process</td>
+          <td><span class="pill p-o">kill -15 PID</span></td>
+        </tr>
+        <tr>
+          <td>Queue Backlog</td>
+          <td>Transactions pending, delay</td>
+          <td>Check queue depth + consumer status</td>
+          <td><span class="pill p-v">Restart consumer</span></td>
+        </tr>
+        <tr>
+          <td>Missing TXN</td>
+          <td>Customer complaint, no update</td>
+          <td>DB search by TXN ID + log grep</td>
+          <td><span class="pill p-b">Trace status</span></td>
+        </tr>
+        <tr>
+          <td>Timeout</td>
+          <td>Slow API, 30s failures</td>
+          <td>Identify timeout type from log message</td>
+          <td><span class="pill p-c">Restart gateway / add index</span></td>
+        </tr>
+        <tr>
+          <td>Cert Expired</td>
+          <td>TLS error in logs</td>
+          <td><code style="font-family:'JetBrains Mono',monospace;font-size:11px;">openssl s_client</code> → check expiry</td>
+          <td><span class="pill p-t">Renew certificate</span></td>
+        </tr>
+        <tr>
+          <td>DB Slow</td>
+          <td>Timeout, high response time</td>
+          <td>Check pg_stat_activity for slow queries</td>
+          <td><span class="pill p-g">Add index</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Troubleshooting Scenarios — What I Know</h3>
+    <ul>
+      <li>API Down → 503 errors → check service logs and health endpoint → restart service if process has stopped</li>
+      <li>Disk Full → writes failing → df -h to confirm, du to find biggest folder → clean old logs to free space</li>
+      <li>High CPU → slow app across all endpoints → top / ps aux to identify the heavy process → kill -15 PID with bridge approval</li>
+      <li>Queue Backlog → transactions pending, delay → check queue depth and consumer status → restart consumer in safe order</li>
+      <li>Missing Transaction → customer complaint, unknown status → search DB and grep logs by TXN ID → trace status and update or escalate</li>
+      <li>Timeout → slow API, 30-second failures → identify timeout type from the log error message → restart gateway for external or add index for DB</li>
+      <li>Certificate Expired → TLS error → openssl s_client to check expiry → renew cert and restart web server to apply</li>
+      <li>DB Slow → timeout and high response time → check pg_stat_activity for long-running queries → ask DBA to add missing index — never restart DB for a slow query</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>
