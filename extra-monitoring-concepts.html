@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Extra Learning — Monitoring Concepts</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#07080d;
+    --surface:#0d1018;
+    --surface2:#121620;
+    --surface3:#171c28;
+    --border:#1e2535;
+    --text:#a8b8cc;
+    --text-dim:#3e5268;
+    --text-faint:#162035;
+    --white:#eaf2fc;
+
+    --violet:#a855f7;
+    --violet-bg:#0e0818;
+    --violet-border:#281840;
+
+    --cyan:#22d3ee;
+    --cyan-bg:#001820;
+    --cyan-border:#003848;
+
+    --amber:#f59e0b;
+    --amber-bg:#180c00;
+    --amber-border:#3c2800;
+
+    --green:#22d46a;
+    --green-bg:#001810;
+    --green-border:#003820;
+
+    --rose:#f43f5e;
+    --rose-bg:#180008;
+    --rose-border:#3c0018;
+
+    --blue:#3b82f6;
+    --blue-bg:#020e20;
+    --blue-border:#082240;
+
+    --teal:#14b8a6;
+    --teal-bg:#001814;
+    --teal-border:#003830;
+
+    --orange:#f97316;
+    --orange-bg:#180800;
+    --orange-border:#3c2000;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;line-height:1.7;padding:48px 24px 100px;}
+  .page{max-width:960px;margin:0 auto;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:52px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .topbar-left{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;}
+  .tb-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 16px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);}
+
+  .hero{margin-bottom:52px;}
+  .day-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--violet);margin-bottom:14px;}
+  .hero h1{font-size:clamp(30px,5.5vw,54px);font-weight:800;line-height:1.05;color:var(--white);margin-bottom:14px;}
+  .hero h1 span{color:var(--violet);}
+  .hero-desc{color:var(--text-dim);font-size:15px;max-width:560px;}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;}
+  .tag{padding:5px 14px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+
+  .sec{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faint);margin-bottom:18px;margin-top:44px;display:flex;align-items:center;gap:12px;}
+  .sec .sn{color:var(--violet);font-size:12px;}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .intro-card{background:var(--violet-bg);border:1px solid var(--violet-border);border-left:4px solid var(--violet);border-radius:12px;padding:22px 28px;margin-bottom:14px;}
+  .intro-card .al{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--violet);margin-bottom:8px;}
+  .intro-card p{color:var(--text);font-size:14px;}
+  .intro-card strong{color:var(--white);}
+
+  /* SCENARIO CARDS */
+  .scenarios-grid{display:flex;flex-direction:column;gap:16px;margin-bottom:14px;}
+
+  .sc-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+  .sc-head{padding:16px 22px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .sc-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .sc-topic{font-size:17px;font-weight:700;color:var(--white);flex:1;}
+  .sc-tag{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 10px;border-radius:100px;white-space:nowrap;}
+
+  .sc-body{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;}
+  .sc-col{padding:18px 20px;border-right:1px solid var(--border);}
+  .sc-col:last-child{border-right:none;}
+  .sc-col-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+  .sc-col p{font-size:13px;color:var(--text-dim);}
+  .sc-col p strong{color:var(--white);}
+  .sc-col ul{list-style:none;display:flex;flex-direction:column;gap:5px;}
+  .sc-col ul li{font-size:13px;color:var(--text-dim);padding-left:16px;position:relative;}
+  .sc-col ul li::before{content:'→';position:absolute;left:0;font-family:'JetBrains Mono',monospace;font-size:10px;}
+
+  /* per-topic colour themes */
+  /* 1 Metrics - cyan */
+  .s1 .sc-num{background:var(--cyan-bg);border:2px solid var(--cyan-border);color:var(--cyan);}
+  .s1 .sc-tag{background:var(--cyan-bg);border:1px solid var(--cyan-border);color:var(--cyan);}
+  .s1 .sc-col-label{color:var(--cyan);}
+  .s1 .sc-col ul li::before{color:var(--cyan);}
+  /* 2 Logs - amber */
+  .s2 .sc-num{background:var(--amber-bg);border:2px solid var(--amber-border);color:var(--amber);}
+  .s2 .sc-tag{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .s2 .sc-col-label{color:var(--amber);}
+  .s2 .sc-col ul li::before{color:var(--amber);}
+  /* 3 Alerts - rose */
+  .s3 .sc-num{background:var(--rose-bg);border:2px solid var(--rose-border);color:var(--rose);}
+  .s3 .sc-tag{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .s3 .sc-col-label{color:var(--rose);}
+  .s3 .sc-col ul li::before{color:var(--rose);}
+  /* 4 Health Checks - green */
+  .s4 .sc-num{background:var(--green-bg);border:2px solid var(--green-border);color:var(--green);}
+  .s4 .sc-tag{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .s4 .sc-col-label{color:var(--green);}
+  .s4 .sc-col ul li::before{color:var(--green);}
+  /* 5 APM - blue */
+  .s5 .sc-num{background:var(--blue-bg);border:2px solid var(--blue-border);color:var(--blue);}
+  .s5 .sc-tag{background:var(--blue-bg);border:1px solid var(--blue-border);color:var(--blue);}
+  .s5 .sc-col-label{color:var(--blue);}
+  .s5 .sc-col ul li::before{color:var(--blue);}
+  /* 6 Dashboards - violet */
+  .s6 .sc-num{background:var(--violet-bg);border:2px solid var(--violet-border);color:var(--violet);}
+  .s6 .sc-tag{background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);}
+  .s6 .sc-col-label{color:var(--violet);}
+  .s6 .sc-col ul li::before{color:var(--violet);}
+  /* 7 SLA/SLO - teal */
+  .s7 .sc-num{background:var(--teal-bg);border:2px solid var(--teal-border);color:var(--teal);}
+  .s7 .sc-tag{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+  .s7 .sc-col-label{color:var(--teal);}
+  .s7 .sc-col ul li::before{color:var(--teal);}
+  /* 8 RCA - orange */
+  .s8 .sc-num{background:var(--orange-bg);border:2px solid var(--orange-border);color:var(--orange);}
+  .s8 .sc-tag{background:var(--orange-bg);border:1px solid var(--orange-border);color:var(--orange);}
+  .s8 .sc-col-label{color:var(--orange);}
+  .s8 .sc-col ul li::before{color:var(--orange);}
+
+  /* QUICK REF TABLE */
+  .ref-table{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+  .rt-head{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:15px;font-weight:700;color:var(--white);}
+  table.rt{width:100%;border-collapse:collapse;}
+  table.rt th{padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);text-align:left;border-bottom:1px solid var(--border);font-weight:400;background:var(--surface3);}
+  table.rt td{padding:11px 18px;font-size:13px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle;}
+  table.rt tr:last-child td{border-bottom:none;}
+  table.rt tr:hover td{background:rgba(255,255,255,0.02);}
+  table.rt td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--white);white-space:nowrap;}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 9px;border-radius:100px;white-space:nowrap;}
+  .p-c{background:var(--cyan-bg);border:1px solid var(--cyan-border);color:var(--cyan);}
+  .p-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .p-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .p-g{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+  .p-b{background:var(--blue-bg);border:1px solid var(--blue-border);color:var(--blue);}
+  .p-v{background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);}
+  .p-t{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+  .p-o{background:var(--orange-bg);border:1px solid var(--orange-border);color:var(--orange);}
+
+  /* NOTE */
+  .note{border-radius:10px;padding:10px 16px;font-size:13px;margin-bottom:12px;}
+  .n-v{background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);}
+  .note strong{color:var(--white);}
+
+  .outcome{background:linear-gradient(135deg,var(--violet-bg) 0%,var(--surface) 100%);border:1px solid var(--violet-border);border-radius:16px;padding:32px;margin-top:48px;}
+  .outcome h3{font-size:20px;font-weight:700;color:var(--violet);margin-bottom:18px;}
+  .outcome ul{display:flex;flex-direction:column;gap:9px;list-style:none;}
+  .outcome ul li{font-size:14px;color:var(--text-dim);padding-left:22px;position:relative;}
+  .outcome ul li::before{content:'✓';position:absolute;left:0;color:var(--violet);font-family:'JetBrains Mono',monospace;}
+
+  @media(max-width:680px){.sc-body{grid-template-columns:1fr;}.sc-col{border-right:none;border-bottom:1px solid var(--border);}.sc-col:last-child{border-bottom:none;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Extra Learning</div>
+    <span class="tb-badge">Monitoring Concepts</span>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="day-label">Extra Learning · Reference Guide</div>
+    <h1>Monitoring <span>Concepts</span></h1>
+    <p class="hero-desc">Eight core monitoring concepts every L2 engineer must understand — each mapped to what it is, the tools and commands you use, and the real operational use case where it matters most.</p>
+    <div class="tags">
+      <span class="tag">Metrics</span>
+      <span class="tag">Logs</span>
+      <span class="tag">Alerts</span>
+      <span class="tag">Health Checks</span>
+      <span class="tag">APM</span>
+      <span class="tag">Dashboards</span>
+      <span class="tag">SLA/SLO</span>
+      <span class="tag">RCA</span>
+    </div>
+  </div>
+
+  <!-- INTRO -->
+  <div class="sec"><span class="sn">01</span> How to Use This Reference</div>
+
+  <div class="intro-card">
+    <div class="al">Purpose</div>
+    <p>
+      Every monitoring concept follows the same three-column structure that directly maps to how you use it on the job:<br><br>
+      <strong>Concept</strong> — what this monitoring type actually is and what it measures.<br>
+      <strong>Tools / Commands</strong> — the specific tools and terminal commands you use to access it.<br>
+      <strong>Ops Use Case</strong> — the real L2 situation where this concept saves you time or prevents an incident.<br><br>
+      Together these 8 concepts form your complete monitoring knowledge base — from raw numbers to root cause.
+    </p>
+  </div>
+
+  <!-- CONCEPTS -->
+  <div class="sec"><span class="sn">02</span> The 8 Monitoring Concepts</div>
+
+  <div class="scenarios-grid">
+
+    <!-- 1: METRICS -->
+    <div class="sc-card s1">
+      <div class="sc-head">
+        <div class="sc-num">01</div>
+        <div class="sc-topic">Metrics</div>
+        <span class="sc-tag">Numbers over time</span>
+      </div>
+      <div class="sc-body">
+        <div class="sc-col">
+          <div class="sc-col-label">Concept</div>
+          <p><strong>CPU, Memory, Disk, and Network usage</strong> — numeric values measured repeatedly over time. Metrics give you the big picture of how healthy your server and application are at any moment. They are the first signal that something is wrong.</p>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Tools / Commands</div>
+          <ul>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);">top</code> — live CPU and memory view</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);">free -h</code> — memory and swap</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);">df -h</code> — disk usage per partition</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);">Grafana</code> — visual dashboards for all metrics</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Ops Use Case</div>
+          <p><strong>Detect server overload.</strong> When CPU is at 94% or disk hits 100%, metrics tell you before a single client complaint arrives. This is the difference between proactive and reactive support.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2: LOGS -->
+    <div class="sc-card s2">
+      <div class="sc-head">
+        <div class="sc-num">02</div>
+        <div class="sc-topic">Logs</div>
+        <span class="sc-tag">Event records</span>
+      </div>
+      <div class="sc-body">
+        <div class="sc-col">
+          <div class="sc-col-label">Concept</div>
+          <p><strong>Application and system logs</strong> — timestamped records of every event your software and OS write. Logs tell you exactly what happened and when, with the precise error message. Where metrics show a number, logs show the story behind it.</p>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Tools / Commands</div>
+          <ul>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber);">tail -f app.log</code> — live log stream</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber);">grep "ERROR" app.log</code> — search by pattern</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber);">ELK Stack</code> — Elasticsearch, Logstash, Kibana</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber);">Loki</code> — lightweight log aggregation</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Ops Use Case</div>
+          <p><strong>Find errors.</strong> When a metric alert fires, logs tell you the exact error — DB_CONNECTION_TIMEOUT, NullPointerException, SOCKET_TIMEOUT — so you know what to fix, not just that something broke.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3: ALERTS -->
+    <div class="sc-card s3">
+      <div class="sc-head">
+        <div class="sc-num">03</div>
+        <div class="sc-topic">Alerts</div>
+        <span class="sc-tag">Threshold triggers</span>
+      </div>
+      <div class="sc-body">
+        <div class="sc-col">
+          <div class="sc-col-label">Concept</div>
+          <p><strong>Threshold-based notifications</strong> — rules that fire automatically when a metric crosses a defined limit. Alerts are the bridge between monitoring and human response. Without them you must watch screens constantly. With them the system watches for you.</p>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Tools / Commands</div>
+          <ul>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--rose);">Alertmanager</code> — routes and manages alerts</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--rose);">email</code> — low-urgency notification channel</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--rose);">Slack webhook</code> — team channel alerts</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--rose);">PagerDuty</code> — on-call phone escalation</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Ops Use Case</div>
+          <p><strong>Immediate action.</strong> A CRITICAL alert at 3 AM wakes the on-call engineer before any client notices. A WARNING alert during office hours creates a Slack message to investigate at the next opportunity. Severity routing means the right person gets the right urgency.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4: HEALTH CHECKS -->
+    <div class="sc-card s4">
+      <div class="sc-head">
+        <div class="sc-num">04</div>
+        <div class="sc-topic">Health Checks</div>
+        <span class="sc-tag">Service availability</span>
+      </div>
+      <div class="sc-body">
+        <div class="sc-col">
+          <div class="sc-col-label">Concept</div>
+          <p><strong>Service availability verification</strong> — automated checks that confirm your application and its dependencies (DB, MQ, external APIs) are reachable and responding. A health check endpoint returns a structured status telling you the health of every component in one call.</p>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Tools / Commands</div>
+          <ul>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);">curl /health</code> — call the health endpoint</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);">systemctl status</code> — check service status</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);">ping</code> — basic network reachability</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);">netstat -an</code> — check open connections</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Ops Use Case</div>
+          <p><strong>Ensure uptime.</strong> When a client reports failures, calling the /health endpoint is the fastest first step — it tells you whether the application, DB, and MQ are all up or which one is broken, in under 2 seconds.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5: APM -->
+    <div class="sc-card s5">
+      <div class="sc-head">
+        <div class="sc-num">05</div>
+        <div class="sc-topic">APM</div>
+        <span class="sc-tag">App performance</span>
+      </div>
+      <div class="sc-body">
+        <div class="sc-col">
+          <div class="sc-col-label">Concept</div>
+          <p><strong>Latency and response monitoring</strong> — Application Performance Monitoring tracks how long each API endpoint takes to respond, what the error rate is per endpoint, and how many requests per second each one handles. It watches the software layer, not just the server.</p>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Tools / Commands</div>
+          <ul>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue);">Grafana APM</code> — per-endpoint performance</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue);">Datadog APM</code> — traces and latency maps</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue);">Jaeger</code> — distributed request tracing</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue);">New Relic</code> — full-stack APM platform</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Ops Use Case</div>
+          <p><strong>Detect slow APIs.</strong> When the system feels slow but CPU and disk look fine, APM shows you that /raast/transfer has p99 latency of 8 seconds while all other endpoints are under 200ms. That specificity makes root cause identification immediate.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6: DASHBOARDS -->
+    <div class="sc-card s6">
+      <div class="sc-head">
+        <div class="sc-num">06</div>
+        <div class="sc-topic">Dashboards</div>
+        <span class="sc-tag">Visual overview</span>
+      </div>
+      <div class="sc-body">
+        <div class="sc-col">
+          <div class="sc-col-label">Concept</div>
+          <p><strong>Visual status overview</strong> — dashboards pull together metrics, logs, and APM data into a single visual screen. Every key number is visible at once — CPU%, error rate, response time, queue depth — colour-coded so you can read system health in under 5 seconds.</p>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Tools / Commands</div>
+          <ul>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--violet);">Grafana</code> — most common, highly customisable</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--violet);">Kibana</code> — log-based dashboards (ELK)</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--violet);">Datadog</code> — all-in-one with built-in dashboards</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--violet);">Splunk</code> — enterprise dashboard for log data</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Ops Use Case</div>
+          <p><strong>Quick decision making.</strong> During an S1 bridge call, opening the dashboard gives you everything needed to answer "what is the current status" in seconds. You read from the dashboard — error rate, affected services, when it started — without opening a terminal.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7: SLA/SLO -->
+    <div class="sc-card s7">
+      <div class="sc-head">
+        <div class="sc-num">07</div>
+        <div class="sc-topic">SLA / SLO</div>
+        <span class="sc-tag">Reliability targets</span>
+      </div>
+      <div class="sc-body">
+        <div class="sc-col">
+          <div class="sc-col-label">Concept</div>
+          <p><strong>Service reliability targets</strong> — SLA (Service Level Agreement) is the contractual commitment to a client on uptime and response time. SLO (Service Level Objective) is the internal target your team works to. Both define what "acceptable" looks like numerically — e.g. 99.9% uptime per month.</p>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Tools / Commands</div>
+          <ul>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--teal);">Reports</code> — monthly uptime and incident reports</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--teal);">Grafana SLO panels</code> — visual SLO tracking</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--teal);">Incident log</code> — duration of each outage</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--teal);">Error budget</code> — how much downtime remains</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Ops Use Case</div>
+          <p><strong>Measure performance.</strong> Every incident you handle contributes to or drains the SLA. A 15-minute outage on a 99.9% SLA uses a significant portion of the month's allowed downtime. Knowing the SLA makes every incident feel appropriately urgent.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8: RCA -->
+    <div class="sc-card s8">
+      <div class="sc-head">
+        <div class="sc-num">08</div>
+        <div class="sc-topic">RCA</div>
+        <span class="sc-tag">Root cause analysis</span>
+      </div>
+      <div class="sc-body">
+        <div class="sc-col">
+          <div class="sc-col-label">Concept</div>
+          <p><strong>Root cause analysis</strong> — the structured investigation after an incident to find not just what failed but why it failed. A good RCA uses evidence from logs and metrics to produce a timeline, a root cause statement, and next steps that prevent recurrence.</p>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Tools / Commands</div>
+          <ul>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--orange);">Logs</code> — timestamps, error messages, build-up</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--orange);">Metrics</code> — when did numbers change</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--orange);">Jira</code> — where the RCA is documented</li>
+            <li><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--orange);">grep / Kibana</code> — searching evidence</li>
+          </ul>
+        </div>
+        <div class="sc-col">
+          <div class="sc-col-label">Ops Use Case</div>
+          <p><strong>Prevent recurrence.</strong> An RCA that says "DB pool exhausted because of a connection leak" leads to a code fix. Without the RCA the same incident happens again in 2 weeks. Good RCAs turn reactive incidents into proactive improvements.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- QUICK REFERENCE -->
+  <div class="sec"><span class="sn">03</span> Quick Reference — All 8 Concepts at a Glance</div>
+
+  <div class="note n-v">💡 <strong>Keep this table as your monitoring reference.</strong> Each concept has a distinct job — know which one to reach for depending on what question you are trying to answer.</div>
+
+  <div class="ref-table">
+    <div class="rt-head">🔖 Monitoring Concepts Cheat Sheet</div>
+    <table class="rt">
+      <thead><tr><th>Topic</th><th>What it answers</th><th>Key Tool</th><th>Ops Use Case</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Metrics</td>
+          <td>How much? How fast? Is the server stressed?</td>
+          <td><code style="font-family:'JetBrains Mono',monospace;font-size:11px;">top, free, df, Grafana</code></td>
+          <td><span class="pill p-c">Detect server overload</span></td>
+        </tr>
+        <tr>
+          <td>Logs</td>
+          <td>What happened? When? What was the error?</td>
+          <td><code style="font-family:'JetBrains Mono',monospace;font-size:11px;">tail, grep, ELK/Loki</code></td>
+          <td><span class="pill p-a">Find errors</span></td>
+        </tr>
+        <tr>
+          <td>Alerts</td>
+          <td>Did anything cross a threshold I care about?</td>
+          <td><code style="font-family:'JetBrains Mono',monospace;font-size:11px;">Alertmanager, Slack, email</code></td>
+          <td><span class="pill p-r">Immediate action</span></td>
+        </tr>
+        <tr>
+          <td>Health Checks</td>
+          <td>Is my service and its dependencies up right now?</td>
+          <td><code style="font-family:'JetBrains Mono',monospace;font-size:11px;">curl, systemctl</code></td>
+          <td><span class="pill p-g">Ensure uptime</span></td>
+        </tr>
+        <tr>
+          <td>APM</td>
+          <td>Which API is slow and by how much?</td>
+          <td><code style="font-family:'JetBrains Mono',monospace;font-size:11px;">Grafana APM, Datadog</code></td>
+          <td><span class="pill p-b">Detect slow APIs</span></td>
+        </tr>
+        <tr>
+          <td>Dashboards</td>
+          <td>What is the overall system status right now?</td>
+          <td><code style="font-family:'JetBrains Mono',monospace;font-size:11px;">Grafana</code></td>
+          <td><span class="pill p-v">Quick decision making</span></td>
+        </tr>
+        <tr>
+          <td>SLA / SLO</td>
+          <td>Are we meeting our reliability commitments?</td>
+          <td><code style="font-family:'JetBrains Mono',monospace;font-size:11px;">Reports, error budget</code></td>
+          <td><span class="pill p-t">Measure performance</span></td>
+        </tr>
+        <tr>
+          <td>RCA</td>
+          <td>Why did it fail and how do we stop it recurring?</td>
+          <td><code style="font-family:'JetBrains Mono',monospace;font-size:11px;">Logs + metrics</code></td>
+          <td><span class="pill p-o">Prevent recurrence</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Monitoring Concepts — What I Know</h3>
+    <ul>
+      <li>Metrics — measure CPU, Memory, Disk, and Network as numbers over time using top, free, df, and Grafana to detect server overload before clients report it</li>
+      <li>Logs — application and system event records searched with tail, grep, and ELK or Loki to find the exact error message and timestamp behind any incident</li>
+      <li>Alerts — threshold-based rules routed through Alertmanager to Slack, email, or PagerDuty so the right person is notified at the right urgency at any time of day</li>
+      <li>Health Checks — service availability verified via curl /health and systemctl to confirm application, DB, and MQ are all up in one call — the fastest first step in any incident</li>
+      <li>APM — latency and response monitoring per API endpoint using Grafana APM and Datadog to pinpoint exactly which API is slow and by how much, even when server metrics look normal</li>
+      <li>Dashboards — visual status overview in Grafana that shows error rate, CPU, queue depth, and response time simultaneously so you can read system health in under 5 seconds during an S1</li>
+      <li>SLA / SLO — service reliability targets defined contractually (SLA) and internally (SLO), measured via monthly reports and error budgets, making every incident feel appropriately urgent</li>
+      <li>RCA — root cause analysis using correlated logs and metrics to build a timestamped timeline, evidence-based root cause statement, and next steps that prevent the same incident from recurring</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>
