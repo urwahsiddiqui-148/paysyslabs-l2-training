@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Extra Learning — L2 Scripts & Commands Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#07080d;
+    --surface:#0d1018;
+    --surface2:#121620;
+    --surface3:#171c28;
+    --border:#1e2535;
+    --text:#a8b8cc;
+    --text-dim:#3e5268;
+    --text-faint:#162035;
+    --white:#eaf2fc;
+
+    --emerald:#10b981;
+    --emerald-bg:#001810;
+    --emerald-border:#003830;
+
+    --sky:#38bdf8;
+    --sky-bg:#001820;
+    --sky-border:#003848;
+
+    --amber:#f59e0b;
+    --amber-bg:#180c00;
+    --amber-border:#3c2800;
+
+    --rose:#f43f5e;
+    --rose-bg:#180008;
+    --rose-border:#3c0018;
+
+    --violet:#a855f7;
+    --violet-bg:#0e0818;
+    --violet-border:#281840;
+
+    --orange:#f97316;
+    --orange-bg:#180800;
+    --orange-border:#3c2000;
+
+    --teal:#14b8a6;
+    --teal-bg:#001814;
+    --teal-border:#003830;
+
+    --green:#22d46a;
+    --green-bg:#001810;
+    --green-border:#003820;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;line-height:1.7;padding:48px 24px 100px;}
+  .page{max-width:960px;margin:0 auto;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:52px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .topbar-left{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;}
+  .tb-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 16px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;background:var(--emerald-bg);border:1px solid var(--emerald-border);color:var(--emerald);}
+
+  .hero{margin-bottom:52px;}
+  .day-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--emerald);margin-bottom:14px;}
+  .hero h1{font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.05;color:var(--white);margin-bottom:14px;}
+  .hero h1 span{color:var(--emerald);}
+  .hero-desc{color:var(--text-dim);font-size:15px;max-width:580px;}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;}
+  .tag{padding:5px 14px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+
+  .sec{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faint);margin-bottom:18px;margin-top:44px;display:flex;align-items:center;gap:12px;}
+  .sec .sn{color:var(--emerald);font-size:12px;}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .intro-card{background:var(--emerald-bg);border:1px solid var(--emerald-border);border-left:4px solid var(--emerald);border-radius:12px;padding:22px 28px;margin-bottom:14px;}
+  .intro-card .al{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--emerald);margin-bottom:8px;}
+  .intro-card p{color:var(--text);font-size:14px;}
+  .intro-card strong{color:var(--white);}
+
+  /* SCRIPT CARDS */
+  .script-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:18px;}
+  .sc-head{padding:16px 24px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .sc-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .sc-title{font-size:17px;font-weight:700;color:var(--white);flex:1;}
+  .sc-purpose{font-size:13px;color:var(--text-dim);}
+  .sc-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 10px;border-radius:100px;}
+
+  .sc-body{padding:22px 24px;display:flex;flex-direction:column;gap:14px;}
+  .sc-desc{font-size:14px;color:var(--text-dim);}
+  .sc-desc strong{color:var(--white);}
+
+  /* CODE */
+  .cbox{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  .cbox-bar{padding:7px 14px;background:var(--surface3);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .cbox-bar-left{display:flex;align-items:center;gap:7px;}
+  .d{width:8px;height:8px;border-radius:50%;}.dr{background:#ff5f56;}.dy{background:#ffbd2e;}.dg{background:#27c93f;}
+  .ct{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);margin-left:4px;letter-spacing:1px;}
+  .cbox-code{padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:2.0;overflow-x:auto;}
+  .cm{color:#2e4050;}.fn{color:#79c0ff;}.str{color:#a5d6ff;}.var{color:#ffa657;}.op{color:#c9d1d9;}.kw{color:#ff7b72;}
+
+  /* BREAKDOWN */
+  .breakdown{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;}
+  .bd-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+  .bd-items{display:flex;flex-direction:column;gap:7px;}
+  .bd-item{display:flex;gap:12px;align-items:flex-start;}
+  .bd-code{font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 8px;border-radius:5px;flex-shrink:0;margin-top:2px;white-space:nowrap;}
+  .bd-text{font-size:13px;color:var(--text-dim);}
+  .bd-text strong{color:var(--white);}
+
+  /* WHEN TO USE */
+  .when-use{border-radius:10px;padding:10px 16px;font-size:13px;}
+  .wu-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+  .wu-text{font-size:13px;color:var(--text-dim);}
+  .wu-text strong{color:var(--white);}
+
+  /* colour per card */
+  .c1 .sc-num{background:var(--emerald-bg);border:2px solid var(--emerald-border);color:var(--emerald);}
+  .c1 .sc-badge{background:var(--emerald-bg);border:1px solid var(--emerald-border);color:var(--emerald);}
+  .c1 .bd-title{color:var(--emerald);}
+  .c1 .bd-code{background:var(--emerald-bg);border:1px solid var(--emerald-border);color:var(--emerald);}
+  .c1 .wu-label{color:var(--emerald);}
+  .c1 .when-use{background:var(--emerald-bg);border:1px solid var(--emerald-border);}
+
+  .c2 .sc-num{background:var(--violet-bg);border:2px solid var(--violet-border);color:var(--violet);}
+  .c2 .sc-badge{background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);}
+  .c2 .bd-title{color:var(--violet);}
+  .c2 .bd-code{background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);}
+  .c2 .wu-label{color:var(--violet);}
+  .c2 .when-use{background:var(--violet-bg);border:1px solid var(--violet-border);}
+
+  .c3 .sc-num{background:var(--amber-bg);border:2px solid var(--amber-border);color:var(--amber);}
+  .c3 .sc-badge{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .c3 .bd-title{color:var(--amber);}
+  .c3 .bd-code{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .c3 .wu-label{color:var(--amber);}
+  .c3 .when-use{background:var(--amber-bg);border:1px solid var(--amber-border);}
+
+  .c4 .sc-num{background:var(--orange-bg);border:2px solid var(--orange-border);color:var(--orange);}
+  .c4 .sc-badge{background:var(--orange-bg);border:1px solid var(--orange-border);color:var(--orange);}
+  .c4 .bd-title{color:var(--orange);}
+  .c4 .bd-code{background:var(--orange-bg);border:1px solid var(--orange-border);color:var(--orange);}
+  .c4 .wu-label{color:var(--orange);}
+  .c4 .when-use{background:var(--orange-bg);border:1px solid var(--orange-border);}
+
+  .c5 .sc-num{background:var(--sky-bg);border:2px solid var(--sky-border);color:var(--sky);}
+  .c5 .sc-badge{background:var(--sky-bg);border:1px solid var(--sky-border);color:var(--sky);}
+  .c5 .bd-title{color:var(--sky);}
+  .c5 .bd-code{background:var(--sky-bg);border:1px solid var(--sky-border);color:var(--sky);}
+  .c5 .wu-label{color:var(--sky);}
+  .c5 .when-use{background:var(--sky-bg);border:1px solid var(--sky-border);}
+
+  .c6 .sc-num{background:var(--teal-bg);border:2px solid var(--teal-border);color:var(--teal);}
+  .c6 .sc-badge{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+  .c6 .bd-title{color:var(--teal);}
+  .c6 .bd-code{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal);}
+  .c6 .wu-label{color:var(--teal);}
+  .c6 .when-use{background:var(--teal-bg);border:1px solid var(--teal-border);}
+
+  /* BONUS SECTION */
+  .bonus-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+  .bonus-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;}
+  .bonus-card .bc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+  .bonus-card h4{font-size:14px;font-weight:700;color:var(--white);margin-bottom:8px;}
+  .bonus-card .bc-code{font-family:'JetBrains Mono',monospace;font-size:11.5px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:8px;line-height:1.9;overflow-x:auto;}
+  .bonus-card p{font-size:12px;color:var(--text-dim);}
+  .bc-e{border-top:3px solid var(--emerald);}
+  .bc-e .bc-label{color:var(--emerald);}
+  .bc-v{border-top:3px solid var(--violet);}
+  .bc-v .bc-label{color:var(--violet);}
+  .bc-a{border-top:3px solid var(--amber);}
+  .bc-a .bc-label{color:var(--amber);}
+  .bc-s{border-top:3px solid var(--sky);}
+  .bc-s .bc-label{color:var(--sky);}
+  .bc-o{border-top:3px solid var(--orange);}
+  .bc-o .bc-label{color:var(--orange);}
+  .bc-t{border-top:3px solid var(--teal);}
+  .bc-t .bc-label{color:var(--teal);}
+
+  /* NOTE */
+  .note{border-radius:10px;padding:10px 16px;font-size:13px;margin-bottom:12px;}
+  .n-e{background:var(--emerald-bg);border:1px solid var(--emerald-border);color:var(--emerald);}
+  .n-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .note strong{color:var(--white);}
+
+  .outcome{background:linear-gradient(135deg,var(--emerald-bg) 0%,var(--surface) 100%);border:1px solid var(--emerald-border);border-radius:16px;padding:32px;margin-top:48px;}
+  .outcome h3{font-size:20px;font-weight:700;color:var(--emerald);margin-bottom:18px;}
+  .outcome ul{display:flex;flex-direction:column;gap:9px;list-style:none;}
+  .outcome ul li{font-size:14px;color:var(--text-dim);padding-left:22px;position:relative;}
+  .outcome ul li::before{content:'✓';position:absolute;left:0;color:var(--emerald);font-family:'JetBrains Mono',monospace;}
+
+  @media(max-width:640px){.bonus-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Extra Learning</div>
+    <span class="tb-badge">Scripts & Commands</span>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="day-label">Extra Learning · Reference Guide</div>
+    <h1>L2 Scripts &<br><span>Commands Reference</span></h1>
+    <p class="hero-desc">Six essential scripts every L2 engineer writes and runs — from auto-restarting a failed service to scheduling health checks with cron. Every script is broken down line by line so you know exactly what each part does and when to use it.</p>
+    <div class="tags">
+      <span class="tag">Service Restart</span>
+      <span class="tag">Log Error Count</span>
+      <span class="tag">Disk Health</span>
+      <span class="tag">CPU Check</span>
+      <span class="tag">Backup Logs</span>
+      <span class="tag">Cron Health Check</span>
+    </div>
+  </div>
+
+  <!-- INTRO -->
+  <div class="sec"><span class="sn">01</span> How Scripts Are Structured Here</div>
+
+  <div class="intro-card">
+    <div class="al">Reading Guide</div>
+    <p>
+      Each script card gives you four things:<br><br>
+      <strong>What it does</strong> — plain English explanation of the purpose.<br>
+      <strong>Full script</strong> — the complete, runnable bash code you copy to Kali.<br>
+      <strong>Line-by-line breakdown</strong> — what every part of the script means.<br>
+      <strong>When to use it</strong> — the real L2 scenario where this script saves you time.
+    </p>
+  </div>
+
+  <!-- SCRIPTS -->
+  <div class="sec"><span class="sn">02</span> The 6 Core L2 Scripts</div>
+
+  <!-- ===== SCRIPT 1: SERVICE RESTART ===== -->
+  <div class="script-card c1">
+    <div class="sc-head">
+      <div class="sc-num">01</div>
+      <div>
+        <div class="sc-title">Service Restart</div>
+        <div class="sc-purpose">Auto-restart a service if it is down</div>
+      </div>
+      <span class="sc-badge">Auto-recovery</span>
+    </div>
+    <div class="sc-body">
+      <div class="sc-desc">This script checks whether a service is running. If it is down — it restarts it automatically. This is the foundation of any service monitoring script. In production this would run via crontab every 5 minutes so crashed services recover without manual intervention.</div>
+
+      <div class="cbox">
+        <div class="cbox-bar">
+          <div class="cbox-bar-left"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">service-restart.sh</span></div>
+        </div>
+        <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Checks if a service is running — restarts it if not</span><br>
+<br>
+<span class="var">SERVICE</span>=<span class="str">"app"</span>   <span class="cm"># replace with your service name e.g. nginx, rabbitmq</span><br>
+<br>
+<span class="kw">if</span> ! <span class="fn">systemctl</span> is-active --quiet <span class="var">$SERVICE</span>; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"$SERVICE is down. Restarting..."</span><br>
+&nbsp;&nbsp;<span class="fn">systemctl</span> restart <span class="var">$SERVICE</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"$SERVICE restarted at $(date)"</span><br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"$SERVICE is running. No action needed."</span><br>
+<span class="kw">fi</span>
+        </div>
+      </div>
+
+      <div class="breakdown c1">
+        <div class="bd-title">Line-by-Line Breakdown</div>
+        <div class="bd-items">
+          <div class="bd-item"><span class="bd-code">SERVICE="app"</span><div class="bd-text">Variable — set the service name here. Change to <strong>nginx</strong>, <strong>rabbitmq</strong>, <strong>payment-service</strong> etc.</div></div>
+          <div class="bd-item"><span class="bd-code">if ! systemctl is-active</span><div class="bd-text"><strong>if !</strong> means "if NOT." <code>systemctl is-active --quiet</code> checks if the service is running silently. If NOT running — go into the if block.</div></div>
+          <div class="bd-item"><span class="bd-code">systemctl restart</span><div class="bd-text">The restart command. Sends a stop signal then starts the service again cleanly.</div></div>
+          <div class="bd-item"><span class="bd-code">$(date)</span><div class="bd-text">Inserts the current date and time into the log message so you know exactly when the restart happened.</div></div>
+          <div class="bd-item"><span class="bd-code">else ... fi</span><div class="bd-text">If the service IS running — print "running" and do nothing. <code>fi</code> closes the if block.</div></div>
+        </div>
+      </div>
+
+      <div class="when-use c1">
+        <div class="wu-label">When to use this</div>
+        <div class="wu-text">Schedule this via crontab every 5 minutes. When a service crashes at 3 AM — it auto-recovers before the next check cycle. You wake up to a log showing "restarted at 03:22" instead of an outage that lasted until 9 AM. Also useful on bridge calls — run it manually to confirm a service restart completed.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCRIPT 2: LOG ERROR COUNT ===== -->
+  <div class="script-card c2">
+    <div class="sc-head">
+      <div class="sc-num">02</div>
+      <div>
+        <div class="sc-title">Log Error Count</div>
+        <div class="sc-purpose">Count ERROR lines in a log file</div>
+      </div>
+      <span class="sc-badge">Log Analysis</span>
+    </div>
+    <div class="sc-body">
+      <div class="sc-desc">The most-used log command in daily L2 work. It searches the application log for the word ERROR and counts how many lines contain it. The result tells you in one number how many errors occurred — the starting point of every investigation.</div>
+
+      <div class="cbox">
+        <div class="cbox-bar">
+          <div class="cbox-bar-left"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">log-error-count.sh</span></div>
+        </div>
+        <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Count ERROR lines in a log file</span><br>
+<br>
+<span class="var">LOG</span>=<span class="str">"/var/log/app.log"</span><br>
+<br>
+<span class="cm"># Basic one-liner — count and show the number</span><br>
+<span class="fn">grep</span> -i error <span class="str">"$LOG"</span> | <span class="fn">wc</span> -l<br>
+<br>
+<span class="cm"># Full version — with verdict</span><br>
+<span class="var">COUNT</span>=<span class="op">$(</span><span class="fn">grep</span> -i <span class="str">"error"</span> <span class="str">"$LOG"</span> | <span class="fn">wc</span> -l<span class="op">)</span><br>
+<span class="fn">echo</span> <span class="str">"Error count: $COUNT"</span><br>
+<br>
+[ <span class="str">"$COUNT"</span> -gt <span class="op">5</span> ] &amp;&amp; <span class="fn">echo</span> <span class="str">"ACTION REQUIRED"</span> || <span class="fn">echo</span> <span class="str">"OK"</span><br>
+<br>
+<span class="cm"># Bonus — show what types of errors appeared</span><br>
+<span class="fn">grep</span> -i <span class="str">"error"</span> <span class="str">"$LOG"</span> | <span class="fn">awk</span> <span class="str">'{print $4}'</span> | <span class="fn">sort</span> | <span class="fn">uniq</span> -c | <span class="fn">sort</span> -rn
+        </div>
+      </div>
+
+      <div class="breakdown c2">
+        <div class="bd-title">Line-by-Line Breakdown</div>
+        <div class="bd-items">
+          <div class="bd-item"><span class="bd-code">grep -i error</span><div class="bd-text"><strong>grep</strong> searches for a pattern. <strong>-i</strong> makes it case-insensitive — finds ERROR, Error, error. Without -i it only finds exact case matches.</div></div>
+          <div class="bd-item"><span class="bd-code">| wc -l</span><div class="bd-text">The pipe <strong>|</strong> sends grep's output to <strong>wc -l</strong> which counts the number of lines. Together: count how many error lines.</div></div>
+          <div class="bd-item"><span class="bd-code">[ "$COUNT" -gt 5 ]</span><div class="bd-text">A condition check — <strong>-gt</strong> means "greater than." If COUNT is more than 5 → print ACTION REQUIRED, otherwise print OK.</div></div>
+          <div class="bd-item"><span class="bd-code">awk '{print $4}'</span><div class="bd-text"><strong>awk</strong> prints the 4th word of each line — in a structured log that is usually the error type (e.g. DB_CONNECTION_TIMEOUT).</div></div>
+          <div class="bd-item"><span class="bd-code">sort | uniq -c | sort -rn</span><div class="bd-text">Sort alphabetically, count duplicates with <strong>uniq -c</strong>, then sort numerically reversed so the most common error appears first.</div></div>
+        </div>
+      </div>
+
+      <div class="when-use c2">
+        <div class="wu-label">When to use this</div>
+        <div class="wu-text">Run every morning as part of the health checklist. Also run immediately when an alert fires — the error count and type breakdown tells you within 5 seconds whether it is a DB issue, a network issue, or an application bug. Forms the first line of every RCA.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCRIPT 3: DISK HEALTH ===== -->
+  <div class="script-card c3">
+    <div class="sc-head">
+      <div class="sc-num">03</div>
+      <div>
+        <div class="sc-title">Disk Health</div>
+        <div class="sc-purpose">Check disk usage and alert if above threshold</div>
+      </div>
+      <span class="sc-badge">Resource Check</span>
+    </div>
+    <div class="sc-body">
+      <div class="sc-desc">Disk filling up is the most common silent killer in fintech — it fills slowly and then everything breaks at once. This script checks the disk usage percentage and prints a warning if it is above the threshold. The awk command extracts just the number so you can compare it in an if statement.</div>
+
+      <div class="cbox">
+        <div class="cbox-bar">
+          <div class="cbox-bar-left"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">disk-health.sh</span></div>
+        </div>
+        <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Check disk usage — alert if above 80%</span><br>
+<br>
+<span class="cm"># One-liner from the screenshot</span><br>
+<span class="fn">df</span> -h | <span class="fn">awk</span> <span class="str">'$5 > 80 {print $0}'</span><br>
+<br>
+<span class="cm"># Full version — with threshold and verdict</span><br>
+<span class="var">THRESHOLD</span>=<span class="op">80</span><br>
+<span class="var">DISK_USED</span>=<span class="op">$(</span><span class="fn">df</span> / | <span class="fn">awk</span> <span class="str">'NR==2 {print $5}'</span> | <span class="fn">tr</span> -d <span class="str">'%'</span><span class="op">)</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"Disk usage: $DISK_USED%"</span><br>
+<br>
+<span class="kw">if</span> [ <span class="str">"$DISK_USED"</span> -ge <span class="op">90</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"CRITICAL: Disk at $DISK_USED% — act immediately"</span><br>
+<span class="kw">elif</span> [ <span class="str">"$DISK_USED"</span> -ge <span class="var">$THRESHOLD</span> ]; <span class="kw">then</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"WARNING: Disk at $DISK_USED% — plan cleanup"</span><br>
+<span class="kw">else</span><br>
+&nbsp;&nbsp;<span class="fn">echo</span> <span class="str">"OK: Disk at $DISK_USED%"</span><br>
+<span class="kw">fi</span><br>
+<br>
+<span class="cm"># Find what is eating disk space</span><br>
+<span class="fn">du</span> -sh /var/log/* 2&gt;/dev/null | <span class="fn">sort</span> -rh | <span class="fn">head</span> -5
+        </div>
+      </div>
+
+      <div class="breakdown c3">
+        <div class="bd-title">Line-by-Line Breakdown</div>
+        <div class="bd-items">
+          <div class="bd-item"><span class="bd-code">df -h</span><div class="bd-text"><strong>df</strong> = disk free. <strong>-h</strong> = human-readable sizes (GB, MB). Shows all partitions.</div></div>
+          <div class="bd-item"><span class="bd-code">awk '$5 > 80 {print $0}'</span><div class="bd-text">The screenshot's one-liner. <strong>$5</strong> is the 5th column (Use%). If it is above 80 — print the whole line (<strong>$0</strong>). This filters df output to only show over-80% partitions.</div></div>
+          <div class="bd-item"><span class="bd-code">NR==2 {print $5}</span><div class="bd-text"><strong>NR==2</strong> = "only the second row" (skip the header). <strong>$5</strong> = the Use% column. Gets just the percentage number for the root partition.</div></div>
+          <div class="bd-item"><span class="bd-code">tr -d '%'</span><div class="bd-text">Removes the % character from the number so bash can do math with it. Without this — "81%" cannot be compared to 80.</div></div>
+          <div class="bd-item"><span class="bd-code">du -sh /var/log/*</span><div class="bd-text"><strong>du</strong> = disk usage. <strong>-s</strong> = summary (one line per folder). <strong>-h</strong> = human-readable. Shows the size of every folder in /var/log.</div></div>
+        </div>
+      </div>
+
+      <div class="when-use c3">
+        <div class="wu-label">When to use this</div>
+        <div class="wu-text">Run first thing every morning. Always check disk before CPU or memory — a full disk causes everything else to break. When disk is critical, run the du command to find which folder is the culprit — almost always old log files in /var/log.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCRIPT 4: CPU CHECK ===== -->
+  <div class="script-card c4">
+    <div class="sc-head">
+      <div class="sc-num">04</div>
+      <div>
+        <div class="sc-title">CPU Check</div>
+        <div class="sc-purpose">Show top CPU-consuming processes</div>
+      </div>
+      <span class="sc-badge">Process Analysis</span>
+    </div>
+    <div class="sc-body">
+      <div class="sc-desc">When CPU is high, you need to find which process is eating it — fast. This command lists all running processes sorted by CPU usage, highest first. The top entry is your suspect. You then check how long it has been running and decide whether to wait, kill, or escalate.</div>
+
+      <div class="cbox">
+        <div class="cbox-bar">
+          <div class="cbox-bar-left"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">cpu-check.sh</span></div>
+        </div>
+        <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Show top CPU processes</span><br>
+<br>
+<span class="cm"># The core command from the screenshot</span><br>
+<span class="fn">ps</span> -eo pid,ppid,cmd,%mem,%cpu --sort=-%cpu | <span class="fn">head</span><br>
+<br>
+<span class="cm"># Full version — with load average and verdict</span><br>
+<span class="fn">echo</span> <span class="str">"=== CPU Check — $(date) ==="</span><br>
+<span class="fn">echo</span> <span class="str">"Load average: $(cat /proc/loadavg | awk '{print $1, $2, $3}')"</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">echo</span> <span class="str">"Top 5 processes by CPU:"</span><br>
+<span class="fn">ps</span> -eo pid,user,cmd,%cpu,%mem --sort=-%cpu | <span class="fn">head</span> -6<br>
+<br>
+<span class="cm"># Check CPU idle — below 10% means overloaded</span><br>
+<span class="fn">echo</span> <span class="str">""</span><br>
+<span class="fn">top</span> -bn1 | <span class="fn">grep</span> <span class="str">"Cpu(s)"</span> | <span class="fn">awk</span> <span class="str">'{print "CPU idle: "$8}'</span><br>
+<br>
+<span class="cm"># How long has the top process been running?</span><br>
+<span class="var">TOP_PID</span>=<span class="op">$(</span><span class="fn">ps</span> -eo pid --sort=-%cpu | <span class="fn">sed</span> -n <span class="str">'2p'</span><span class="op">)</span><br>
+<span class="fn">ps</span> -p <span class="str">"$TOP_PID"</span> -o pid,etime,pcpu,cmd 2&gt;/dev/null
+        </div>
+      </div>
+
+      <div class="breakdown c4">
+        <div class="bd-title">Line-by-Line Breakdown</div>
+        <div class="bd-items">
+          <div class="bd-item"><span class="bd-code">ps -eo</span><div class="bd-text"><strong>ps</strong> = process status. <strong>-e</strong> = show every process. <strong>-o</strong> = choose which columns to display. You choose pid, ppid, cmd, %mem, %cpu.</div></div>
+          <div class="bd-item"><span class="bd-code">--sort=-%cpu</span><div class="bd-text">Sort by CPU percentage descending (the <strong>-</strong> before %cpu means highest first). The top row = the most CPU-hungry process.</div></div>
+          <div class="bd-item"><span class="bd-code">| head</span><div class="bd-text">Shows only the first 10 lines (header + top 9 processes). Add <strong>-6</strong> for top 5. Stops the screen from filling with hundreds of processes.</div></div>
+          <div class="bd-item"><span class="bd-code">cat /proc/loadavg</span><div class="bd-text">Reads the system load average from the kernel. The three numbers are 1-minute, 5-minute, 15-minute averages. Above 1.0 per CPU core = system is overloaded.</div></div>
+          <div class="bd-item"><span class="bd-code">ps -p "$TOP_PID" -o etime</span><div class="bd-text">Gets the elapsed time (how long running) for a specific PID. <strong>etime</strong> shows hours:minutes:seconds. A process running for 3 hours when it should take 5 minutes = stuck.</div></div>
+        </div>
+      </div>
+
+      <div class="when-use c4">
+        <div class="wu-label">When to use this</div>
+        <div class="wu-text">Run immediately when CPU is above 90% on the dashboard. The top process is almost always your root cause. Check the elapsed time — if it has been running far longer than expected, it is stuck in a loop. Get bridge approval then kill -15 PID to stop it gracefully.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCRIPT 5: BACKUP LOGS ===== -->
+  <div class="script-card c5">
+    <div class="sc-head">
+      <div class="sc-num">05</div>
+      <div>
+        <div class="sc-title">Backup Logs</div>
+        <div class="sc-purpose">Compress and archive log files</div>
+      </div>
+      <span class="sc-badge">Backup</span>
+    </div>
+    <div class="sc-body">
+      <div class="sc-desc">Log files grow continuously. Left unchecked they fill the disk. This script uses tar and gzip to compress the log folder into a single timestamped archive, freeing space without losing the data. The archived file can be restored at any time for incident investigation.</div>
+
+      <div class="cbox">
+        <div class="cbox-bar">
+          <div class="cbox-bar-left"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">backup-logs.sh</span></div>
+        </div>
+        <div class="cbox-code">
+<span class="kw">#!/bin/bash</span><br>
+<span class="cm"># Compress logs — from the screenshot</span><br>
+<span class="fn">tar</span> -czf logs.tar.gz /var/log/app<br>
+<br>
+<span class="cm"># Full version — timestamped backup with cleanup</span><br>
+<span class="var">LOG_DIR</span>=<span class="str">"/var/log/app"</span><br>
+<span class="var">BACKUP_DIR</span>=<span class="str">"$HOME/backups"</span><br>
+<span class="var">TIMESTAMP</span>=<span class="op">$(</span><span class="fn">date</span> +<span class="str">"%Y-%m-%d_%H-%M-%S"</span><span class="op">)</span><br>
+<span class="var">BACKUP_FILE</span>=<span class="str">"$BACKUP_DIR/logs-$TIMESTAMP.tar.gz"</span><br>
+<br>
+<span class="fn">mkdir</span> -p <span class="str">"$BACKUP_DIR"</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"Creating backup: $BACKUP_FILE"</span><br>
+<span class="fn">tar</span> -czf <span class="str">"$BACKUP_FILE"</span> <span class="str">"$LOG_DIR"</span><br>
+<br>
+<span class="fn">echo</span> <span class="str">"Size: $(du -sh $BACKUP_FILE | awk '{print $1}')"</span><br>
+<br>
+<span class="cm"># Delete backups older than 7 days</span><br>
+<span class="fn">find</span> <span class="str">"$BACKUP_DIR"</span> -name <span class="str">"logs-*.tar.gz"</span> -mtime +7 -delete<br>
+<span class="fn">echo</span> <span class="str">"Done. Old backups cleaned."</span>
+        </div>
+      </div>
+
+      <div class="breakdown c5">
+        <div class="bd-title">Line-by-Line Breakdown</div>
+        <div class="bd-items">
+          <div class="bd-item"><span class="bd-code">tar -czf</span><div class="bd-text"><strong>tar</strong> = tape archive. Flags: <strong>-c</strong> create, <strong>-z</strong> compress with gzip, <strong>-f</strong> filename follows. Together = create a compressed archive.</div></div>
+          <div class="bd-item"><span class="bd-code">logs.tar.gz</span><div class="bd-text">The output filename. <strong>.tar</strong> = the bundle, <strong>.gz</strong> = gzip compressed. Together = compressed archive format used everywhere in Linux.</div></div>
+          <div class="bd-item"><span class="bd-code">$(date +"%Y-%m-%d_%H-%M-%S")</span><div class="bd-text">Inserts the current timestamp into the filename. Creates unique filenames like <strong>logs-2024-03-15_14-30-00.tar.gz</strong> so backups never overwrite each other.</div></div>
+          <div class="bd-item"><span class="bd-code">mkdir -p</span><div class="bd-text">Creates the backup folder if it does not exist. <strong>-p</strong> means no error if the folder already exists.</div></div>
+          <div class="bd-item"><span class="bd-code">find -mtime +7 -delete</span><div class="bd-text">Find files modified more than 7 days ago and delete them. Prevents the backup folder itself from filling up with old archives.</div></div>
+        </div>
+      </div>
+
+      <div class="when-use c5">
+        <div class="wu-label">When to use this</div>
+        <div class="wu-text">Run this when disk is above 80% and logs are the cause. Also schedule it nightly via crontab (midnight) so logs are automatically archived before they cause a disk full incident. The 7-day cleanup ensures you always have a week of history for investigations.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCRIPT 6: CRON HEALTH CHECK ===== -->
+  <div class="script-card c6">
+    <div class="sc-head">
+      <div class="sc-num">06</div>
+      <div>
+        <div class="sc-title">Cron Health Check</div>
+        <div class="sc-purpose">Schedule a health script to run automatically</div>
+      </div>
+      <span class="sc-badge">Automation</span>
+    </div>
+    <div class="sc-body">
+      <div class="sc-desc">Cron is the Linux scheduler. It runs scripts automatically at defined intervals — without you doing anything. This is what turns a one-time script into a continuous monitoring system. The cron expression defines exactly when the script runs.</div>
+
+      <div class="cbox">
+        <div class="cbox-bar">
+          <div class="cbox-bar-left"><span class="d dr"></span><span class="d dy"></span><span class="d dg"></span><span class="ct">crontab entry — from the screenshot</span></div>
+        </div>
+        <div class="cbox-code">
+<span class="cm"># The screenshot's cron entry</span><br>
+<span class="op">*/5 * * * *</span> /home/ops/healthcheck.sh<br>
+<br>
+<span class="cm"># What each field means:</span><br>
+<span class="cm"># ┌── minute (*/5 = every 5 minutes)</span><br>
+<span class="cm"># │  ┌── hour (* = every hour)</span><br>
+<span class="cm"># │  │  ┌── day of month (* = every day)</span><br>
+<span class="cm"># │  │  │  ┌── month (* = every month)</span><br>
+<span class="cm"># │  │  │  │  ┌── day of week (* = every day)</span><br>
+<span class="cm"># │  │  │  │  │</span><br>
+<span class="cm"># */5 *  *  *  *  /home/ops/healthcheck.sh</span><br>
+<br>
+<span class="cm"># Common cron schedules</span><br>
+<span class="op">*/5  * * * *</span>  /home/ops/healthcheck.sh  <span class="cm"># every 5 min</span><br>
+<span class="op">0    * * * *</span>  /home/ops/log-check.sh     <span class="cm"># every hour</span><br>
+<span class="op">0    9 * * 1-5</span> /home/ops/morning-drill.sh <span class="cm"># 9 AM weekdays</span><br>
+<span class="op">0    0 * * *</span>  /home/ops/backup-logs.sh   <span class="cm"># midnight daily</span><br>
+<br>
+<span class="cm"># Add a cron job</span><br>
+<span class="fn">crontab</span> -e    <span class="cm"># opens cron editor</span><br>
+<span class="fn">crontab</span> -l    <span class="cm"># lists all scheduled jobs</span><br>
+<span class="fn">crontab</span> -r    <span class="cm"># removes all jobs (use carefully)</span>
+        </div>
+      </div>
+
+      <div class="breakdown c6">
+        <div class="bd-title">Cron Expression Breakdown</div>
+        <div class="bd-items">
+          <div class="bd-item"><span class="bd-code">*/5</span><div class="bd-text"><strong>*/5 in the minute field</strong> = every 5 minutes. The <strong>*</strong> means "every" and <strong>/5</strong> means "divided by 5" — so every 5th minute.</div></div>
+          <div class="bd-item"><span class="bd-code">*</span><div class="bd-text">An asterisk alone means <strong>"every possible value."</strong> In the hour field it means every hour. In the day field it means every day.</div></div>
+          <div class="bd-item"><span class="bd-code">0 9 * * 1-5</span><div class="bd-text">Minute 0, Hour 9, every day, every month, days 1–5 (Monday to Friday). Reads as: <strong>run at 09:00 every weekday.</strong></div></div>
+          <div class="bd-item"><span class="bd-code">/home/ops/healthcheck.sh</span><div class="bd-text">Always use the <strong>full absolute path</strong> in cron jobs. Cron does not have the same PATH as your terminal so relative paths fail silently.</div></div>
+          <div class="bd-item"><span class="bd-code">crontab -e</span><div class="bd-text">Opens the cron editor (vi or nano). Add your cron line, save and exit. The job is now scheduled. Use <strong>crontab -l</strong> to confirm it was saved.</div></div>
+        </div>
+      </div>
+
+      <div class="when-use c6">
+        <div class="wu-label">When to use this</div>
+        <div class="wu-text">Use crontab after every script you write that should run automatically. The service restart script → every 5 minutes. The log error count → every hour. The backup → midnight. The morning drill → 07:45 weekdays. Cron is what turns manual checks into a self-running monitoring system.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BONUS: ADDITIONAL COMMANDS FROM TRAINING -->
+  <div class="sec"><span class="sn">03</span> Bonus — Additional Commands from the Training</div>
+
+  <div class="note n-e">💡 These are the most-used individual commands from Weeks 2–6.5. Each one appears repeatedly across different topics. Knowing these by memory makes investigation 10x faster.</div>
+
+  <div class="bonus-grid">
+
+    <div class="bonus-card bc-e">
+      <div class="bc-label">Log Investigation</div>
+      <h4>Trace One Transaction</h4>
+      <div class="bc-code">grep "TXN-501" payment-service.log<br>grep -B 3 "ERROR" payment-service.log</div>
+      <p>Find all log lines for a specific TXN ID. The -B 3 flag shows 3 lines before each error — reveals the build-up.</p>
+    </div>
+
+    <div class="bonus-card bc-v">
+      <div class="bc-label">Process Control</div>
+      <h4>Kill a Heavy Process</h4>
+      <div class="bc-code">kill -15 PID   # graceful stop<br>kill -9  PID   # force stop (last resort)</div>
+      <p>-15 sends a clean stop signal. The process shuts down properly. -9 forces it immediately — never use on a DB process.</p>
+    </div>
+
+    <div class="bonus-card bc-a">
+      <div class="bc-label">Memory Check</div>
+      <h4>RAM and Swap Status</h4>
+      <div class="bc-code">free -h<br>free -m | awk 'NR==2{print $7}'<br>free -m | awk 'NR==3{print $3}'</div>
+      <p>free -h shows the full picture. The awk commands extract just available RAM and swap used for scripting.</p>
+    </div>
+
+    <div class="bonus-card bc-s">
+      <div class="bc-label">Network</div>
+      <h4>Connectivity and Connections</h4>
+      <div class="bc-code">ping -c 4 8.8.8.8<br>netstat -an | grep ESTABLISHED | wc -l<br>netstat -an | grep TIME_WAIT | wc -l</div>
+      <p>Ping tests basic connectivity. netstat counts open and stuck connections — TIME_WAIT above normal = connection leak.</p>
+    </div>
+
+    <div class="bonus-card bc-o">
+      <div class="bc-label">Backup / Restore</div>
+      <h4>tar Commands</h4>
+      <div class="bc-code">tar -czf backup.tar.gz /folder   # create<br>tar -tzvf backup.tar.gz          # list<br>tar -xzf backup.tar.gz -C /dest  # restore</div>
+      <p>-c create, -z gzip, -f filename, -t list, -x extract, -C destination. These 3 cover 100% of backup operations.</p>
+    </div>
+
+    <div class="bonus-card bc-t">
+      <div class="bc-label">SSL / Cert</div>
+      <h4>Check Certificate Expiry</h4>
+      <div class="bc-code">openssl s_client -connect host:443 2>/dev/null \<br>| openssl x509 -noout -dates</div>
+      <p>Checks the TLS certificate of a live server and shows notBefore and notAfter dates. Immediately tells you if a cert is expired or about to expire.</p>
+    </div>
+
+    <div class="bonus-card bc-e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+      <div class="bc-label">Bash</div>
+      <h4>L2-Bash Scripting</h4>
+      <div class="bc-code">Common commands and examples<br><a href="extra-Bash-scripts-commands.html" style="color:var(--emerald);text-decoration:underline;">Open L2-Bash Scripting</a></div>
+      <p>Mobile-first, center-aligned reference for L2 Bash scripts — optimized for iOS and Android screens while matching the site's colour and card style.</p>
+    </div>
+
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ L2 Scripts & Commands — What I Know</h3>
+    <ul>
+      <li>Service Restart — <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--emerald);">if ! systemctl is-active</code> checks if a service is down and restarts it automatically — schedule every 5 minutes via crontab</li>
+      <li>Log Error Count — <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--emerald);">grep -i error /var/log/app.log | wc -l</code> counts errors and <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--emerald);">sort | uniq -c</code> shows the breakdown by type</li>
+      <li>Disk Health — <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--emerald);">df -h | awk '$5 > 80 {print $0}'</code> filters partitions above 80% — always run first in any investigation</li>
+      <li>CPU Check — <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--emerald);">ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%cpu | head</code> shows top processes by CPU — then check etime to see how long they have been running</li>
+      <li>Backup Logs — <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--emerald);">tar -czf logs.tar.gz /var/log/app</code> compresses logs — timestamped backups with 7-day auto-cleanup prevent disk full incidents</li>
+      <li>Cron Health Check — <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--emerald);">*/5 * * * * /home/ops/healthcheck.sh</code> schedules any script to run automatically — the 5-field cron syntax controls when</li>
+      <li>grep -B 3 "ERROR" — shows 3 lines before each error, revealing the WARN build-up that caused it — most useful single grep flag in L2 work</li>
+      <li>kill -15 PID for graceful stop, kill -9 only as last resort, never on a DB process — openssl s_client to check SSL certificate expiry on live servers</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>
