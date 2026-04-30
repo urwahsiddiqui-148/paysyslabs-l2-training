@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Extra Learning — Quick Scenarios & Their Steps</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#07080d;
+    --surface:#0d1018;
+    --surface2:#121620;
+    --surface3:#171c28;
+    --border:#1e2535;
+    --text:#a8b8cc;
+    --text-dim:#3e5268;
+    --text-faint:#162035;
+    --white:#eaf2fc;
+
+    --rose:#f43f5e;
+    --rose-bg:#180008;
+    --rose-border:#3c0018;
+
+    --orange:#f97316;
+    --orange-bg:#180800;
+    --orange-border:#3c2000;
+
+    --violet:#a855f7;
+    --violet-bg:#0e0818;
+    --violet-border:#281840;
+
+    --amber:#f59e0b;
+    --amber-bg:#180c00;
+    --amber-border:#3c2800;
+
+    --sky:#38bdf8;
+    --sky-bg:#001820;
+    --sky-border:#003848;
+
+    --green:#22d46a;
+    --green-bg:#001810;
+    --green-border:#003820;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;line-height:1.7;padding:48px 24px 100px;}
+  .page{max-width:960px;margin:0 auto;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:52px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .topbar-left{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;}
+  .tb-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 16px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+
+  .hero{margin-bottom:52px;}
+  .day-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--rose);margin-bottom:14px;}
+  .hero h1{font-size:clamp(28px,5vw,52px);font-weight:800;line-height:1.05;color:var(--white);margin-bottom:14px;}
+  .hero h1 span{color:var(--rose);}
+  .hero-desc{color:var(--text-dim);font-size:15px;max-width:560px;}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;}
+  .tag{padding:5px 14px;border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+
+  .sec{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faint);margin-bottom:18px;margin-top:44px;display:flex;align-items:center;gap:12px;}
+  .sec .sn{color:var(--rose);font-size:12px;}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .intro-card{background:var(--rose-bg);border:1px solid var(--rose-border);border-left:4px solid var(--rose);border-radius:12px;padding:20px 26px;margin-bottom:16px;}
+  .intro-card .al{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--rose);margin-bottom:8px;}
+  .intro-card p{color:var(--text);font-size:14px;}
+  .intro-card strong{color:var(--white);}
+
+  /* SCENARIO CARDS */
+  .sc-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;margin-bottom:22px;}
+
+  .sc-banner{padding:20px 28px;display:flex;align-items:center;gap:16px;}
+  .sc-icon{font-size:30px;flex-shrink:0;}
+  .sc-info{flex:1;}
+  .sc-num{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+  .sc-title{font-size:20px;font-weight:800;color:var(--white);}
+  .sc-subtitle{font-size:13px;color:var(--text-dim);margin-top:2px;}
+  .sc-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 14px;border-radius:100px;white-space:nowrap;}
+
+  /* STEPS FLOW */
+  .steps-flow{padding:24px 28px;border-top:1px solid var(--border);display:flex;align-items:flex-start;gap:0;flex-wrap:wrap;row-gap:12px;}
+  .step-item{display:flex;align-items:flex-start;gap:0;}
+  .step-box{display:flex;flex-direction:column;align-items:center;max-width:160px;}
+  .step-circle{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;flex-shrink:0;margin-bottom:8px;}
+  .step-label{font-size:12px;font-weight:700;color:var(--white);text-align:center;margin-bottom:3px;}
+  .step-cmd{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);text-align:center;}
+  .step-arrow{font-size:20px;color:var(--text-faint);margin:0 8px;padding-top:8px;flex-shrink:0;}
+
+  /* DETAIL SECTION */
+  .sc-detail{padding:0 28px 24px;display:flex;flex-direction:column;gap:10px;}
+  .detail-row{display:flex;gap:12px;align-items:flex-start;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;}
+  .dr-num{font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 8px;border-radius:6px;flex-shrink:0;margin-top:2px;}
+  .dr-content{flex:1;}
+  .dr-title{font-size:14px;font-weight:700;color:var(--white);margin-bottom:3px;}
+  .dr-desc{font-size:13px;color:var(--text-dim);}
+  .dr-desc strong{color:var(--white);}
+  .dr-cmd{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 10px;margin-top:6px;display:inline-block;color:var(--text-dim);}
+
+  /* COLOUR THEMING PER CARD */
+  /* S1 — Service Down — rose */
+  .s1 .sc-banner{background:var(--rose-bg);border-bottom:1px solid var(--rose-border);}
+  .s1 .sc-num{color:var(--rose);}
+  .s1 .sc-badge{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .s1 .step-circle{background:var(--rose-bg);border:2px solid var(--rose-border);color:var(--rose);}
+  .s1 .dr-num{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  /* S2 — High CPU — orange */
+  .s2 .sc-banner{background:var(--orange-bg);border-bottom:1px solid var(--orange-border);}
+  .s2 .sc-num{color:var(--orange);}
+  .s2 .sc-badge{background:var(--orange-bg);border:1px solid var(--orange-border);color:var(--orange);}
+  .s2 .step-circle{background:var(--orange-bg);border:2px solid var(--orange-border);color:var(--orange);}
+  .s2 .dr-num{background:var(--orange-bg);border:1px solid var(--orange-border);color:var(--orange);}
+  /* S3 — Queue Backlog — violet */
+  .s3 .sc-banner{background:var(--violet-bg);border-bottom:1px solid var(--violet-border);}
+  .s3 .sc-num{color:var(--violet);}
+  .s3 .sc-badge{background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);}
+  .s3 .step-circle{background:var(--violet-bg);border:2px solid var(--violet-border);color:var(--violet);}
+  .s3 .dr-num{background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);}
+  /* S4 — Disk Full — amber */
+  .s4 .sc-banner{background:var(--amber-bg);border-bottom:1px solid var(--amber-border);}
+  .s4 .sc-num{color:var(--amber);}
+  .s4 .sc-badge{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .s4 .step-circle{background:var(--amber-bg);border:2px solid var(--amber-border);color:var(--amber);}
+  .s4 .dr-num{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  /* S5 — API Failure — sky */
+  .s5 .sc-banner{background:var(--sky-bg);border-bottom:1px solid var(--sky-border);}
+  .s5 .sc-num{color:var(--sky);}
+  .s5 .sc-badge{background:var(--sky-bg);border:1px solid var(--sky-border);color:var(--sky);}
+  .s5 .step-circle{background:var(--sky-bg);border:2px solid var(--sky-border);color:var(--sky);}
+  .s5 .dr-num{background:var(--sky-bg);border:1px solid var(--sky-border);color:var(--sky);}
+
+  /* QUICK REF TABLE */
+  .ref-table{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+  .rt-head{padding:14px 22px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:15px;font-weight:700;color:var(--white);}
+  table.rt{width:100%;border-collapse:collapse;}
+  table.rt th{padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);text-align:left;border-bottom:1px solid var(--border);font-weight:400;background:var(--surface3);}
+  table.rt td{padding:11px 18px;font-size:13px;color:var(--text-dim);border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle;}
+  table.rt tr:last-child td{border-bottom:none;}
+  table.rt tr:hover td{background:rgba(255,255,255,0.02);}
+  table.rt td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--white);font-weight:700;white-space:nowrap;}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 9px;border-radius:100px;white-space:nowrap;}
+  .p-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .p-o{background:var(--orange-bg);border:1px solid var(--orange-border);color:var(--orange);}
+  .p-v{background:var(--violet-bg);border:1px solid var(--violet-border);color:var(--violet);}
+  .p-a{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .p-s{background:var(--sky-bg);border:1px solid var(--sky-border);color:var(--sky);}
+
+  .note{border-radius:10px;padding:10px 16px;font-size:13px;margin-bottom:12px;}
+  .n-r{background:var(--rose-bg);border:1px solid var(--rose-border);color:var(--rose);}
+  .note strong{color:var(--white);}
+
+  .outcome{background:linear-gradient(135deg,var(--rose-bg) 0%,var(--surface) 100%);border:1px solid var(--rose-border);border-radius:16px;padding:32px;margin-top:48px;}
+  .outcome h3{font-size:20px;font-weight:700;color:var(--rose);margin-bottom:18px;}
+  .outcome ul{display:flex;flex-direction:column;gap:9px;list-style:none;}
+  .outcome ul li{font-size:14px;color:var(--text-dim);padding-left:22px;position:relative;}
+  .outcome ul li::before{content:'✓';position:absolute;left:0;color:var(--rose);font-family:'JetBrains Mono',monospace;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">L2 Support Engineer · Fintech · Extra Learning</div>
+    <span class="tb-badge">Quick Reference</span>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="day-label">Extra Learning · Reference Guide</div>
+    <h1>Quick <span>Scenarios</span><br>& Their Steps</h1>
+    <p class="hero-desc">Five common incidents mapped to their exact step-by-step resolution paths. When a ticket arrives, match the symptom to a scenario and follow the steps in order — no guessing, no delay.</p>
+    <div class="tags">
+      <span class="tag">Service Down</span>
+      <span class="tag">High CPU</span>
+      <span class="tag">Queue Backlog</span>
+      <span class="tag">Disk Full</span>
+      <span class="tag">API Failure</span>
+    </div>
+  </div>
+
+  <div class="sec"><span class="sn">01</span> How to Read Each Scenario</div>
+
+  <div class="intro-card">
+    <div class="al">Reading Guide</div>
+    <p>
+      Each card shows the scenario, the <strong>step-by-step flow</strong> at a glance, and then a <strong>detailed breakdown</strong> of what to do and what command to run at each step.<br><br>
+      The flow at the top is what you memorise. The detail below is what you refer to when you need the exact command. Together they give you both the big picture and the precise action.
+    </p>
+  </div>
+
+  <div class="sec"><span class="sn">02</span> The 5 Quick Scenarios</div>
+
+  <!-- ============================= -->
+  <!-- SCENARIO 1 — SERVICE DOWN     -->
+  <!-- ============================= -->
+  <div class="sc-card s1">
+    <div class="sc-banner">
+      <div class="sc-icon">🚨</div>
+      <div class="sc-info">
+        <div class="sc-num">Scenario 01</div>
+        <div class="sc-title">Service Down</div>
+        <div class="sc-subtitle">A service has stopped responding — clients are getting errors or no response at all</div>
+      </div>
+      <span class="sc-badge">P1 Candidate</span>
+    </div>
+
+    <!-- STEPS FLOW -->
+    <div class="steps-flow">
+      <div class="step-item">
+        <div class="step-box">
+          <div class="step-circle">1</div>
+          <div class="step-label">Check Logs</div>
+          <div class="step-cmd">tail -f / grep</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step-item">
+        <div class="step-box">
+          <div class="step-circle">2</div>
+          <div class="step-label">Restart Service</div>
+          <div class="step-cmd">systemctl restart</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step-item">
+        <div class="step-box">
+          <div class="step-circle">3</div>
+          <div class="step-label">Verify Health</div>
+          <div class="step-cmd">curl /health</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step-item">
+        <div class="step-box">
+          <div class="step-circle">4</div>
+          <div class="step-label">Notify Team</div>
+          <div class="step-cmd">Slack / Jira</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETAIL -->
+    <div class="sc-detail">
+      <div class="detail-row">
+        <span class="dr-num">Step 1</span>
+        <div class="dr-content">
+          <div class="dr-title">Check Logs — find out why it went down</div>
+          <div class="dr-desc">Do not restart blindly. Read the log first. Was it a crash? A disk full? A DB failure? The log tells you. If you restart without knowing why — it may crash again in 2 minutes.
+            <div class="dr-cmd">tail -f /var/log/app.log</div>
+            <div class="dr-cmd">grep -i "error\|fatal\|crash" /var/log/app.log | tail -20</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <span class="dr-num">Step 2</span>
+        <div class="dr-content">
+          <div class="dr-title">Restart the Service — bring it back up</div>
+          <div class="dr-desc">Once you know the cause and it is safe to restart — do it. Always use <strong>systemctl restart</strong>, not kill, for services. Get bridge approval before restarting on PROD.
+            <div class="dr-cmd">systemctl restart app-service</div>
+            <div class="dr-cmd">systemctl status app-service</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <span class="dr-num">Step 3</span>
+        <div class="dr-content">
+          <div class="dr-title">Verify Health — confirm the restart worked</div>
+          <div class="dr-desc">After restarting, confirm the service is actually healthy — not just "started" but accepting connections and responding correctly. Call the health endpoint.
+            <div class="dr-cmd">curl -s https://your-app/health</div>
+            <div class="dr-cmd">systemctl is-active app-service</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <span class="dr-num">Step 4</span>
+        <div class="dr-content">
+          <div class="dr-title">Notify Team — close the loop</div>
+          <div class="dr-desc">Update the bridge, send recovery message to Slack #incidents, update the Jira ticket with what happened, what was done, and the recovery time. Do not close a P1 without a post-incident update.
+            <div class="dr-cmd">Jira: Service restored at [time]. Root cause: [cause]. Action taken: restart. Monitoring for recurrence.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================= -->
+  <!-- SCENARIO 2 — HIGH CPU         -->
+  <!-- ============================= -->
+  <div class="sc-card s2">
+    <div class="sc-banner">
+      <div class="sc-icon">⚙️</div>
+      <div class="sc-info">
+        <div class="sc-num">Scenario 02</div>
+        <div class="sc-title">High CPU</div>
+        <div class="sc-subtitle">CPU is above 90% — everything is slow and transactions are timing out</div>
+      </div>
+      <span class="sc-badge">Resource Spike</span>
+    </div>
+
+    <div class="steps-flow">
+      <div class="step-item">
+        <div class="step-box">
+          <div class="step-circle">1</div>
+          <div class="step-label">top</div>
+          <div class="step-cmd">Live view</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step-item">
+        <div class="step-box">
+          <div class="step-circle">2</div>
+          <div class="step-label">Identify Process</div>
+          <div class="step-cmd">ps aux --sort</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step-item">
+        <div class="step-box">
+          <div class="step-circle">3</div>
+          <div class="step-label">Restart / Kill</div>
+          <div class="step-cmd">kill -15 PID</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step-item">
+        <div class="step-box">
+          <div class="step-circle">4</div>
+          <div class="step-label">Verify</div>
+          <div class="step-cmd">Load avg drops</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sc-detail">
+      <div class="detail-row">
+        <span class="dr-num">Step 1</span>
+        <div class="dr-content">
+          <div class="dr-title">top — open the live view</div>
+          <div class="dr-desc">Open top immediately. Press <strong>P</strong> to sort by CPU. The process at the top is your suspect. Note the PID and %CPU. Check the load average in the header — above 1.0 per core = overloaded.
+            <div class="dr-cmd">top</div>
+            <div class="dr-cmd">cat /proc/loadavg</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <span class="dr-num">Step 2</span>
+        <div class="dr-content">
+          <div class="dr-title">Identify the process — confirm it is the problem</div>
+          <div class="dr-desc">Use ps for a cleaner snapshot. Check how long the top process has been running. If a Java batch job normally takes 5 minutes but has run 3 hours — it is stuck.
+            <div class="dr-cmd">ps aux --sort=-%cpu | head -6</div>
+            <div class="dr-cmd">ps -p PID -o pid,etime,pcpu,cmd</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <span class="dr-num">Step 3</span>
+        <div class="dr-content">
+          <div class="dr-title">Restart or kill — with bridge approval on PROD</div>
+          <div class="dr-desc">Use <strong>kill -15</strong> for a graceful stop. It tells the process to clean up and exit properly. Only use kill -9 if -15 does not work. <strong>Never kill -9 a database process.</strong>
+            <div class="dr-cmd">kill -15 PID   # graceful — try first</div>
+            <div class="dr-cmd">kill -9  PID   # force — only if -15 fails</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <span class="dr-num">Step 4</span>
+        <div class="dr-content">
+          <div class="dr-title">Verify — confirm CPU recovered</div>
+          <div class="dr-desc">After killing the process, watch the load average drop. Run ps again to confirm the process is gone. Check that transaction response times are back to normal.
+            <div class="dr-cmd">cat /proc/loadavg   # should decrease</div>
+            <div class="dr-cmd">ps aux --sort=-%cpu | head -4</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================= -->
+  <!-- SCENARIO 3 — QUEUE BACKLOG    -->
+  <!-- ============================= -->
+  <div class="sc-card s3">
+    <div class="sc-banner">
+      <div class="sc-icon">📬</div>
+      <div class="sc-info">
+        <div class="sc-num">Scenario 03</div>
+        <div class="sc-title">Queue Backlog</div>
+        <div class="sc-subtitle">MQ queue depth growing — transactions piling up and not being processed</div>
+      </div>
+      <span class="sc-badge">MQ Stuck</span>
+    </div>
+
+    <div class="steps-flow">
+      <div class="step-item">
+        <div class="step-box">
+          <div class="step-circle">1</div>
+          <div class="step-label">Check Depth</div>
+          <div class="step-cmd">Queue depth</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step-item">
+        <div class="step-box">
+          <div class="step-circle">2</div>
+          <div class="step-label">Restart Consumer</div>
+          <div class="step-cmd">Safe order</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step-item">
+        <div class="step-box">
+          <div class="step-circle">3</div>
+          <div class="step-label">Monitor</div>
+          <div class="step-cmd">Depth decreasing</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sc-detail">
+      <div class="detail-row">
+        <span class="dr-num">Step 1</span>
+        <div class="dr-content">
+          <div class="dr-title">Check queue depth — note the number before touching anything</div>
+          <div class="dr-desc">Check the current queue depth. <strong>Write the number down.</strong> This is your before-state. You need it to confirm messages were not lost after restart. Also check if the consumer service is running.
+            <div class="dr-cmd">systemctl status payment-consumer</div>
+            <div class="dr-cmd">grep "Queue depth" /var/log/mq-consumer.log | tail -5</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <span class="dr-num">Step 2</span>
+        <div class="dr-content">
+          <div class="dr-title">Restart consumer — in the safe order only</div>
+          <div class="dr-desc">The safe restart order is critical. Wrong order = lost messages. <strong>Stop consumer → get bridge approval → restart MQ if needed → start consumer.</strong> Never restart MQ while consumer is actively reading from it.
+            <div class="dr-cmd">systemctl stop payment-consumer</div>
+            <div class="dr-cmd">systemctl restart rabbitmq-server  # if MQ itself is stuck</div>
+            <div class="dr-cmd">systemctl start payment-consumer</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <span class="dr-num">Step 3</span>
+        <div class="dr-content">
+          <div class="dr-title">Monitor — watch the queue drain</div>
+          <div class="dr-desc">After restarting, the queue depth should start decreasing as the consumer picks up messages. If depth stays high — the consumer restarted but is immediately failing again. Check logs.
+            <div class="dr-cmd">watch -n 5 "grep 'Queue depth' /var/log/mq-consumer.log | tail -3"</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================= -->
+  <!-- SCENARIO 4 — DISK FULL        -->
+  <!-- ============================= -->
+  <div class="sc-card s4">
+    <div class="sc-banner">
+      <div class="sc-icon">💾</div>
+      <div class="sc-info">
+        <div class="sc-num">Scenario 04</div>
+        <div class="sc-title">Disk Full</div>
+        <div class="sc-subtitle">Disk at 100% — writes failing, DB can't save data, logs stopped</div>
+      </div>
+      <span class="sc-badge">Resource Critical</span>
+    </div>
+
+    <div class="steps-flow">
+      <div class="step-item">
+        <div class="step-box">
+          <div class="step-circle">1</div>
+          <div class="step-label">df -h</div>
+          <div class="step-cmd">Confirm full</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step-item">
+        <div class="step-box">
+          <div class="step-circle">2</div>
+          <div class="step-label">Clean Logs</div>
+          <div class="step-cmd">du / rm old</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step-item">
+        <div class="step-box">
+          <div class="step-circle">3</div>
+          <div class="step-label">Compress Old</div>
+          <div class="step-cmd">tar -czf</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step-item">
+        <div class="step-box">
+          <div class="step-circle">4</div>
+          <div class="step-label">Verify</div>
+          <div class="step-cmd">df -h again</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sc-detail">
+      <div class="detail-row">
+        <span class="dr-num">Step 1</span>
+        <div class="dr-content">
+          <div class="dr-title">df -h — confirm which partition is full</div>
+          <div class="dr-desc">Run df -h to see all partitions. Find the one at 100%. Then use du to find which folder is the biggest consumer — it is almost always /var/log.
+            <div class="dr-cmd">df -h</div>
+            <div class="dr-cmd">du -sh /var/log/* 2>/dev/null | sort -rh | head -8</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <span class="dr-num">Step 2</span>
+        <div class="dr-content">
+          <div class="dr-title">Clean logs — delete or move old log files</div>
+          <div class="dr-desc">Delete log files older than a safe period (e.g. 30 days). <strong>Never delete the currently active log file</strong> — only rotated old ones. Confirm the application is still writing after cleanup.
+            <div class="dr-cmd">find /var/log/app -name "*.log" -mtime +30 -delete</div>
+            <div class="dr-cmd">find /var/log/app -name "*.log.gz" -mtime +60 -delete</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <span class="dr-num">Step 3</span>
+        <div class="dr-content">
+          <div class="dr-title">Compress old files — archive instead of delete</div>
+          <div class="dr-desc">For logs you need to keep (for compliance or investigation) — compress them with tar. A 500MB log file compresses to ~15MB. You keep the data but free 97% of the space.
+            <div class="dr-cmd">tar -czf /backup/logs-$(date +%Y%m%d).tar.gz /var/log/app/old/</div>
+            <div class="dr-cmd">rm -rf /var/log/app/old/   # only after confirming backup</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <span class="dr-num">Step 4</span>
+        <div class="dr-content">
+          <div class="dr-title">Verify — confirm disk is healthy again</div>
+          <div class="dr-desc">Run df -h again. Disk should be below 80%. Confirm DB is writing, logs are growing, and no write errors remain in the log file.
+            <div class="dr-cmd">df -h   # confirm below 80%</div>
+            <div class="dr-cmd">tail -f /var/log/app.log   # confirm writes resumed</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================= -->
+  <!-- SCENARIO 5 — API FAILURE      -->
+  <!-- ============================= -->
+  <div class="sc-card s5">
+    <div class="sc-banner">
+      <div class="sc-icon">🔌</div>
+      <div class="sc-info">
+        <div class="sc-num">Scenario 05</div>
+        <div class="sc-title">API Failure</div>
+        <div class="sc-subtitle">An API endpoint is returning errors or not responding — clients getting 5xx responses</div>
+      </div>
+      <span class="sc-badge">Service Degraded</span>
+    </div>
+
+    <div class="steps-flow">
+      <div class="step-item">
+        <div class="step-box">
+          <div class="step-circle">1</div>
+          <div class="step-label">curl</div>
+          <div class="step-cmd">Test endpoint</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step-item">
+        <div class="step-box">
+          <div class="step-circle">2</div>
+          <div class="step-label">Logs</div>
+          <div class="step-cmd">Find error</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step-item">
+        <div class="step-box">
+          <div class="step-circle">3</div>
+          <div class="step-label">Restart</div>
+          <div class="step-cmd">If process down</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step-item">
+        <div class="step-box">
+          <div class="step-circle">4</div>
+          <div class="step-label">Validate</div>
+          <div class="step-cmd">curl again</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sc-detail">
+      <div class="detail-row">
+        <span class="dr-num">Step 1</span>
+        <div class="dr-content">
+          <div class="dr-title">curl — test the endpoint directly from the server</div>
+          <div class="dr-desc">Use curl to call the failing endpoint from the server itself. This tells you the exact HTTP response code and error message. Also call /health to see if all dependencies are up.
+            <div class="dr-cmd">curl -s -o /dev/null -w "%{http_code}" https://api/endpoint</div>
+            <div class="dr-cmd">curl -s https://api/health | python3 -m json.tool</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <span class="dr-num">Step 2</span>
+        <div class="dr-content">
+          <div class="dr-title">Logs — find the specific error behind the failure</div>
+          <div class="dr-desc">Check the API service log for the error. A 502 usually means the downstream service is down. A 500 means the application code threw an exception. The log shows the exact error.
+            <div class="dr-cmd">grep "ERROR\|500\|502\|503" /var/log/api.log | tail -20</div>
+            <div class="dr-cmd">grep -B 3 "ERROR" /var/log/api.log | tail -15</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <span class="dr-num">Step 3</span>
+        <div class="dr-content">
+          <div class="dr-title">Restart — if the process or dependency is down</div>
+          <div class="dr-desc">If logs show the API process crashed — restart it. If logs show DB_CONNECTION_REFUSED — the DB is the problem, not the API. Fix the root cause, not the symptom.
+            <div class="dr-cmd">systemctl restart api-service</div>
+            <div class="dr-cmd">systemctl status api-service</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-row">
+        <span class="dr-num">Step 4</span>
+        <div class="dr-content">
+          <div class="dr-title">Validate — confirm the endpoint is working again</div>
+          <div class="dr-desc">Call curl again. You should get HTTP 200. Call /health and verify all dependencies show connected. Monitor logs for 5 minutes after restart to confirm no immediate re-failure.
+            <div class="dr-cmd">curl -s -o /dev/null -w "%{http_code}" https://api/endpoint</div>
+            <div class="dr-cmd">tail -f /var/log/api.log   # watch for new errors</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK REF TABLE -->
+  <div class="sec"><span class="sn">03</span> Quick Reference — All 5 Scenarios at a Glance</div>
+
+  <div class="note n-r">🔥 <strong>Memorise this table.</strong> When a ticket arrives — match the symptom to a scenario. The step sequence tells you what to do first without thinking.</div>
+
+  <div class="ref-table">
+    <div class="rt-head">⚡ Quick Scenario Steps — Cheat Sheet</div>
+    <table class="rt">
+      <thead><tr><th>Scenario</th><th>Step 1</th><th>Step 2</th><th>Step 3</th><th>Step 4</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Service Down</td>
+          <td><span class="pill p-r">Check logs</span></td>
+          <td>Restart service</td>
+          <td>Verify health</td>
+          <td>Notify team</td>
+        </tr>
+        <tr>
+          <td>High CPU</td>
+          <td><span class="pill p-o">top</span></td>
+          <td>Identify process</td>
+          <td>kill -15 PID</td>
+          <td>Verify drop</td>
+        </tr>
+        <tr>
+          <td>Queue Backlog</td>
+          <td><span class="pill p-v">Check depth</span></td>
+          <td>Restart consumer</td>
+          <td>Monitor draining</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>Disk Full</td>
+          <td><span class="pill p-a">df -h</span></td>
+          <td>Clean logs</td>
+          <td>Compress old files</td>
+          <td>Verify % free</td>
+        </tr>
+        <tr>
+          <td>API Failure</td>
+          <td><span class="pill p-s">curl endpoint</span></td>
+          <td>Check logs</td>
+          <td>Restart if needed</td>
+          <td>Validate curl</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome">
+    <h3>✅ Quick Scenarios — What I Know</h3>
+    <ul>
+      <li>Service Down — check logs first to find why, then restart service, verify with curl /health, and notify the team with a Jira update</li>
+      <li>High CPU — open top, press P to sort, identify the heavy process by PID, check its etime, kill -15 with bridge approval, verify load average drops</li>
+      <li>Queue Backlog — check and note the queue depth first, stop consumer, get bridge approval, restart MQ if needed, start consumer, monitor depth decreasing</li>
+      <li>Disk Full — run df -h to confirm, use du to find the biggest folder, delete or compress old logs with tar -czf, verify disk is below 80% and writes resumed</li>
+      <li>API Failure — curl the endpoint for the HTTP code, check logs for the exact error, restart only if the process is the cause, validate with curl and monitor logs after</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>
