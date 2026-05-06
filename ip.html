@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NBP Digital Infrastructure – IP Address & Service Mapping Report</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 40px;
+      color: #1f2933;
+      line-height: 1.6;
+    }
+
+    h1 {
+      color: #003366;
+      border-bottom: 3px solid #003366;
+      padding-bottom: 10px;
+    }
+
+    h2 {
+      color: #003366;
+      margin-top: 40px;
+      border-bottom: 1px solid #cccccc;
+      padding-bottom: 6px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid #cccccc;
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background-color: #f4f6f8;
+      color: #003366;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9fafb;
+    }
+
+    .note {
+      background-color: #f9fafb;
+      border-left: 4px solid #003366;
+      padding: 12px;
+      margin: 25px 0;
+    }
+
+    .footer {
+      margin-top: 60px;
+      font-size: 0.85em;
+      color: #555;
+      border-top: 1px solid #ddd;
+      padding-top: 15px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>NBP Digital Infrastructure – IP Address & Service Mapping</h1>
+
+<p>
+This document provides a consolidated view of the <strong>NBP Digital platform IP addresses</strong>
+along with their assigned services and functional roles.  
+The information is intended to support operational clarity, troubleshooting, access control,
+and architectural understanding.
+</p>
+
+<h2>IP Address and Service Mapping</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>IP Address</th>
+      <th>Port</th>
+      <th>Service / Function</th>
+      <th>Role Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>10.0.80.1</td><td>22</td><td>BISP + BEOE MPAY (OC)</td><td>OpenConnect MPAY services supporting BISP and BEOE payment flows</td></tr>
+    <tr><td>10.0.80.2</td><td>22</td><td>NBP Digital Portals</td><td>Customer‑facing and internal digital portals</td></tr>
+    <tr><td>10.0.80.3</td><td>22</td><td>NBP Digital PROD Mobile App</td><td>Production backend services for the NBP Digital mobile application</td></tr>
+    <tr><td>10.0.80.4</td><td>22</td><td>NBP Digital Call Center Backoffice (Windows)</td><td>Call center operational backoffice systems</td></tr>
+    <tr><td>10.0.80.6</td><td>22</td><td>NBP Digital Jasper</td><td>Jasper platform used for messaging / operational services</td></tr>
+    <tr><td>10.0.80.7</td><td>22</td><td>NBP Digital MPAY (OC)</td><td>Primary MPAY OpenConnect transaction processing node</td></tr>
+    <tr><td>10.0.80.8</td><td>22</td><td>NBP Digital BETA Mobile App + Push Notifications</td><td>Beta environment mobile services and push notification handling</td></tr>
+    <tr><td>10.0.80.9</td><td>22</td><td>NBP Digital BULK Disbursement Backoffice (Windows)</td><td>Operational interface for bulk and subsidy disbursement processing</td></tr>
+    <tr><td>10.0.80.10</td><td>22</td><td>NBP Digital Notification Service</td><td>Centralized notification delivery service (SMS / push integration)</td></tr>
+    <tr><td>10.0.80.11</td><td>22</td><td>NBP Digital Account Opening</td><td>Digital onboarding and account opening services</td></tr>
+    <tr><td>10.0.80.12</td><td>22</td><td>NBP CRPL</td><td>Compliance and regulatory processing layer</td></tr>
+    <tr><td>10.0.80.14</td><td>22</td><td>NBP Digital BULK Disbursement Backoffice – NEW</td><td>New deployment for enhanced bulk disbursement operations</td></tr>
+    <tr><td>10.0.80.34 / 192.168.51.56</td><td>22 / 1440</td><td>Databases – NBP BEOF + BISP + BULK</td><td>Primary databases supporting BEOF, BISP, and bulk payment services</td></tr>
+    <tr><td>10.0.80.37 / 192.168.51.3</td><td>22 / 1440</td><td>NBP Digital Database</td><td>Core digital banking database environment</td></tr>
+    <tr><td>10.0.80.41</td><td>22</td><td>NBP Digital NGINX (BETA Services)</td><td>NGINX gateway for beta digital services routing</td></tr>
+    <tr><td>10.0.80.42</td><td>22</td><td>NBP Digital NGINX (PROD Services)</td><td>NGINX gateway for production digital services routing</td></tr>
+    <tr><td>10.0.80.74</td><td>22</td><td>Internal NGINX</td><td>Internal traffic routing and service exposure control</td></tr>
+    <tr><td>10.0.80.19</td><td>22</td><td>NBP P2M Acquiring Backoffice</td><td>Backoffice systems for person‑to‑merchant acquiring operations</td></tr>
+    <tr><td>10.0.80.20</td><td>22</td><td>NBP P2M Raast Acquiring</td><td>Raast‑based merchant acquiring transaction processing</td></tr>
+    <tr><td>10.0.80.22</td><td>22</td><td>NBP P2M MPAY</td><td>MPAY services supporting P2M flows</td></tr>
+    <tr><td>10.0.80.16</td><td>22</td><td>NBP MPG Raast</td><td>Raast Message Processing Gateway</td></tr>
+    <tr><td>10.0.80.36 / 192.168.51.57</td><td>22 / 1440</td><td>NBP MPG Raast Database</td><td>Database supporting Raast MPG transaction storage and processing</td></tr>
+  </tbody>
+</table>
+
+<div class="note">
+<strong>Note:</strong> This report reflects service‑to‑IP mapping as provided.  
+Any changes in infrastructure, network segmentation, or environment (UAT / PROD) should be
+validated with the latest operations or CMDB records.
+</div>
+
+<div class="footer">
+  <p>
+    Prepared for architectural reference and operational clarity.<br>
+    Document intended for internal technical circulation.
+  </p>
+</div>
+
+</body>
+</html>
